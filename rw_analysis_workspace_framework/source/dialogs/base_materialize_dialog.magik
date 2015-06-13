@@ -1,0 +1,236 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        :
+##
+##
+## Date written    : 2014-12-31
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:base_materialize_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+## Creates a materialized collection of the source
+## collection. Uses a materialized_collection_creator to do
+## so. The creator takes a structure as input that will guide
+## it with new names and join aspect fields.
+def_slotted_exemplar(:base_materialize_dialog,
+	{
+		{:items, _unset},
+		{:holder, _unset},
+		{:analysis_dsm, _unset},
+		{:log_file, _unset},
+		{:log_stream, _unset},
+		{:thread, _unset}
+	},
+	:model)
+$
+
+message_handler.new(:base_materialize_dialog).add_uses(:model, :gen_graphics)
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.set_holder(holder, ds)
+	.holder << holder
+	.analysis_dsm << ds
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_abstract _method base_materialize_dialog.activate_in(container)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.build_top_label(container)
+	text_window.new(container, 4, 50, _unset,
+			:horizontal_scrollbar?, _false,
+			:editable?, _false,
+			:contents, _self.message(:top_label),
+			:col_alignment, :fill,
+			:row_alignment, :fill )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.build_progress(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill, :col_resize_values, {100,0})
+	.items[:progress_label] << label_item.new(rc, _self.message(:no_progress), :col_alignment, :fill)
+	.items[:interrupt] << image_button_item.new_safe(rc, _self.stop_image,
+							 _self, :|interrupt()|,
+							 :insensitive_image, _self.grey_stop_image,
+							 :col_alignment, :right)
+	.items[:interrupt].set_property(:has_border?, _false)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.build_buttons(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.on_activation()
+	_self.manage_actions()
+	_return _super.on_activation()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_abstract _private _method base_materialize_dialog.validate()
+	##
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.ok()
+	_self.validate()
+	_self.run_in_background(:|materialize()|)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.interrupt()
+	_if .thread _isnt _unset
+	_then
+		.thread.kill(:kill)
+		.thread << _unset
+		_self.report(_self.message(:interrupted))
+	_endif
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_materialize_dialog.run_in_background(meth)
+	_if .thread _isnt _unset
+	_then
+		.thread.kill(:kill)
+	_endif
+	.thread << _proc(me, meth)
+			   me.perform_safely(:|running_in_background()|, meth)
+		   _endproc.fork_at(3, _self, meth)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_materialize_dialog.running_in_background(meth)
+	_self.manage_actions()
+	_protect
+		_self.perform_safely(meth)
+	_protection
+		.thread << _unset
+		_self.manage_actions()
+	_endprotect
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.materialize()
+	_local new_col << _self.construct_materialized()
+	.parent_model.add_collection(new_col)
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_abstract _private _method base_materialize_dialog.construct_materialized()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.cancel()
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.manage_actions()
+	_local running? << .thread _isnt _unset
+	.items[:interrupt].enabled? << running?
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.report(string)
+	.items[:progress_label].value << string
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.create_log_stream()
+
+	.log_file << system.temp_file_name("materialization.log")
+	.log_stream << external_text_output_stream.new(.log_file)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.close_log_stream()
+	.log_stream.close()
+	.log_stream << _unset
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.open_log()
+	_handling error _with _proc(x) x.report_contents_on(!output!) _endproc
+
+	system.start_command(write_string("notepad ", %", .log_file, %" ))
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_materialize_dialog.log(str)
+	_try
+		.log_stream.write(str)
+		.log_stream.newline()
+		.log_stream.flush()
+	_when error
+		write("Error writing to log ", _self )
+	_endtry
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_materialize_dialog.note_change(who, what, data)
+	_if what _is :report
+	_then
+		_self.report(data)
+	_elif what _is :log
+	_then
+		_self.log(data)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_materialize_dialog.stop_image
+	_return smallworld_product.get_raster_image(:stop, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_materialize_dialog.grey_stop_image
+	_return smallworld_product.get_raster_image(:stop_grey, :ui_resources)
+_endmethod
+$

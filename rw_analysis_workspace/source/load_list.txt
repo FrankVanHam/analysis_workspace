@@ -1,0 +1,13 @@
+declare_package
+base_collection
+analysis_dataset_manager
+materialization_setting
+materialized_collection_creator
+view_creator
+large_record_register
+
+records/
+area/
+spatial/
+sw/
+workspace/

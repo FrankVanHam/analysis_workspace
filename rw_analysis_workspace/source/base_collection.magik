@@ -1,0 +1,262 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:base_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Top base class for all analysis collections. These collections are
+## hierarchical and work on other collections, except for
+## the leaf collections that hold their own data.
+##
+def_slotted_exemplar(:base_collection,
+	{
+		{:dsm,              _unset},
+		{:base_collections, _unset}
+	})
+$
+
+_pragma(classify_level=basic, topic={analysis})
+# Support for XML serialisation
+serial_structure_mixin.add_child(base_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+# Support for XML serialisation
+base_collection.define_shared_constant(:serial_structure, :slotted, :public)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_collection.init(dsm, _gather base_cols)
+	.dsm << dsm
+	_if base_cols.empty?.not _andif base_cols[1] _is _unset _then condition.raise(:error, :string, "only valid base collections allowed") _endif 
+	.base_collections << base_cols
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.base_collections
+	_return .base_collections
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.base_collection
+	_return .base_collections.an_element()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.is_record_collection?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.origin_is_sw_collection?
+	_if _self.base_collection _isnt _unset 
+	_then
+		_return _self.base_collection.origin_is_sw_collection?
+	_else
+		_return _false
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.is_sw_collection?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.is_spatial?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.is_area?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method base_collection.serial_slots()
+    _local keys   << rope.new_with(:oop, :base_collections)
+    _local values << rope.new_with(_self.as_oop, .base_collections)
+    _return keys, values
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method base_collection.new_from_serial(keys,values)
+	_dynamic !current_analysis_dataset_manager!
+	
+	_local dsm << !current_analysis_dataset_manager!
+	_local oop << values[1]
+	_local col << dsm.collection_at_oop(oop)
+	_if col _is _unset
+	_then 
+		col << _clone.init_from_serial(dsm,_scatter values.slice_to_end(2))
+		dsm.cache_collection_at_oop(oop, col)
+	_endif 
+	_return col
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_private _method base_collection.init_from_serial(dsm, base_cols)
+	.dsm << dsm
+	.base_collections << base_cols
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method base_collection.equals?(other)
+	_if _not _self.is_class_of?(other) _then _return _false _endif
+	_return other.equals_in_details?(.base_collections)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method base_collection.equals_in_details?(other_bases)
+	_if .base_collections.size <> other_bases.size _then _return _false _endif
+	
+	_for i_index, i_col _over .base_collections.fast_keys_and_elements()
+	_loop
+		_if _not i_col.equals?(other_bases[i_index])
+		_then
+			_return _false
+		_endif
+	_endloop
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.is_leaf?
+	_return .base_collections.empty?
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_collection.expose()
+	## Expose the inner basic collection.
+	_if _self.base_collection _isnt _unset 
+	_then
+		_return _self.base_collection.expose()
+	_else 
+		_return _unset
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.world
+	_return _self.base_collection.world
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_iter _method base_collection.branch_to_root()
+	_loopbody(_self)
+	_if _self.base_collection _isnt _unset 
+	_then
+		_for i_col _over _self.base_collection.branch_to_root()
+		_loop
+			_loopbody(i_col)
+		_endloop
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.size_is_fast?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.convert_to_geometry_is_fast?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _method base_collection.size
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _iter _method base_collection.fast_elements()
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _iter _method base_collection.fast_geometries(_optional bounds, geom_name)
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.goto_bounds
+	_return _self.convert_to_geometry(_unset).bounds
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.discard()
+	_if _self.base_collection _isnt _unset
+	_then
+		_self.base_collection.discard()
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_collection.description
+	_return _self.class_name
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_collection.copy()
+	_return _clone.init_copy()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_collection.init_copy()
+	_return _self
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_collection.message(id, _gather args)
+	_return message_handler.new(_self.class_name).human_string(id, _unset, _scatter args)	
+_endmethod
+$
+

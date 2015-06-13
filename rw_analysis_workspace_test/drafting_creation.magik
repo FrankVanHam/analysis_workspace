@@ -1,0 +1,184 @@
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((272493023*2.0),(258367039.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_texts].field(:text_1)
+last_rec <<  text.new_with_sectors(fd,sectors,"test_poi_in_buffer_around_road")
+last_rec.height << (1.0)
+last_rec.justification << 21
+last_rec.orientation << (0.0)
+last_rec.font_orientation << unset
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((272734935*2.0),(258401157.0),(545804939.0),(4034447*2.0**6),(545566151.0),(64449383*2.0**2),(545340709.0),(64462705*2.0**2),(34076049*2.0**4),(129071321*2.0),(272734935*2.0),(258401157.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
+last_rec <<  simple_chain.new_with_sectors(fd,sectors)
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((544514653.0),(259229527.0),(17013835*2.0**5),(32396327*2.0**3),(136093937*2.0**2),(259171857.0),(136081843*2.0**2),(259349005.0),(544394179.0),(64852605*2.0**2),(544514653.0),(259229527.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
+last_rec <<  simple_chain.new_with_sectors(fd,sectors)
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((545565739.0),(258344921.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_texts].field(:text_1)
+last_rec <<  text.new_with_sectors(fd,sectors,"test_finding_hotels_near_parks")
+last_rec.height << (1.0)
+last_rec.justification << 21
+last_rec.orientation << (0.0)
+last_rec.font_orientation << unset
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((545406633.0),(258531531.0),(272986865*2.0),(258426703.0),(545757093.0),(128823299*2.0),(136165585*2.0**2),(128829041*2.0),(544594753.0),(129004399*2.0),(545406633.0),(258531531.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
+last_rec <<  simple_chain.new_with_sectors(fd,sectors)
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((68238333*2.0**3),(129092599*2.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_texts].field(:text_1)
+last_rec <<  text.new_with_sectors(fd,sectors,"test_on_spatial_analysis_col")
+last_rec.height << (1.0)
+last_rec.justification << 21
+last_rec.orientation << (0.0)
+last_rec.font_orientation << unset
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((545577889.0),(129759559*2.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_texts].field(:text_1)
+last_rec <<  text.new_with_sectors(fd,sectors,"test_basic_area_analysis")
+last_rec.height << (1.0)
+last_rec.justification << 22
+last_rec.orientation << (0.0)
+last_rec.font_orientation << unset
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((544358067.0),(259191291.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_texts].field(:text_1)
+last_rec <<  text.new_with_sectors(fd,sectors,"xor2")
+last_rec.height << (1.0)
+last_rec.justification << 21
+last_rec.orientation << (0.0)
+last_rec.font_orientation << unset
+last_rec.new_dataless_rwo()
+$
+
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((544358067.0),(259191291.0),(544411549.0),(259236701.0),(136117503*2.0**2),(259187063.0),(544549985.0),(259172171.0),(272295951*2.0),(259110399.0),(544502001.0),(259066275.0),(544353531.0),(259133779.0),(544358067.0),(259191291.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
+last_rec <<  simple_chain.new_with_sectors(fd,sectors)
+last_rec.new_dataless_rwo()
+$
+
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((136463121*2.0**2),(259807321.0),(545932493.0),(64958331*2.0**2),(273007251*2.0),(259703309.0),(545918491.0),(32457413*2.0**3),(136463121*2.0**2),(259807321.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
+last_rec <<  simple_chain.new_with_sectors(fd,sectors)
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((272957811*2.0),(259827841.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_texts].field(:text_1)
+last_rec <<  text.new_with_sectors(fd,sectors,"test_topology_query")
+last_rec.height << (1.0)
+last_rec.justification << 21
+last_rec.orientation << (0.0)
+last_rec.font_orientation << unset
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((544394179.0),(64852605*2.0**2))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_texts].field(:text_1)
+last_rec <<  text.new_with_sectors(fd,sectors,"xor1")
+last_rec.height << (1.0)
+last_rec.justification << 21
+last_rec.orientation << (0.0)
+last_rec.font_orientation << unset
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((545514205.0),(259492625.0),(68205215*2.0**3),(259545671.0),(545670283.0),(129717239*2.0),(272865995*2.0),(259392503.0),(272833101*2.0),(259373271.0),(68201483*2.0**3),(32397521*2.0**3),(34094479*2.0**4),(259282825.0),(545514205.0),(259492625.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
+last_rec <<  simple_chain.new_with_sectors(fd,sectors)
+last_rec.new_dataless_rwo()
+$
+sectors << sector_rope.new()
+$
+_block@recreate_sector_rope
+	s << sector.new_with_xy((136204073*2.0**2),(258317137.0),(272478591*2.0),(129202693*2.0),(272505685*2.0),(258333393.0),(136207363*2.0**2),(258242047.0),(136204073*2.0**2),(258317137.0))
+	sectors.add_last(s)
+_endblock
+$
+fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
+last_rec <<  simple_chain.new_with_sectors(fd,sectors)
+last_rec.new_dataless_rwo()
+$

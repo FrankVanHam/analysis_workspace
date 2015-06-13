@@ -1,0 +1,12 @@
+
+_package sw
+$
+
+
+
+_pragma(classify_level=basic)
+_method cached_record_collection.new_for_rw_analysis_collection(source)
+	
+	   _return _clone.init(source, source.expose(), _false)
+_endmethod
+$

@@ -1,0 +1,10 @@
+rw_analysis_workspace_test	1
+description
+	Unit tests for the Realworld Analysis Workspace core
+end
+requires
+	munit_image_latest
+end
+tests_modules
+	rw_analysis_workspace
+end

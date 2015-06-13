@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <plugins>
+    <plugin name="file" class_name="rwan:dataset_plugin">
+      <property name="dsm_name" value="analysis"/>
+    </plugin>
+    <plugin name="construct" class_name="rwan:construct_plugin">
+      <property name="runner_plugin_name" value="runner"/>
+    </plugin>
+    <plugin name="highlight" class_name="rwan:highlight_plugin">
+      <property name="highlight_priority" value="50"/>
+    </plugin>
+    <plugin name="workspace" class_name="rwan:workspace_plugin"/>
+    <plugin name="tree" class_name="rwan:tree_plugin"/>
+    <plugin name="runner" class_name="rwan:runner_plugin"/>
+  </plugins>
+</config>
+

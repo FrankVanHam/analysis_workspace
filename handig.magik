@@ -1,0 +1,1742 @@
+#% text_encoding = iso8859_1
+##
+## File            : handig.magik
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains       :
+##
+##
+## Date written    : 1996
+## Date changed    : Dec/2010
+##
+## `Source contents (Starts with evt. Shared Cons/vars, Automatically maintained):'
+##
+## '|Shared Cons|:`
+##                  ds_record.roos_show_slots_on_debug?
+## '|Procs|:`
+##                  !roos_setvars!
+##                  cr
+##                  cur
+##                  appl
+##                  getview
+##                  !list_alts!
+##                  !goto_alts!
+##                  !save_alts!
+##                  scw
+##                  col
+##                  colap
+##                  colapext
+##                  wrel
+##                  wrkel
+##                  prel
+##                  writer
+##                  raise
+##                  find_req_tree
+## '|Substituted Methods|:`
+##                  ds_record.debug_print_on
+##                  condition.raise
+## '|Methods (Public)|:`
+##                  component_framework.cap()
+##                  component_framework.c()
+##                  component_framework.dap()
+##                  component_framework.d()
+##                  application.gtrail
+##                  application.goto()
+##                  dd_record_mixin.gt
+##                  dd_record_mixin.gt()
+##                  rwo_record.bdraw()
+##                  sector_rope.bdraw()
+##                  geom_section.bdraw()
+##                  geom_location.bdraw()
+##                  coordinate_mixin.bdraw()
+##                  coords_vector.bdraw()
+##                  bounding_box.bdraw()
+##                  ds_geometry.bdraw()
+##                  pseudo_geometry.bdraw()
+##                  rwo_record.ldraw()
+##                  object.ldraw()
+##                  database_view.roos_merge_down()
+##                  ds_version_view.apn()
+##                  ds_version_view.roos_info_string()
+##                  dd_collection_mixin.random()
+##                  basic_collection_mixin.random()
+##                  object.ae
+##                  object.fes()
+##                  ds_record.debug_print_on()
+##                  dd_field_type.where_used()
+##                  dd_record_and_collection_mixin.df()
+##                  dd_record_and_collection_mixin.pe
+##                  dd_record_and_collection_mixin.fdap()
+##                  dd_record_and_collection_mixin.se()
+##                  basic_collection_mixin.pvc()
+##                  dd_collection_mixin.pvc()
+##                  basic_collection_mixin.cvc()
+##                  dd_collection_mixin.cvc()
+##                  procedure.roos_complexity_factor
+##                  object.xml
+##                  object.org
+##                  object.ap()
+##                  object.p
+##                  object.dp
+##                  object.ph
+##                  object.pa
+##                  object.roos_pad()
+#                  condition.raise
+# `Source Code'
+#&&
+#
+
+_package user
+
+!global_auto_declare?! << _true
+$
+
+# ----------
+# 1. global shortcuts
+# ----------
+_block
+	_global sp,g, mh, smm, pms, p, w, dp, pa, ph, ap, puo, pso, pio, pgr
+	g   << gis_program_manager
+	mh  << message_handler 
+	smm << sw_module_manager
+	sp  << smallworld_product
+	pms << print_memory_statistics
+	p << print
+	w << write
+	dp << debug_print
+	pa << print_ancestry
+	ph << print_hierarchy
+	ap << apropos
+	puo << print_users_of
+	pso << print_senders_of
+	pio << print_implementors_of
+	pgr << print_global_references
+_endblock
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global !roos_setvars! << _proc @set_handig_global_variables()
+				  _global cg 
+				  _global gv 
+				  _global cv 
+				  _global acv
+				  _global racv
+				  _global auv
+				  _global mv
+				  _global sv
+				  _global fv
+				  _global rp
+				  # ----------
+				  # ST 2002/02: Just to be sure, also reset the globals defined
+				  # outside !roos_setvars! (might have changed by e. g. setvars
+				  # in PNI 300)
+				  # ----------				  
+				  g    << gis_program_manager
+				  mh   << message_handler 
+				  smm  << sw_module_manager
+				  cg   << smallworld_product.application(:case)
+				  rp   << _if smallworld_product.responds_to?(:realworld_product) # doesn't have to be loaded!
+					  _then >> smallworld_product.realworld_product
+					  _endif 
+				  rs   << smallworld_product.products[:realworld_site_specific]
+				  
+				  _if ds_environment.c_is_initialised?
+				  _then
+					  #----------
+					  # database opened
+					  #----------
+					  gv  << g.cached_dataset(:gis)
+					  cv  << g.cached_dataset(:case)
+					  acv << g.ace_view
+					  sv  << g.style_view
+					  auv << g.authorisation_view
+					  mv  << message_handler.view
+					  _if package(:rw)[:roos_ace_view] _isnt _unset
+					  _then
+						  racv << g.roos_ace_view
+					  _endif 
+					  _if package(:rw)[:roos_flat_view] _isnt _unset
+					  _then
+						  fv << g.roos_flat_view
+					  _endif 
+				  _endif 
+			  _endproc
+$
+
+# ----------
+# 2. applications and components
+# ----------
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method component_framework.cap(p_name)
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : P_NAME: part ('*' will be added on both sides)
+	## Returns       : 
+	## Function      : component apropos
+	## Revision      :
+	_local l_result << property_list.new()
+	_local l_name << write_string(%*,p_name,%*).as_symbol()
+	_for i_key,i_comp _over .components.fast_keys_and_elements()
+	_loop
+		_if i_key.matches?(l_name)
+		_then
+			write(i_key,tab_char,i_comp)
+			l_result[i_key] << i_comp
+		_endif
+	_endloop
+	
+	>> l_result
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method component_framework.c(p_name)
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : P_NAME: component_name
+	## Returns       : 
+	## Function      : .components is not public
+	## Revision      :
+	>> .components[p_name]
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method component_framework.dap(p_wildcard_string,_optional p_write?)
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : p_wildcard_string ('*' added as prefix & suffix)
+	## Returns       : 
+	## Function      : dialog (sub_menu) matching p_wildcard_string
+	## Revision      :
+	_local l_result << property_list.new()
+	_local l_dialogname
+	_for i_key,i_component _over .components.fast_keys_and_elements()
+	_loop
+		_for i_key2,i_dialog _over i_component.dialogs.fast_keys_and_elements()
+		_loop
+			l_dialogname << i_dialog.class_name
+			_if l_dialogname.matches?(%*+p_wildcard_string+%*)
+			_then
+				_if l_result[i_key] _is _unset
+				_then
+					l_result[i_key] << rope.new()
+				_endif
+				l_result[i_key].add(i_key2)
+				_if p_write? _isnt _false 
+				_then
+					write(i_key,tab_char,l_dialogname)
+				_endif
+			_endif
+		_endloop
+	_endloop
+	>> l_result
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method component_framework.d(p_key)
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : 
+	## Returns       : 
+	## Function      : dialog (sub_menu) named p_key
+	## Revision      :
+	_local l_matching << _self.dap(p_key, _false)
+	_for i_comp_key,i_rope _over l_matching.fast_keys_and_elements()
+	_loop
+		_for i_name _over i_rope.fast_elements()
+		_loop
+			_if i_name = p_key
+			_then
+				_return _self.component(i_comp_key).dialogs[i_name]
+			_endif
+		_endloop
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method application.gtrail
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : 
+	## Returns       : sector_rope
+	## Function      : 
+	## Revision      :
+	>> _self.c(:maps).current_trail.geometry
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global cr << _proc @returns_current_rwo_from_gis(_optional p_appl_name)
+		      _local l_geometry << cur(p_appl_name)
+		      _if l_geometry _isnt _unset 
+		      _then
+			      _return l_geometry.rwo
+		      _endif
+	      _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global cur << _proc @returns_current_geometry(_optional p_appl_name)
+		       _local l_selection << appl(p_appl_name).plugin(:maps).current_map_view.map.current_selection
+		       _if l_selection.size <> 1
+		       _then
+			       write("Ambigious selection!")
+			       _return
+		       _else
+			       _return l_selection.an_element()
+		       _endif
+	       _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global appl << _proc @returns_application_with_name_contains_or_default_an_element(_optional p_appl_name)
+			_if p_appl_name _is _unset
+			_then
+				_for i_appl _over smallworld_product.applications.fast_elements()
+				_loop # i_appl can be a (case_)graphics_system
+					_if i_appl.is_class_of?(application)
+					_then
+						_return i_appl
+					_endif					   
+				_endloop
+			_elif smallworld_product.application(p_appl_name) _isnt _unset
+			_then
+				_return smallworld_product.application(p_appl_name)
+			_endif
+			_for i_appl _over smallworld_product.applications.fast_elements()
+			_loop # i_appl can be a (case_)graphics_system
+				_if i_appl.is_kind_of?(application) _andif i_appl.application_name.matches?(write_string(%*,p_appl_name,%*))
+			      _then
+				      _return i_appl
+			      _endif					   
+			_endloop
+			>> smallworld_product.applications.an_element()
+		_endproc
+
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global ced << _proc @current_embedded_editor (_optional p_appl_name)
+		       >> _if (l_appl << appl(p_appl_name)) _isnt _unset _andif
+			      (l_ed_man << l_appl.plugin(:editor_manager)) _isnt _unset _andif
+			      (l_ed << l_ed_man.sys!slot(:embedded_viewer).current_editor) _isnt _unset
+			  _then
+				  >> l_ed
+			  _else
+				  >> _unset 
+			  _endif
+	       _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global co << _proc @current_object_in_editor (_optional p_appl_name)
+		      >> _if (l_ed << ced(p_appl_name)) _isnt _unset
+			 _then
+				 >> l_ed.current_object
+			 _else
+				 >> _unset 
+			 _endif
+	      _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global cw << _proc @current_workrecord_in_editor (_optional p_appl_name)
+		       
+		      >> _if (l_ed << ced(p_appl_name)) _isnt _unset
+			 _then
+				 >> l_ed.work_record()
+			 _else
+				 >> _unset 
+			 _endif
+	      _endproc
+
+# ----------
+# 3. goto & drawing
+# ----------
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method application.goto(p_something)
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : P_SOMETHING: if it has bounds, let my
+	##                 map_manager (if I have one) go to it
+	## Returns       : 
+	## Function      : 
+	## Revision      :
+	_local l_m << _self.c(:maps)
+	_local l_b << _if p_something.is_kind_of?(bounding_box)
+		      _then
+			      >> p_something
+		      _elif p_something.responds_to?(:goto_bounds)
+		      _then
+			      >> p_something.goto_bounds
+		      _elif p_something.responds_to?(:bounds)
+		      _then
+			      >> p_something.bounds
+		      _endif
+	_if l_m _isnt _unset _andif l_b _isnt _unset 
+	_then
+		l_m.goto(l_b)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_record_mixin.gt
+	# Author         : Realworld Systems (BArtO); Date: Sep/2009
+	## Parameters    : 
+	## Returns       : 
+	## Function      : goes to
+	## Revision      : 
+	_self.gt()
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_record_mixin.gt(_optional p_appl_name)
+	# Author         : Realworld Systems (BArtO); Date: Sep/2009
+	## Parameters    : 
+	## Returns       : 
+	## Function      : goes to
+	## Revision      :
+	_if _self.responds_to?(:bounds).not
+	_then
+		write("No bounds for ",_self)
+		_return 
+	_endif
+	appl(p_appl_name).goto(_self.bounds)
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method rwo_record.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_local l_line_style << p_line_style
+	_if l_line_style _is _unset 
+	_then
+		l_line_style << line_style.new_with_properties(:foreground_colour,colour.new_with_properties(:red,1,:green,0,:blue,0),
+							       :width,3)
+	_endif
+	_local l_point_style << line_style.new_with_properties(:foreground_colour,colour.new_with_properties(:red,0,:green,0,:blue,1),
+							       :width,8)
+	_local l_text_style << text_style.new_with_properties(:foreground_colour,colour.new_with_properties(:red,1,:green,0,:blue,1),
+							       :width,3)
+	_for i_geom _over _self.geometries(_false).fast_elements()
+	_loop
+		_if p_window _is _unset 
+		_then
+			_local l_app << appl(p_appl_name)
+			_for i_view _over l_app.component(:maps).current_map.views()
+			_loop
+				_local l_window << i_view.window
+				_if l_window _is _unset _then _continue _endif
+				_if i_geom.roos_has_method?(:first_coord)
+				_then
+					i_geom.first_coord.draw_mark_on(l_window,l_point_style)
+					i_geom.last_coord.draw_mark_on(l_window,l_point_style)
+				_elif i_geom.roos_has_method?(:coord)
+				_then
+					i_geom.coord.draw_mark_on(l_window,l_point_style)
+				_endif
+				_if i_geom.is_kind_of?(text)
+				_then
+					i_geom.draw_on(l_window,l_text_style)
+				_else
+					i_geom.draw_on(l_window,l_line_style)
+				_endif
+			_endloop
+		_else
+			i_geom.draw_on(p_window,l_line_style)
+			_if i_geom.roos_has_method?(:first_coord)
+			_then
+				i_geom.first_coord.draw_mark_on(p_window,l_point_style)
+				i_geom.last_coord.draw_mark_on(p_window,l_point_style)
+			_elif i_geom.roos_has_method?(:coord)
+			_then
+				i_geom.coord.draw_mark_on(p_window,l_point_style)
+			_endif
+		_endif
+	_endloop
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method sector_rope.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_local l_line_style << p_line_style
+	_if l_line_style _is _unset 
+	_then
+		l_line_style << line_style.new_with_properties(:foreground_colour,colour.new_rgb(1,0,0),
+							       :width,3)
+	_endif
+	_local l_point_style << line_style.new_with_properties(:foreground_colour,colour.new_rgb(0,0,1),
+							       :width,8)
+	_local l_text_style << text_style.new_with_properties(:foreground_colour,colour.new_rgb(1,0,1),
+							       :width,3)
+	_if p_window _is _unset 
+	_then
+		_local l_app << appl(p_appl_name)
+		_for i_view _over l_app.component(:maps).current_map.views()
+		_loop
+			_local l_window << i_view.window
+			_if l_window _is _unset _then _continue _endif
+			_self.first_coord.draw_mark_on(l_window,l_point_style)
+			_self.last_coord.draw_mark_on(l_window,l_point_style)
+			_self.draw_on(l_window,l_line_style)
+		_endloop
+	_else
+		_self.draw_on(p_window,l_line_style)
+		_self.first_coord.draw_mark_on(p_window,l_point_style)
+		_self.last_coord.draw_mark_on(p_window,l_point_style)
+	_endif
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method geom_section.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_self.sectors.bdraw(p_appl_name, p_window,p_line_style)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method geom_location.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_self.coord.bdraw(p_appl_name, p_window,p_line_style)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method coordinate_mixin.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	sector_rope.roos_new_from_coords(_self).bdraw(p_appl_name, p_window,p_line_style)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method coords_vector.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	sector_rope.roos_new_from_coords(_self.coords).bdraw(p_appl_name, p_window,p_line_style)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method bounding_box.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_self.sectors.bdraw(p_appl_name, p_window, p_line_style)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method ds_geometry.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_self.sectors.bdraw(p_appl_name, p_window, p_line_style)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method pseudo_geometry.bdraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_self.sectors.bdraw(p_appl_name, p_window, p_line_style)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method rwo_record.ldraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_local l_current_prio << _thisthread.vm_priority
+	_protect
+		appl(p_appl_name).goto(_self)
+		_thisthread.vm_priority << light_thread.minimum_priority
+		_thisthread.yield_processor()
+		>> _self.bdraw (p_appl_name, p_window,p_line_style)
+	_protection
+		_thisthread.vm_priority << l_current_prio
+	_endprotect
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={subclassable})
+_method object.ldraw(_optional p_appl_name, p_window,p_line_style)
+	# Author         : BArtO; Date: Jul/2005
+	## Purpose       : 
+	## Function      : 
+	## Revision      :
+	_if _self.responds_to?(:bounds).not 
+	_then
+		_return 
+	_endif
+	_local l_current_prio << _thisthread.vm_priority
+	_protect
+		appl(p_appl_name).goto(_self)
+		_thisthread.vm_priority << light_thread.minimum_priority
+		_thisthread.yield_processor()
+		_if _self.responds_to?(:|bdraw()|)
+		_then
+			_self.bdraw (p_appl_name, p_window,p_line_style)
+		_endif
+	_protection
+		_thisthread.vm_priority << l_current_prio
+	_endprotect
+_endmethod 
+$
+
+# ----------
+# 4. databases and alternatives
+# ----------
+
+_pragma(classify_level=debug, topic={roos, handig})
+_method database_view.roos_merge_down()
+	# Author         : Realworld OO Systems (BArtO); Date: Sep/1998
+	## Parameters    : 
+	## Returns       :
+	## Function      : merge from alternative_path_name down
+	## Revision      : 
+	_if _self.alternative_level _isnt 0
+	_then
+		_self.switch(:write)
+		_if _self.writable?
+		_then
+			write("Merging: ",_self.alternative_path_name())
+			_self.merge()
+			write("Merge successfull: ",_self.alternative_path_name())
+		_else
+			write("****** Could NOT merge: ",
+			      _self.alternative_path_name(),
+			      " ****** writer : ",_self.current_writer)
+		_endif
+	_endif
+	_for i _over _self.alternatives.fast_elements()
+	_loop
+		l_down? << _false
+		_catch @any_error
+			_handling error _with _proc (p_cond)
+						      write(p_cond)
+						      _throw @any_error
+					      _endproc
+			_self.down(i.alternative_name,:write)
+			l_down? << _true 
+			_self.roos_merge_down()
+		_endcatch 
+		_if l_down?
+		_then
+			_self.up()
+		_endif
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method ds_version_view.apn()
+	_return _self.alternative_path_name()
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method ds_version_view.roos_info_string()
+	## return info about path users and name 
+	## this will be a string
+	l_string << "|" 
+	_for i_alt _over _self.alternative_path.fast_elements()
+	_loop
+		l_string +<< i_alt + "|"
+	_endloop
+	l_string << l_string.space_pad(40, _unset, _true)
+	l_writer << _self.current_writer.default("No writer")
+	l_string +<< " " + l_writer.space_pad(10, _unset, _true)
+	l_readers << _self.current_readers.size
+	l_string +<< " " + l_readers.write_string.space_pad(4, _unset, _true)
+	_return l_string 
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global getview << _proc @returns_view(_optional name_or_viewname)
+			   _if name_or_viewname.is_kind_of?(ds_version_view)
+			   _then _return name_or_viewname
+			   _elif name_or_viewname _is _unset 
+			   _then
+				   _return gis_program_manager.cached_dataset(:gis)
+			   _endif
+			   _local l_view << gis_program_manager.cached_dataset(name_or_viewname)
+			   _if l_view _isnt _unset
+			   _then
+				   _return l_view
+			   _endif
+			   _for i_view _over dsv(_true).fast_elements()
+			   _loop
+				   _local l_view_name << i_view.view_name
+				   
+				   _if l_view_name _is _unset
+				   _then
+					   _continue
+				   _elif l_view_name.matches?(write_string(%*,name_or_viewname,%*))
+				   _then
+					   _return i_view
+				   _endif					   
+			   _endloop
+		   _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global sfl << _proc @roos_handig_show_file_locations_of_databases () 
+	       _local l_logi_file
+	       _for i_view _over dsv(_true).fast_elements() 
+	       _loop
+		       write("# ", i_view.external_name, " (", i_view.name, ")")
+		       sflv(i_view)
+	       _endloop
+	       write("#------------------------------")
+       _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global sflv <<
+_proc @roos_handig_show_location_of_files_of_view  (p_database_or_name)
+	_local l_view << getview(p_database_or_name)
+	_if l_view _is _unset 
+	_then
+		write("No view with name '",p_database_or_name,%')
+		_return 
+	_endif
+	_for i_file _over l_view.files.fast_elements() 
+	_loop
+		l_logi_file << i_file.current_logical_file
+		write("#    ", l_logi_file.leafname, " in: ", l_logi_file.directory)
+	_endloop
+_endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global sfs <<
+_proc @roos_handig_show_file_sizes_of_databases () 
+	_for i_view _over ds_environment.views.fast_elements() 
+	_loop
+		write("# ", i_view.external_name, " (", i_view.name, ")")
+		#show_size_of_files_of_view
+		sfsd(i_view)
+	_endloop
+	write("#------------------------------")
+_endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global sfsd <<
+_proc @roos_handig_show_file_sizes_of_one_database (p_database_or_name)
+	_local l_view << getview(p_database_or_name)
+	_if l_view _is _unset 
+	_then
+		write("No view with name '",p_database_or_name,%')
+		_return 
+	_endif
+	_for i_file _over l_view.files.fast_elements() 
+	_loop
+		# ----------
+		# show_size_of_file
+		# ----------
+		sfsf(i_file)
+	_endloop
+	write("#------------------------------")
+_endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global sfsf <<
+_proc @roos_handig_show_size_of_dbfile (p_dsfile) 
+	_local l_logi_file << p_dsfile.current_logical_file
+	_local l_candir
+	(l_path, l_not_superfile?) << p_dsfile.superfile_query_file()
+	_if l_not_superfile?
+	_then
+		l_phys_file << l_logi_file.physical_file
+		l_kb_size << 4 * l_phys_file.size
+		l_mb_size << l_kb_size / 1024.0
+		l_size_string << l_mb_size.as_fixed_string(8,2)
+		l_candir << system.canonicalise(l_logi_file.directory)
+		write("#    ", l_size_string, " : R : ", l_logi_file.leafname, " in: ", l_candir)
+	_else
+		l_tot_used << 0 
+		(l_file_id, l_log_block, l_tot_comps, l_max_comps) << p_dsfile.superfile_query_index()
+		_for i _over 0.upto(l_tot_comps-1)
+		_loop
+			(l_path, l_max, l_used) << p_dsfile.superfile_query_component(i)
+			l_tot_used +<< l_used
+		_endloop
+		l_size_string << l_tot_used.as_fixed_string(8,2)
+		l_candir << system.canonicalise(l_logi_file.directory)
+		write("#    ", l_size_string, " : S : ", l_logi_file.leafname, " in: ", l_candir)
+	_endif
+_endproc 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global !list_alts! << _proc @list_alts()
+			      # ----------
+			      # Geeft een listing van alle saved alts die in je homedir staat
+			      # ----------
+			      l_home_dir << system.getenv("HOME")
+			      l_dchannel << directory_channel.new(l_home_dir,_unset,_false)
+			      _loop 
+				      l_name << l_dchannel.get()
+				      _if l_name _is _unset _then _leave _endif
+				      _catch @alt_lister
+					      _handling file_does_not_exist
+					      _with _proc(_gather args)
+							    # Ignore it
+							    _throw @alt_lister
+					      _endproc
+					      
+					      l_status << file_status.new(system.pathname_from_components(l_name, l_home_dir))
+			
+					      _if l_status.type _is :file
+					      _then
+						      _if l_name.roos_matches?("alternatives_*.csv",_true)
+						      _then							  
+							      write("Saved alternatives: ",l_name.replace_substrings({"alternatives_",".csv"},""))
+						      _endif
+					      _endif
+				      _endcatch
+			      _endloop
+		      _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global !goto_alts! <<
+	_proc (_optional p_delta)
+		l_home_dir << system.getenv("HOME")
+		l_filename << _if p_delta _is _unset 
+			      _then
+				      >> "alternatives.csv"
+			      _else
+				      >> "alternatives_" + p_delta.write_string + ".csv"
+			      _endif
+		l_alts_file_name << system.pathname_from_components(l_filename, l_home_dir)
+		_try
+			_with l_condition 
+			l_stream << external_text_input_stream.new(l_alts_file_name)
+		_when error 
+		      write("ERROR: file ", l_alts_file_name, " could not be opened!")
+		      write(l_condition.report_string)
+		      _return 
+		_endtry
+		write("Configuratie: ")
+		_local l_prop << property_list.new() 
+		_loop
+			l_line << l_stream.get_line()
+			_if l_line _is _unset 
+			_then
+				_leave 
+			_endif
+			l_parts << l_line.split_by(%;)
+			_if l_parts.size _isnt 2 
+			_then
+				write("Fout in regel:")
+				write(l_line)
+				_continue 
+			_endif 
+			l_view << l_parts[1].as_symbol()
+			l_alternative << l_parts[2]
+			l_prop[l_view] << l_alternative
+			write(l_view, " : ", l_alternative)
+		_endloop
+		write("Now do the alternative changes...")
+		_for i_key, i_value _over l_prop.fast_keys_and_elements()
+		_loop
+			_try 
+				_with l_condition
+				l_view << gis_program_manager.databases[i_key]
+				l_view.go_to_alternative(i_value)
+			_when error 
+				write("Error: going to ", i_value, " for ", i_key)
+				write(l_condition.report_string) 
+			_endtry	
+		_endloop
+		l_stream.close() 
+	_endproc 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global !save_alts! <<
+	_proc (_optional p_delta)
+		l_home_dir << system.getenv("HOME")
+		l_filename << _if p_delta _is _unset 
+			      _then
+				      >> "alternatives.csv"
+			      _else
+				      >> "alternatives_" + p_delta.write_string + ".csv"
+			      _endif
+		l_alts_file_name << system.pathname_from_components(l_filename, l_home_dir)
+		_try
+			_with l_condition 
+			l_stream << external_text_output_stream.new(l_alts_file_name)
+		_when error 
+		      write("ERROR: file ", l_alts_file_name, " could not be opened!")
+		      write(l_condition.report_string)
+		      _return 
+		_endtry
+		_protect 
+			write("Configuratie om te saven: ")
+			_local l_prop << property_list.new()
+			_for i_view _over dsv(_true).fast_elements()
+			_loop
+				_if i_view.name _is _unset 
+				_then
+					_continue 
+				_endif
+				l_view << i_view.name.as_symbol()
+				_if {
+					    :|Style|,
+					    :|Ace|,
+					    :|Ace (Replica)|, 
+					    :|Scrapbook|,
+					    :|roos_ace|,
+					    :|message|,
+					    :|Auth|,
+					    :|roos_flat|,
+					    :|dxf|
+				    }.includes?(l_view)
+				_then
+					_continue 
+				_endif
+				(l_alternative, l_vec) << i_view.alternative_path_name()
+				_if l_vec.size _is 0 
+				_then
+					l_alternative << "|" 
+				_endif
+				write(l_view, " : ", l_alternative)
+				l_prop[l_view] << l_alternative 
+			_endloop
+			write("saven...")
+			_for i_key, i_value _over l_prop.fast_keys_and_elements()
+			_loop
+				l_stream.write(i_key)
+				l_stream.write(%;)
+				l_stream.write(i_value)
+				l_stream.newline()
+			_endloop
+		_protection 
+			l_stream.close()
+		_endprotect
+		write("...done")
+	_endproc 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global scw << _proc @show_current_writers()
+		       l_message << write_string("Current Writers",newline_char)
+		       _for l_view _over dsv(_true).fast_elements()
+		       _loop
+			       _if (l_name << l_view.view_name) _is _unset
+			       _then
+				       _continue 
+			       _endif
+			       l_message << write_string(l_message,newline_char,
+							 (l_name.write_string + ":").space_pad(20),
+							 l_view.current_writer.default("---"))
+		       _endloop
+		       write(l_message)
+		       #gis_program_manager.show_alert(l_message)
+	       _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global dbs << _proc @ roos_database_info ()
+		       _local d << dsv(_true)
+		       _local l_max << 0
+		       _for i_view _over d.fast_elements()
+		       _loop
+			       l_max << i_view.view_name.default(i_view).write_string.size.max(l_max)
+		       _endloop
+		       write(l_max * %-)
+		       write("Database information")
+		       write("DB".space_pad(l_max+2),"Alternative path                         Writer     #Readers")
+		       _local l_splitline << write_string(l_max * %-,"  ---------------------------------------- ---------- --------")
+		       write(l_splitline)
+		       _for i_view _over d.fast_elements()
+		       _loop
+			       l_name << i_view.view_name.default(i_view)
+			       l_string << l_name.write_string.space_pad(l_max+2, _unset, _true)
+			       l_string +<< i_view.roos_info_string()
+			       write(l_string)
+		       _endloop
+		       write(l_splitline)
+	       _endproc
+$
+
+# Author         : Realworld Systems (BArtO); Date: Sep/2009
+## Parameters    : P_EXCLUDE_DS_VERSION_VIEW?: if true, do not
+##                 return ds_version_view (does not have collections)
+##                 P_INCLUDE_REPLICAS? : default false
+## Function      : 
+## Revision      : 
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global dsv <<
+	_proc @returns_all_views_in_rope (_optional p_exclude_ds_version_view?,p_include_replicas?)
+		_local l_res << rope.new()
+		_for i_view _over ds_environment.views.fast_elements()
+		_loop
+			_if p_include_replicas? _isnt _true _andif
+			    i_view.view_name _isnt _unset _andif 
+			    i_view.view_name.matches?("*(Replica)")
+			_then
+				_continue 
+			_endif
+			_if p_exclude_ds_version_view? _isnt _true _orif
+			    i_view.is_kind_of?(database_view) #one level higher
+			_then l_res.add(i_view)
+			_endif					   
+		_endloop
+		>> l_res
+	_endproc
+$
+
+# ----------
+# 5. collection handling
+# ----------
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_collection_mixin.random()
+	_if _self.empty?
+	_then
+		_return _unset
+	_endif
+	_local l_size << _self.size
+	#_local n << random.new(l_size).get() + 1
+	_local n << (random.get() _mod l_size) + 1
+	_return _self.nth_record(n)
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method basic_collection_mixin.random()
+	_if _self.empty?
+	_then
+		_return _unset
+	_endif
+	_local l_size << _self.size
+	#_local n << random.new(l_size).get() + 1
+	_local n << (random.get() _mod l_size) + 1
+	_return rope.new_from(_self).nth(n)
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global col << _proc @returns_ds_collection(p_name, _optional p_view_or_viewname)
+		       _if p_view_or_viewname _isnt _unset
+		       _then
+			       l_view << getview(p_view_or_viewname)
+		       _endif
+		       # ----------
+		       # in case of sending an exemplar, write_string start with "a "
+		       # ----------
+		       _local l_name << p_name.write_string.split_by(%space).last.as_symbol()
+		       _if l_view _isnt _unset
+		       _then
+			       _return l_view.collections[l_name], l_view
+		       _endif
+		       _for i_view _over dsv(_true).fast_elements()
+		       _loop
+			       _local l_col << i_view.collections[l_name]
+			       _if l_col _isnt _unset
+			       _then _return l_col, i_view
+			       _endif					   
+		       _endloop
+	       _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global colap << _proc @returns_writes_ds_collections_matching_string(string, _optional view_or_view_name)
+			 _local views << {}
+			 _if view_or_view_name= :all
+			 _then
+				 views << smallworld_product.application(:swaf_professional).spatial_object_controller.swdp_datasets 
+			 _else
+				 _local l_view << getview(view_or_view_name).default(getview())
+				 _if l_view _isnt _unset
+				 _then
+					 views << {l_view}
+				 _endif
+			 _endif
+			 c_rope << rope.new()
+			 _for i_view _over views.fast_elements()
+			 _loop
+				 string << string.write_string
+				 _for c _over i_view.collections.fast_elements()
+				 _loop
+					 _if c.name.write_string.index_of_seq(string) _isnt _unset 
+					 _then
+						 _local l_set << "  ("+i_view.name.write_string+")"
+						 write(":",c.name.roos_pad(32,_unset, _true),%tab,l_set)
+						 c_rope.add_last(c)
+					 _endif
+				 _endloop
+			 _endloop 
+			 >> c_rope
+		 _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global colapext << _proc @returns_writes_ds_collections_matching_ext_name_string(string, _optional view_or_view_name)
+			    _local l_views
+			    _if view_or_view_name _is :all
+			    _then
+				    l_views << dsv(_true)
+			    _else
+				    _local l_view << getview(view_or_view_name).default(getview())
+				    _if l_view _isnt _unset
+				    _then
+					    l_views << {l_view}
+				    _endif
+			    _endif
+			    c_rope << rope.new()
+			    string << string.write_string.lowercase
+			    _for i_view _over l_views.fast_elements()
+			    _loop
+				    _for c _over i_view.collections.fast_elements()
+				    _loop
+					    _if c.external_name.write_string.lowercase.index_of_seq(string) _isnt _unset 
+					    _then
+						    _local l_set << ""
+						    _if view_or_view_name _is :all
+						    _then l_set << "("+i_view.name.write_string+")"
+						    _endif 
+						    write(":",c.name.roos_pad(32,_unset, _true),tab_char,c.external_name,%space,l_set)
+						    c_rope.add_last(c)
+					    _endif
+				    _endloop
+			    _endloop 
+			    >> c_rope
+		    _endproc
+
+_pragma(classify_level=debug, topic={roos, handig})
+_method object.ae
+	# Author         : Realworld OO Systems (gjb); Date: Mar/1999
+	## Parameters    : 
+	## Returns       : an element
+	## Function      : tests if self knows an_element()
+	## Revision      : 
+	_if _self.responds_to?(:|an_element()|)
+	_then
+		_return _self.an_element()
+	_else
+		write("Class ",_self.class_name," does not have the method an_element()!")
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig}) 
+_iter _method object.fes(_optional p_counter, p_start) 
+        # KremerK aug/2004 
+        ## fes =fast element selection 
+        ## iterates using fast_elements() from p_start.default(1) over p_counter.default(!print_length!)elements. 
+        ## An condition is raised when there is no fast_elements() implementation
+	
+        _if _self.responds_to?(:|fast_elements()|).not
+        _then 
+                condition.raise(:error ,:string , "No fast_elements() implementation for" +_self.write_string ) 
+        _endif
+	
+        _local l_counter << p_counter.default(!print_length!)
+	_local l_skip << p_start.default(1)-1
+	_local l_cnt << 0
+        _for i_el _over _self.fast_elements() 
+        _loop
+		l_cnt +<< 1
+		_if l_cnt <= l_skip _then _continue _endif 
+		
+                _loopbody( i_el)
+		
+                l_counter -<< 1 
+                _if l_counter = 0 _then _return _endif 
+        _endloop 
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global wrel << _proc @loops_over_elements_and_writes_them(a_col, _optional a_method)
+			_for l _over a_col.elements()
+			_loop
+				_if a_method _isnt _unset _andif
+				    l.responds_to?(a_method)
+				_then
+					write(l," || ",l.perform(a_method))
+				_else
+					write(l)
+				_endif
+			_endloop
+		_endproc
+
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global wrkel << _proc @loops_over_keys_and_elements_and_writes_them(a_col, _optional a_method)
+
+			 _if a_col.method(:|fast_keys_and_elements()|) _is _unset
+			 _then
+				 write("No keys available:")
+				 wrel(a_col, a_method)
+			 _else
+				 _for k,l _over a_col.fast_keys_and_elements()
+				 _loop
+					 _if a_method _isnt _unset _andif
+					     l.responds_to?(a_method)
+					 _then
+						 write(k, "    ", l," || ",l.perform(a_method))
+					 _else
+						 write(k, "    ", l)
+					 _endif
+				 _endloop
+			 _endif
+		 _endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global prel << _proc @loops_over_elements_and_prints_them(a_col)
+			_for l _over a_col.elements()
+			_loop
+				write("----")
+				print(l)
+			_endloop
+		_endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global writer << _proc @performs_iter_and_writes_elements(a_col, _optional an_iter, a_method, _gather args)
+			  l_iter << an_iter.default(:|elements()|)
+			  _for l _over a_col.perform_iter(l_iter, _scatter args)
+			  _loop
+				  _if a_method _isnt _unset _andif
+				      l.responds_to?(a_method)
+				  _then
+					  write(l," || ",l.perform(a_method))
+				  _else
+					  write(l)
+				  _endif
+			  _endloop
+		  _endproc
+
+# ----------
+# 6. ds_collections, objects and fields
+# ----------
+
+_pragma(classify_level=debug, topic={roos,handig}, usage={redefinable})
+##
+## When _true, also slots are shown for ds_record on
+## debug_print(). Default: _false. Used in substituted method
+## ds_record.debug_print_on()
+##
+ds_record.define_shared_constant(:roos_show_slots_on_debug?,
+				 _false,
+				 :public)
+$
+
+ds_record.define_method_synonym(:debug_print_on_sworg_handig|()|, :|debug_print_on()|, _false)
+$
+
+_pragma(classify_level=debug, topic={dd,database_collections_and_records,roos,handig})
+_method ds_record.debug_print_on(a_stream,_gather p_spare_args)
+	# Author         : Realworld OO Systems BV (Andre); Date: Sep/2001
+	## Parameters    : see _self.debug_print_on_sworg_sw_mods()
+	## Returns       : see _self.debug_print_on_sworg_sw_mods()
+	## Function      : Orignal Conflict method resolution and changed to
+	##                 allow printing of slots when
+	##                 _self.roos_show_slots_on_debug? is _true. If
+	##                 _false, the default behaviour is called
+	## Methodology   : method substitution
+	## Revision      : 
+	_if _not _self.roos_show_slots_on_debug?
+	_then _return _self.debug_print_on_sworg_handig(a_stream,_scatter p_spare_args)		
+	_endif
+	
+	_super(ds_record_and_field_mixin).debug_print_on(a_stream)
+	a_stream.write(newline_char)
+	_super(dd_record_mixin).debug_print_on(a_stream,_scatter p_spare_args)
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_field_type.where_used()
+	## 
+	## Returns the collections and fields using the field_type 
+	_for e _over col(:dd!field_type,_self.dd).select(predicate.eq(:name,_self.name)).elements()
+	_loop
+		f << col(:dd!physical_field,_self.dd).select(predicate.eq(:fid,e.fid)).an_element()
+		write(col(:dd!collection,_self.dd).at(f.tid).name,": ",f.name)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_record_and_collection_mixin.df()
+	## 
+	_return _self.descriptor.describe_fields()
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_record_and_collection_mixin.pe
+	## 
+	a_stream << !output!
+	a_stream.write(_self," ")
+	a_stream.show(_self.external_name)
+	a_stream.newline()
+	_local l_max1 << 0
+	_local l_max2 << 0
+	_for i_fld _over _self.visible_fields.fast_elements()
+	_loop
+		l_max1 << i_fld.class_name.size.max(l_max1)
+		l_max2 << i_fld.name.size.max(l_max2)
+	_endloop 
+	_for i_fld _over _self.visible_fields.fast_elements()
+	_loop
+		a_stream.write(i_fld.class_name.roos_pad(l_max1,_unset,_true),%space)
+		a_stream.write(i_fld.name.roos_pad(l_max2,_unset,_true),%space)
+		a_stream.write(i_fld.external_name)
+		a_stream.newline()
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_record_and_collection_mixin.fdap(p_string)
+	## 
+	## Writes/Returns fields with name matching string
+	l_string << p_string.write_string
+	l_f_rope << rope.new()
+	_for f _over _self.all_fields.fast_elements()
+	_loop
+		_if f.name.matches?("*"+l_string+"*")
+		_then
+			write(f.name)
+			l_f_rope.add_last(f)
+		_endif
+	_endloop
+	_return l_f_rope
+_endmethod
+$
+
+_pragma (classify_level=debug, topic={roos,handig})
+_method dd_record_and_collection_mixin.se(p_fieldname_or_wildcard)
+	# Author         : BArtO; Date: Mar/2006
+	## Parameters    : P_FIELDNAME_OR_WILDCARD: fieldname or
+	##                 wildcard (=part of fieldname)
+	## Returns       : 
+	## Function      : se = 'show enumerator values'
+	##                 writes possible values of enumerator for
+	##                 matching fields, if any.
+	## Usage         : col(:g_regulating_installation).se(:fun)
+	## Revision      :
+	_local l_matchstring << write_string(%*,p_fieldname_or_wildcard,%*)
+	_for i_fld _over _self.physical_fields.fast_elements()
+	_loop
+		_local l_name << i_fld.name
+		_if l_name.matches?(l_matchstring)
+		_then
+			_local l_enum << i_fld.type.enumerator
+			_if l_enum _isnt _unset 
+			_then
+				write(i_fld.roos_identification_string())
+				print(l_enum.sorted_values)
+				write(22*"+-")
+			_endif
+		_endif
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method basic_collection_mixin.pvc(p_field_or_method_name,_optional p_some_kind_of_collection)
+	# Author         : BArtO; Date: Jun/2007
+	## Parameters    : P_FIELD_OR_METHOD_NAME: fieldname or
+	##                 methodname; result should be number,string
+	##                 or unset (will be tested on equality)
+	##                 P_SOME_KIND_OF_COLLECTION: if given,
+	##                 elements of this collection will be evaluated
+	## Returns       : 
+	## Function      : from now the singlepass version, so no
+	##                 longer the same as print_value_count!
+        ## Revision	 :
+	_local l_collection << p_some_kind_of_collection
+	_if l_collection _is _unset 
+	_then
+		l_collection << _self
+	_endif
+	_local l_result << equality_hash_table.new()
+	_local l_longest_key_size << 0
+	_local l_keyval
+	_for i_element _over l_collection.fast_elements()
+	_loop
+		l_keyval << i_element.perform(p_field_or_method_name).write_string
+		_if l_result[l_keyval] _is _unset _then l_result[l_keyval] << 0 _endif
+		l_result[l_keyval] +<< 1
+	_endloop
+	_for i_key _over l_result.fast_keys()
+	_loop
+		l_longest_key_size << i_key.size.max(l_longest_key_size)
+	_endloop
+	# ----------
+	# now print
+	# ----------
+	_for i_key _over l_result.keys.as_sorted_collection().fast_elements()
+	_loop
+		write(i_key.roos_pad(l_longest_key_size)," : ",l_result[i_key])
+	_endloop
+	>> l_result
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_collection_mixin.pvc(p_field_or_method_name,_optional p_some_kind_of_collection)
+	# Author         : BArtO; Date: Jun/2007
+	## Parameters    : P_FIELD_OR_METHOD_NAME: fieldname or
+	##                 methodname; result should be number,string
+	##                 or unset (will be tested on equality)
+	##                 P_SOME_KIND_OF_COLLECTION: if given,
+	##                 elements of this collection will be evaluated
+	## Returns       : redirect to basic_collection_mixin.pvc()
+	##                 using second parameter
+	## Function      : from now the singlepass version, so no
+	##                 longer the same as print_value_count!
+        ## Revision	 :
+	_local l_collection << p_some_kind_of_collection
+	_if l_collection _is _unset 
+	_then
+		l_collection << _self
+	_endif
+	>> {}.pvc(p_field_or_method_name,l_collection)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method basic_collection_mixin.cvc(p_field_or_method_name,_optional p_some_kind_of_collection)
+	# Author         : BArtO; Date: Jun/2007
+	## Parameters    : P_FIELD_OR_METHOD_NAME: fieldname or
+	##                 methodname; result should be number,string
+	##                 or unset (will be tested on equality)
+	##                 P_SOME_KIND_OF_COLLECTION: if given,
+	##                 elements of this collection will be evaluated
+	## Returns       : 
+	## Function      : from now the singlepass version, so no
+	##                 longer the same as print_value_count!
+        ## Revision	 :
+	_local l_collection << p_some_kind_of_collection
+	_if l_collection _is _unset 
+	_then
+		l_collection << _self
+	_endif
+	_local l_result << equality_hash_table.new()
+	_local l_longest_key_size << 0
+	_local l_keyval
+	_for i_element _over l_collection.fast_elements()
+	_loop
+		l_keyval << i_element.perform(p_field_or_method_name).write_string
+		_if l_result[l_keyval] _is _unset _then l_result[l_keyval] << rwo_set.new() _endif
+		l_result[l_keyval].add(i_element)
+	_endloop
+	_for i_key _over l_result.fast_keys()
+	_loop
+		l_longest_key_size << i_key.size.max(l_longest_key_size)
+	_endloop
+	# ----------
+	# now print
+	# ----------
+	_for i_key _over l_result.keys.as_sorted_collection().fast_elements()
+	_loop
+		write(i_key.roos_pad(l_longest_key_size)," : ",l_result[i_key].size)
+	_endloop
+	>> l_result
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method dd_collection_mixin.cvc(p_field_or_method_name,_optional p_some_kind_of_collection)
+	# Author         : BArtO; Date: Jun/2007
+	## Parameters    : P_FIELD_OR_METHOD_NAME: fieldname or
+	##                 methodname; result should be number,string
+	##                 or unset (will be tested on equality)
+	##                 P_SOME_KIND_OF_COLLECTION: if given,
+	##                 elements of this collection will be evaluated
+	## Returns       : redirect to basic_collection_mixin.pvc()
+	##                 using second parameter
+	## Function      : from now the singlepass version, so no
+	##                 longer the same as print_value_count!
+        ## Revision	 :
+	_local l_collection << p_some_kind_of_collection
+	_if l_collection _is _unset 
+	_then
+		l_collection << _self
+	_endif
+	>> {}.cvc(p_field_or_method_name,l_collection)
+_endmethod 
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_global fdap << _proc @returns_all_fieldnames_matching_p_string_in_view (p_string, _optional p_view_or_name)
+		_local l_view << getview(p_view_or_name)
+		_for i_coll _over l_view.collections.fast_elements()
+		_loop
+			_for i_fd _over i_coll.all_fields.fast_elements()
+			_loop
+				_if i_fd.name.matches?(write_string("*",p_string,"*"))
+				_then
+					write(i_coll.name,": ",i_fd.name)
+				_endif
+			_endloop
+		_endloop
+	_endproc
+$
+
+# ----------
+# 7. general debugging
+# ----------
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method procedure.roos_complexity_factor 
+	# Author         : Essent Ict Services (KremerK); Date: Jun/2006
+	## Parameters    :  
+	## Returns       : number, complexity factor (the larger the
+	##                 more complex)
+	## Function      : 
+	## Revision      : 
+	_local l_counter << 0
+	_local l_int_proc 
+	 l_int_proc << _proc(p_procedure) 
+				     _import l_int_proc,l_counter 
+				     l_int << p_procedure.code_vector.size + p_procedure.num_literals
+				      _if l_counter >5
+				     _then
+					     
+					     _return l_int
+				     _endif
+				     l_copy_counter << l_counter
+				     _for i_num _over 0.upto(p_procedure.num_literals-1)
+				     _loop
+					     _if (l_lit << p_procedure.literal(i_num)).is_kind_of?(procedure)
+						     _then
+							     l_counter +<< 1
+							     l_int +<<l_int_proc(l_lit)
+					
+					     _endif
+				     _endloop
+				          l_counter << l_copy_counter 
+				     _return l_int
+		       _endproc
+	 
+	_return l_int_proc(_self)
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.xml
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : 
+	## Returns       : 
+	## Function      : write down xml files for this class, so you
+	##                 can jump with F2-J
+	## Revision      :
+	_local l_mt << _self.method_table
+	_local l_module,l_files
+	_if l_mt _isnt _unset 
+	_then
+		l_module << l_mt.roos_software_module
+	_endif
+	_if l_module _isnt _unset 
+	_then
+		l_files << l_module.resource_files(:data,_true )
+		_for i_index,i_path _over l_files.keys_and_elements()
+		_loop
+			write(i_index,tab_char,i_path)
+		_endloop
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.org
+	# Author         : BArtO; Date: Sep/2004
+	## Parameters    : 
+	## Returns       : 
+	## Function      : write down original directory
+	## Revision      :
+	_local l_metadata << _self.method_table.metadata
+	_local l_sf << l_metadata[:source_file].relative_path
+	_local l_module << sw_module_manager.module(_self.module_name)#l_metadata[:roos_software_module]
+	_local l_msf << l_module.full_directory
+	_local l_result << system.canonicalise(system.pathname_from_components(l_sf,l_msf))
+	write(l_result)#.roos_find_and_replace_all(".magikc",".magik"))
+	#>> l_result
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos, handig})
+_global raise <<
+_proc @substitute_raise_to_show_tracebacks(_optional p_show?)
+	##
+	## If p_show? isnt false, any condition that is raised will be
+	## shown as traceback, regardless the handling environment
+	## When false this is reset to normal condition_handling
+	##
+	_local l_sworged? << condition.roos_has_method?(:|raise_sworg_handig()|)
+	_if _not l_sworged? _andif p_show? _isnt _false
+	_then
+		condition.roos_substitute_method(:|raise()|,:handig)
+		condition.define_method(:|raise()|,
+					_proc (_gather p_args)
+						_if p_args.size > 0 _then write("*** Raised Condition: ",p_args[1]) _endif 
+					        !traceback!(!output!)
+						>> _self.raise_sworg_handig(_scatter p_args)
+						
+					_endproc,
+					_false #not private
+			  )
+		write("Tracing of all conditions enabled")
+	_elif l_sworged? _andif p_show? _isnt _true
+	_then
+		condition.roos_undo_substitute_method(:|raise()|,:handig)
+		write("Tracing of all conditions disabled")
+	_endif
+_endproc
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.ap(_gather args)
+	_return _self.apropos(_scatter args)
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.p
+	print(_self)
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.dp
+	debug_print(_self)
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.ph
+	## print_hierarchy of self 
+	print_hierarchy(_self)
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.pa
+	## print_ancestry of _self
+	print_ancestry(_self)
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={roos,handig})
+_method object.roos_pad(width, _optional left??, truncate_ok?)
+	# Author         : Realworld OO Systems (bart); Date: Aug/1998
+	## Parameters    : 
+	## Returns       :
+	## Function      : always send space_pad instead of write_string.space_pad
+	## Revision      : 
+	>> _self.write_string.space_pad(width, left??, truncate_ok?)
+_endmethod
+$
+
+#----------
+# SW_MODULE HANDLING
+#----------
+
+_pragma(classify_level=debug, topic={roos,handig})
+# Author         : Realworld Systems (BArtO); Date: Sep/2010
+## Parameters    : p_module_or_name: software module or name;
+##                 if a name is given, it might be useful to
+##                 give versionnumber too : p_version
+##                 rest: see sw_module.print_prerequisite_information_recursive()
+## Returns       : 
+## Function      :
+## Revision	 : 
+_global find_req_tree <<
+	_proc @lists_requirements_of_sw_module(p_module_or_name,_optional p_version,p_whole_tree?,p_done,p_completely_done,p_depth)
+		_local smm << sw_module_manager
+		_local l_module << _if p_module_or_name.is_kind_of?(sw_module)
+				   _then
+					   >> p_module_or_name
+				   _else
+					   >> smm.module(p_module_or_name,p_version)
+				   _endif
+		_return l_module.print_prerequisite_information_recursive(p_whole_tree?,p_done,p_completely_done,p_depth)
+	_endproc
+$
+
+_block
+	_if sw_module_manager.module_is_loaded?(:roos_initial)
+	_then
+		sw_module_manager.define_method_synonym(:|dmap()|,:|roos_defined_module_apropos()|,_false)
+		sw_module_manager.define_method_synonym(:|lmap()|,:|roos_loaded_module_apropos()|,_false)
+	_else
+		write("Warning - module apropos shortcuts not loaded!")
+	_endif
+_endblock
+$
+
+mapv << _proc(_optional app)
+		_return appl(app).plugin(:maps).current_map_view
+	_endproc
+$
+
+tr << _proc(_optional app)
+		_return mapv(app).map.trail
+	_endproc
+$
+
+oe << _proc(_optional app)
+		_return appl(app).plugin(:editor_manager).current_embedded_editor
+	_endproc
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.tree_selected(tree_selection)
+	_global sel
+	sel << .tree_item.selection.an_element()
+	.owner.publish_selection(tree_selection.keys)
+_endmethod
+$
+
+!global_auto_declare?! << _maybe 

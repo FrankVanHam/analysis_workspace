@@ -1,0 +1,34 @@
+_package sw
+$
+
+
+_pragma(classify_level=basic)
+_method lazy_record_collection.new_for_rw_analysis_collection(a_collection)
+	_return _clone.init_for_rw_analysis_collection(a_collection)
+_endmethod
+$
+
+_pragma(classify_level=basic)
+_private _method lazy_record_collection.init_for_rw_analysis_collection(a_collection)
+	_local sw_col << a_collection.expose()
+	
+	.descriptor << sw_col.descriptor
+	.record_exemplar << sw_col.record_exemplar
+	.source_collection << sw_col
+	.name << .source_collection.name
+	
+	.fast_source? << a_collection.size_is_fast?
+	_if _not .fast_source?
+	_then
+		.base_collection << _unset # so we don't hang onto stuff
+		.records << cached_record_collection.new_for_rw_analysis_collection(a_collection)
+		_self.have_post_mortem(_true)
+	_else
+		.base_collection << a_collection
+		.records << _unset # may be coming from _self.new() in select  
+	_endif
+
+	>> _self 
+_endmethod
+$
+

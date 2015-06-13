@@ -1,0 +1,124 @@
+#
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-29
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:object_control_dialog)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+##
+## Dialog to create a sw_collection to travel a smallworld collection.
+##
+def_slotted_exemplar(:object_control_dialog,
+	{
+		{:items, _unset},
+		{:dsm, _unset},
+		{:ds, _unset}
+	},
+	:model)
+$
+
+message_handler.new(:object_control_dialog).add_uses(:model, :gen_graphics)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method object_control_dialog.set_dataset(ds, dsm)
+	.ds << ds
+	.dsm << dsm
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method object_control_dialog.activate_in(frame)
+	frame.modality << :primary_modal
+	_local rc << rowcol.new(frame, _unset, 1, _unset, :style, :nested, :resize?, _true, :row_resize_values, {100,0}, :min_width, 300)
+	.items << property_list.new()
+	_self.build_list(rc)
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method object_control_dialog.build_list(container)
+	.items[:rwo_list] << rwo_hierarchy_component.new( :rwo_list, _self,
+							  :ace_control, .parent_model.ace_control,
+							  :display_geometry?, _false,
+							  :mode, :many)
+	.items[:rwo_list].add_event_handler( :double_click, _self, :|double_clicked()| )
+	.items[:rwo_list].build_gui(container)
+	_self.filter_ds()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method object_control_dialog.build_buttons(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:add] << button_item.new_safe(rc, _self.message(:add), _self, :|add()|, :min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:close), _self, :|close()|, :min_width, 75)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method object_control_dialog.filter_ds()
+	_local trees << .items[:rwo_list].trees
+	_for i_child _over trees.fast_elements()
+	_loop
+		_if i_child.key.key _is .ds
+		_then
+			i_child.detach()
+			_leave 
+		_endif 
+	_endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method object_control_dialog.double_clicked()
+	_self.perform_safely(:|add()|)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method object_control_dialog.add()
+
+	_local cols << _self.current_selected_collections
+	_local ana_cols << rope.new_for(cols.size)
+	_for i_col _over cols.fast_elements()
+	_loop
+		ana_cols.add(rwan:sw_collection.new(.dsm, i_col))
+	_endloop
+	.parent_model.add_collections(ana_cols)
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method object_control_dialog.current_selected_collections
+	sel << .items[:rwo_list].display_tree_selection
+	cols << rope.new_for(sel.size)
+	_for i_sel _over sel.fast_elements()
+	_loop
+		cols.add(i_sel.key.key)
+	_endloop
+	_return cols 
+_endmethod
+$

@@ -1,0 +1,140 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:filter_by_predicate_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## These tests are located around the Chesterton
+## roundabout. All the tests deliver roads and the roads are
+## filtered on there type
+def_slotted_exemplar(:filter_by_predicate_test_case,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method filter_by_predicate_test_case.pred
+	_return predicate.eq(:road_type, "A-Road")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_join_and_pred()
+	# Test following the joins
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	_local annot_col << rcol.follow_join(:road_annotations)
+	_local rcol2 << annot_col.follow_join(:min_road)
+	_local rcol3 << rcol2.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol3.size, 2, "o) There are 2 A-Roads at the chesteron roundabout with labels")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_basic_pred()
+	# Test a global alfa predicate on the collection
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local rcol1 << rcol.filter_by_predicate(_self.pred)
+	_local sel << col.select(_self.pred)
+	_self.assert_is( rcol1.size, sel.size, "both sizes should be equal")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_set_and_pred()
+	# Take a set and apply the predicate to it.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local aset << _self.haig_and_chesterton_set(dsm)
+	_local aset1 << aset.filter_by_predicate(_self.pred)
+	_self.assert_is( aset.size, aset1.size, "both sizes should be equal because haigh and chesterton are both A-roads")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_geometry_filter_and_pred()
+	# Take a geometry set and apply the predicate to it.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	_local rcol2 << rcol.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol2.size, 3, "a) There are 3 A-Roads at the chesteron roundabout")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_buffer_and_pred()
+	# Filter the roundabout collection for
+	# the Chesterton roundabout. Make a buffer around it and find
+	# the roads. Apply the predicate to these roads.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rbcol << rwan:sw_collection.new(dsm, _self.roundabout_collection)
+	_local rbcol1 << rbcol.filter_by_predicate(predicate.eq(:name, "Chesterton"))
+	_self.assert_is(rbcol1.size, 1, "There should be one")
+	_local rb_buffer << rbcol1.buffer( :location, length_value.new(10000,:mm) )
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local rcol1 << rcol.filter_by_geometry(:centre_line, :interacting_with, rb_buffer)
+	_self.assert_is(rcol1.size, 4, "There are 4 roads nearby the roundabout")
+	_local rcol2 << rcol1.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol2.size, 3, "b) There are 3 A-Roads at the chesteron roundabout")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_topology_and_pred()
+	# Take the Chesterton roundabout and find the connected
+	# roads. Then apply the predicate to it.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rbcol << rwan:sw_collection.new(dsm, _self.roundabout_collection)
+	_local rbcol1 << rbcol.filter_by_predicate(predicate.eq(:name, "Chesterton"))
+	_local rcol << rbcol1.follow_topology(:location, :min_road)
+	_self.assert_is(rcol.size, 4, "There are 4 roads connected to the roundabout")
+	_local rcol1 << rcol.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol1.size, 3, "c) There are 3 A-Roads at the chesteron roundabout")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_append_and_pred()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local rcol1 << rcol.filter_by_predicate(predicate.eq(:name, "Chesterton Road"))
+	_local rcol2 << rcol.filter_by_predicate(predicate.eq(:name, "Haig Road"))
+	_local ap_col << rcol1.union(rcol2)
+	rcol << ap_col.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol.size, 2, "There are 2 A-Roads in this set")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_test_case.test_subtract_and_pred()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	_local subtract_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	subtract_col << subtract_col.filter_by_predicate(predicate.eq(:carriage_type, "Single Carriage"))
+
+	_local rcol1 << rcol.subtraction(subtract_col)
+	_local rcol2 << rcol1.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol2.size, 3, "There are 3 A-Roads that comply")
+_endmethod
+$

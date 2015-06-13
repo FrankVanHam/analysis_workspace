@@ -1,0 +1,140 @@
+
+
+_package rwan
+$
+
+#remex(:collection_holder)
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Holder for one analysis collection. Holds the colletion,
+## name, colour, etc.
+##
+def_slotted_exemplar(:collection_holder,
+	{
+		{:collection,_unset},
+		{:highlight?, _unset, :readable},
+		{:name, _unset},
+		{:colour, _unset},
+		{:fill_style, _unset, :readable}
+	} )
+$
+
+serial_structure_mixin.add_child(collection_holder)
+$
+
+collection_holder.define_shared_constant(:serial_structure, :slotted, :public)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.new(col, name, colour, fill_style)
+	_return _clone.init(col, name, colour, fill_style)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method collection_holder.init(col, name, colour, fill_style)
+	.collection << col
+	.highlight? << _false 
+	.name << name
+	.colour << colour
+	.fill_style << fill_style
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.name
+	_return .name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.discard()
+	.collection.discard()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.serial_slots()
+    _local keys   << rope.new_with(:collection, :name, :colour, :fill_style)
+    _local values << rope.new_with(.collection, .name, .colour, .fill_style)
+    _return keys, values
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.new_from_serial(keys,values)
+    _return _clone.init_from_serial(_scatter values)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method collection_holder.init_from_serial(collection, name, colour, fill_style)
+	.highlight? << _false 
+	.collection << collection
+	.name << name
+	.colour << colour
+	.fill_style << fill_style
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.is_spatial?
+	_return .collection.is_spatial?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.is_area?
+	_return .collection.is_area?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.is_record_collection?
+	_return .collection.is_record_collection?
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.collection
+	_return .collection
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.display_tree_in(builder)
+	_return .collection.display_tree_in(builder)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder[key]
+	>> _if key _is :highlight?
+	   _then >> .highlight?
+	   _elif key _is :name
+	   _then >> .name
+	   _elif key _is :colour
+	   _then >> .colour
+	   _elif key _is :fill_style
+	   _then >> .fill_style
+	   _endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder[key] << value 
+	_if key _is :highlight?
+	_then .highlight? << value
+	_elif key _is :name
+	_then .name << value
+	_elif key _is :colour
+	_then .colour << value
+	_elif key _is :fill_style
+	_then .fill_style << value
+	_endif 
+_endmethod
+$

@@ -1,0 +1,63 @@
+_package rwan
+$
+
+#remex(:spatial_filter_read_stream)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+def_slotted_exemplar(:spatial_filter_read_stream,
+	##
+	{
+		{:base_stream, _unset },
+		{:geom_name,   _unset },
+		{:selector,    _unset },
+		{:arg,         _unset }
+	}, :input_stream_with_unget_mixin)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_read_stream.new(base_stream, geom_name, selector, arg)
+	_return _clone.init(base_stream, geom_name, selector, arg)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.init(base_stream, geom_name, selector, arg)
+	.base_stream << base_stream
+	.geom_name << geom_name
+	.selector << selector
+	.arg << arg
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_read_stream.get()
+	_loop
+		_local rec << .base_stream.get()
+		_if rec _is _unset _then _leave _endif #Exhausted
+
+		_local geom << rec.geometry(.geom_name)
+		_if geom _is _unset _then _continue _endif
+		
+		_local gs << geometry_set.new_with(geom)
+		_if gs.select(.selector, .arg).empty?.not
+		_then
+			_return rec
+		_endif 
+	_endloop
+	_return _unset 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_read_stream.size_is_fast?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_read_stream.close()
+	
+_endmethod
+$

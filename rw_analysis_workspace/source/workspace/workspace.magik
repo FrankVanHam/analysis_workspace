@@ -1,0 +1,214 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-18
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+#remex(:workspace)
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+##
+## A workspace, an ordered list of holds for
+## analysis_collections. 
+##
+def_slotted_exemplar(:workspace,
+	{
+		{:dirty?, _unset, :readable},
+		{:name, _unset, :readable},
+		{:holders, _unset, :readable},
+		{:create_date, _unset},
+		{:create_user, _unset}
+	})
+$
+
+serial_structure_mixin.add_child(workspace)
+$
+
+workspace.define_shared_constant(:serial_structure, :slotted, :public)
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace.new(name)
+	_return _clone.init(name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_private _method workspace.init(name)
+	.dirty? << _false 
+	.name << name.as_symbol()
+	.holders << rope.new()
+	.create_date << date_time_now()
+	_try 
+		.create_user << system.user_name
+	_when error
+		.create_user << "Unknow"
+	_endtry 
+	_return _self 	 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.serial_slots()
+    _local keys   << rope.new_with(:name, :holders, :create_date, :create_user)
+    _local values << rope.new_with(.name, .holders, .create_date, .create_user)
+    _return keys, values
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.new_from_serial(keys,values)
+    _return _clone.init_from_serial(_scatter values)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={demo})
+_private _method workspace.init_from_serial(name, holders,
+						     create_date, create_user)
+	.dirty? << _false
+	.name << name
+	.holders << holders
+	.create_date << create_date
+	.create_user << create_user
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.holder_for(col)
+	_for i_holder _over .holders.fast_elements()
+	_loop
+		_if i_holder.collection _is col
+		_then
+			_return i_holder
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.add_holder(holder)
+	.holders.add_last(holder)
+	.dirty? << _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.remove_holder(holder)
+	.holders.remove(holder)
+	.dirty? << _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.move_up(holder)
+	_local top_holders << _self.top_holders
+	_local index << top_holders.index_of(holder)
+	_if index <> 1
+	_then
+		_local prev_holder << top_holders[index-1]
+		
+		_local my_index << .holders.index_of(holder)
+		_local prev_index << .holders.index_of(prev_holder)
+		
+		.holders.remove_nth(my_index)
+		.holders.add_nth(holder, prev_index)
+		.dirty? << _true 
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.can_move_up?(holder)
+	_local top_holders << _self.top_holders
+	_local index << top_holders.index_of(holder)
+	_return index <> 1
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.move_down(holder)
+	_local top_holders << _self.top_holders
+	_local index << top_holders.index_of(holder)
+	_if index <> top_holders.size
+	_then
+		_local next_holder << top_holders[index+1]
+		
+		_local my_index << .holders.index_of(holder)
+		_local next_index << .holders.index_of(next_holder)
+		
+		.holders.remove_nth(my_index)
+		.holders.add_nth(holder, next_index)
+		.dirty? << _true 
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.can_move_down?(holder)
+	_local top_holders << _self.top_holders
+	_local index << top_holders.index_of(holder)
+	_return index <> top_holders.size 
+_endmethod
+$
+_pragma(classify_level=basic, topic={demo})
+_method workspace.top_holders
+	_return _self.top_holders(.holders)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.top_holders(holders)
+	_local uses << set.new()
+	_for i_holder _over .holders.fast_elements()
+	_loop
+		_local bases << i_holder.collection.base_collections
+		uses.add_all(bases)
+	_endloop
+	_local top << rope.new()
+	_for i_holder _over holders.fast_elements()
+	_loop
+		_if uses.includes?(i_holder.collection).not
+		_then
+			top.add(i_holder)
+		_endif 
+	_endloop
+	_return top
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.all_holders
+	_return .holders
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.set_dirty()
+	.dirty? << _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.set_clean()
+	.dirty? << _false 
+_endmethod
+$

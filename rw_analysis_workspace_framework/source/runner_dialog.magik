@@ -1,0 +1,264 @@
+
+_package rwan
+$
+
+#remex(:runner_dialog)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Provide a GUI for executing (in background) and reporting
+## the results of an analysis collection.
+def_slotted_exemplar(:runner_dialog,
+	{
+		{:runner, _unset}
+	},
+	:base_model)
+$
+
+message_handler.new(:runner_dialog).add_uses(:base_model)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.activate_in(container)
+	.top_frame << container.top_frame
+	
+	_local rc << rowcol.new(container,  1, _unset, _unset, :style, :nested, :left_spacing, 7, :resize?, _true )
+	.owner.action(:explorer).place_control_on(rc, :dialog, :min_width, 75)
+	.owner.action(:goto).place_control_on(rc, :dialog, :min_width, 75)
+	.owner.action(:refresh_map).place_control_on(rc, :dialog)
+	.owner.action(:excel).place_control_on(rc, :dialog)
+	.owner.action(:access).place_control_on(rc, :dialog)
+	
+	.items[:busy_with] << label_item.new(rc, _unset ,
+					     :max_width, 100,
+					     :min_width, 100)
+	.items[:time_running] << label_item.new(rc, _unset ,
+					     :max_width, 10,
+					     :min_width, 10)
+	
+	.items[:interrupt] << image_button_item.new_safe(rc, _self.stop_image,
+							  _self, :|cancel_run()|,
+							  :insensitive_image, _self.grey_stop_image, 
+							  :col_alignment, :right)
+	.items[:interrupt].set_property(:has_border?, _false)
+	
+	.runner << background_runner.new(.items[:busy_with], .items[:time_running])
+	.runner.add_dependent(_self)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.refresh_map()
+	.owner.refresh_map()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.cancel_run()
+	.runner.cancel_run()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.run_in_background(receiver, meth, args, descr)
+	.runner.run_in_background(receiver, meth, args, descr)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.running?
+	_return .runner.running?	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.goto()
+	_local descr <<  _self.selection_description()
+	_self.run_in_background(_self, :|do_goto()|, {}, _self.message(:going_to, _unset, descr))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.do_goto()
+	_local b
+	_for i_holder _over _self.selected_holders.fast_elements()
+	_loop
+		_local col << i_holder.collection
+		_local bounds << col.goto_bounds
+		_if bounds _isnt _unset
+		_then 
+			b << bounds.union(b)
+		_endif 
+	_endloop
+	_if b _isnt _unset
+	_then 
+		.owner.goto(b)
+	_else
+		_self.user_error(:no_bounds_to_goto)
+	_endif 
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.send_to_explorer()
+	_local holder << _self.selected_holder
+	_if holder.is_record_collection?.not _then _return _endif
+	
+	_local descr << _self.selection_description()
+	_self.run_in_background(_self, :|do_send_to_explorer()|, {}, _self.message(:sending_to_explorer, _unset, descr))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.do_send_to_explorer()
+	_local col << _self.selected_holder.collection
+	_local lazy << lazy_record_collection.new_for_rw_analysis_collection(col)
+	.owner.explore(lazy)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.export_to_excel()
+	_self.run_in_background(_self, :|do_export_to_excel()|, {},
+				_self.message(:export_to_excel))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.do_export_to_excel()
+	_local name << _self.selected_top_holder.name
+	_local col << _self.selected_top_holder.collection
+	_local lazy << lazy_record_collection.new_for_rw_analysis_collection(col)
+	
+	_local fname << system.temp_file_name("export.xlsx")
+	_local engine << collection_export_engine.new( _self )
+	engine.add_collection(lazy,
+			      :exclude_geometry_fields?, _true,
+			      :unit_fields_as_strings?, _true,
+			      :external_name, name)
+	engine.export_to_excel( :run_in_background?, _false,
+				:filename, fname,
+				:quiet?, _true,
+				:overwrite?, _true)
+	engine.reset()
+	system.start_command({"explorer", fname})
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.export_to_access()
+	_self.run_in_background(_self, :|do_export_to_access()|, {},
+				_self.message(:export_to_access))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.do_export_to_access()
+	_local name << _self.selected_top_holder.name
+	_local col << _self.selected_top_holder.collection
+	_local lazy << lazy_record_collection.new_for_rw_analysis_collection(col)
+	
+	_local fname << system.temp_file_name("export.accdb")
+	_local engine << collection_export_engine.new( _self )
+	engine.add_collection(lazy,
+			      :exclude_geometry_fields?, _false,
+			      :exclude_join_fields?, _false,
+			      :max_length_multiple_result_joins, 0,
+			      :unit_fields_as_strings?, _true,
+			      :join_fields_as_count?, _true,
+			      :ace, .owner.ace,
+			      :external_name, name)
+	engine.export_to_access( :run_in_background?, _false,
+				:filename, fname)
+	engine.reset()
+	system.start_command({"explorer", fname})
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.note_selection_change()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method runner_dialog.selection_description()
+	_local holders << _self.selected_holders
+	_if holders.size > 1
+	_then
+		descr << _self.message(:multiple_selection, _unset, holders.size)
+	_else 
+		descr <<  holders[1][:name]
+	_endif
+	_return descr
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.manage_actions()
+	_local sel << _self.selected_holders
+	_local select? << sel.empty?.not
+	_local record_sel? << select? _andif
+			      sel.an_element().is_record_collection?
+	
+	_local open? << _self.open?
+	
+	.owner.action(:explorer).enabled? << open? _andif record_sel?
+	.owner.action(:goto).enabled? << open? _andif select?
+	.owner.action(:refresh_map).enabled? << _true 
+	.owner.action(:excel).enabled? << open? _andif record_sel?
+	.owner.action(:access).enabled? << open? _andif record_sel?
+
+	_local running? << _self.running?
+	.items[:interrupt].enabled? << running?
+	.items[:busy_with].enabled? << running?
+	.items[:time_running].enabled? << running?
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.note_change(who, what)
+	_self.manage_actions()
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method runner_dialog.stop_image
+	_return smallworld_product.get_raster_image(:stop, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method runner_dialog.grey_stop_image
+	_return smallworld_product.get_raster_image(:stop_grey, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method runner_dialog.export_excel_image
+	_return smallworld_product.get_raster_image(:export_to_excel, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method runner_dialog.grey_export_excel_image
+	_return smallworld_product.get_raster_image(:export_to_excel_grey, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method runner_dialog.export_access_image
+	_return smallworld_product.get_raster_image(:export_to_access, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method runner_dialog.grey_export_access_image
+	_return smallworld_product.get_raster_image(:export_to_access_grey, :ui_resources)
+_endmethod
+$
+
+
+

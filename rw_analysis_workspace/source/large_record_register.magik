@@ -1,0 +1,116 @@
+_package rwan
+$
+
+_pragma(classify_level=basic, topic={analysis})
+## 
+## Register that can hold a very large amount of
+## records. Initialy all records will be held in memory until a
+## threshold is passed, then the records will be held in a
+## scrapbook_bag.
+##
+## Main methods are: add() and includes?()
+##
+# Would be a good candidate for state pattern...
+def_slotted_exemplar(:large_record_register,
+	{
+		{:max_in_memory, _unset},
+		{:scrapbook_bag, _unset},
+		{:set,           _unset}
+	})
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method large_record_register.new(max_in_memory)
+	## Create a register. It will hold MAX_IN_MEMORY in memory (and
+	## thus will be fast). If it gets bigger than we will move to
+	## the scrapbook and will be slower.
+	##
+	## Use discard() to release resources after use.
+	##
+	_return _clone.init(max_in_memory)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method large_record_register.init(max_in_memory)
+	.max_in_memory << max_in_memory
+	.set << rwo_set.new()
+	
+	_self.have_post_mortem(_true)
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method large_record_register.add(rec)
+	_if .set _isnt _unset
+	_then
+		.set.add(rec)
+		_if .set.size > .max_in_memory
+		_then
+			_self.convert_to_scrapbook()
+			.set << _unset 
+		_endif
+	_else
+		.scrapbook_bag.add(rec)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method large_record_register.includes?(rec)
+	_if .set _isnt _unset
+	_then
+		_return .set.includes?(rec)
+	_else
+		_return .scrapbook_bag.includes?(rec)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method large_record_register.convert_to_scrapbook()
+	.scrapbook_bag << _self.scrapbook_view.create_scrapbook_bag(
+				  _self.scrapbook_bag_name, {}, _true, _true )
+	.scrapbook_bag.add_all(.set)
+	.set.empty()
+	.set << _unset 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method large_record_register.discard()
+	_if .set _isnt _unset
+	_then
+		.set.empty()
+	_endif
+	_if .scrapbook_bag _isnt _unset
+	_then 
+		_self.scrapbook_view.drop_scrapbook_bag(_self.scrapbook_bag_name)
+		.scrapbook_bag << _unset 
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method large_record_register.scrapbook_bag_name
+	_return write_string("SCR", _self.as_oop)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method large_record_register.scrapbook_view
+	_return gis_program_manager.scrapbook().scrapbook_view
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method large_record_register.post_mortem()
+	_self.discard()
+	_self.have_post_mortem(_false)
+_endmethod
+$
+
+
+

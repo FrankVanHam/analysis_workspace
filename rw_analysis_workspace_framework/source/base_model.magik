@@ -1,0 +1,118 @@
+_package rwan
+$
+
+#remex(:base_model)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## base dialog model for all models in the analysis workspace framework.
+def_slotted_exemplar(:base_model,
+	{
+		{:items, _unset},
+		{:owner, _unset}
+	}, :model)
+$
+
+message_handler.new(:base_model).add_uses(:model, :gen_graphics)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.new(owner)
+	_return _clone.init(owner)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_model.init(owner)
+	.owner << owner
+	.items << property_list.new()
+	_return _super.init()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.open?
+	_return .owner.open?
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.manage_actions()
+
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_model.selection
+	_return .owner.selected_holders
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.any_selection?
+	_return _self.selection.empty?.not
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_model.workspace_holder
+	_return .owner.workspace_holder
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_model.current_workspace
+	_return _self.workspace_holder.current_workspace
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.selected_top_holder
+	_return _self.selected_top_holders.an_element()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.selected_top_holders
+	## Return the selected holders.
+	_return .owner.selected_top_holders
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.selected_holders
+	## Return the selected holders.
+	_return .owner.selected_holders
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.selected_holder
+	## Return a holder
+	_return _self.selected_holders.an_element()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.all_holders
+	_return .owner.all_holders
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.top_holders
+	_return .owner.top_holders
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.note_selection_change()
+	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.note_workspace_holder_change()
+	
+_endmethod
+$

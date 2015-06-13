@@ -1,0 +1,68 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:simple_area_analyse_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:simple_area_analyse_test_case,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method simple_area_analyse_test_case.test_topology_query()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.haig_and_chesterton_set(dsm)
+	_local hcol << acol.follow_topology( :centre_line, :hotel )
+	_self.assert_is( hcol.size, 9, "There should be 9 topological connected hotels")
+	
+	_local rcol1 << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	hcol << rcol1.follow_topology( :centre_line, :hotel )
+	_self.assert_is( hcol.size, 9, "There should be 9 topological connected hotels")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method simple_area_analyse_test_case.test_composite_collections()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local rcol1 << rcol.filter_by_predicate(predicate.eq(:name, "Chesterton Road"))
+	_local rcol2 << rcol.filter_by_predicate(predicate.eq(:name, "Haig Road"))
+	_local ap_col << rcol1.union(rcol2)
+	_self.assert_is(ap_col.size, 2, "There are two roads")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method simple_area_analyse_test_case.test_subtract_collections()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local all_four << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local pred << predicate.eq(:road_type, "A-Road")
+	_local rcol1 << rcol.filter_by_predicate(pred)
+	
+	_local sub_col << all_four.subtraction(rcol1)
+	_self.assert_is( sub_col.size, 1, "There is only 1 not A-Road at the roundabout")
+_endmethod
+$
+
+

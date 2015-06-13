@@ -1,0 +1,57 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-26
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:where_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:where_analysis_test_case,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method where_analysis_test_case.test_pub_rest_with_A_road_access()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local acol << pcol.follow_join(:min_roads)
+	_local acol1 << acol.filter_by_predicate(predicate.eq(:road_type,"A-Road"))
+	
+	_local pcol1 << acol1.root(_self.pub_rest_collection)	
+	_self.assert_is(pcol1.size, 4, "There are 4 pub/restaurant accessible by an A-Road") 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method where_analysis_test_case.test_pub_rest_with_a_road_access_with_current_roadworks()
+	_local dsm << analysis_dataset_manager.new(:test)
+	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local acol << pcol.follow_join(:min_roads)
+	_self.assert_is(acol.expose().name, :min_road, "is min road")
+	_local rwcol << acol.follow_topology(:centre_line, :road_works)
+	_self.assert_is(rwcol.expose().name, :road_works, "is")
+	_local rwcol1 << rwcol.filter_by_predicate(predicate.eq(:status, "Current"))
+	_local rcol << rwcol1.root(_self.min_road_collection)
+	_self.assert_is(rcol.size, 1, "There is 1 road with a current roadwork leading to a pub")
+	_local pcol1 << rwcol1.root(_self.min_road_collection)
+	_self.assert_is(pcol1.size, 1, "There is 1 pub/restaurant accessible by a Road with a current roadwork") 
+_endmethod
+$

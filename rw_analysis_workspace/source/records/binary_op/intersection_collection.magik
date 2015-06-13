@@ -1,0 +1,103 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+#remex(:intersection_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Analysis collection that will do an intersection of the
+## base collections.
+def_slotted_exemplar(:intersection_collection,
+	{}, :base_binary_op_collection)
+$
+
+message_handler.new(:intersection_collection).add_use(:base_binary_op_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method intersection_collection.operation
+	_return :intersection
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_iter _method intersection_collection.do!fast_elements(the_method, _gather args)
+	_for i_rec _over _self.base_collection.perform_iter( the_method, _scatter args)
+	_loop
+		_if _self.other_collection.includes?(i_rec)
+		_then
+			_loopbody(i_rec)
+		_endif 
+	_endloop
+_endmethod
+$
+#
+#_pragma(classify_level=restricted, topic={analysis, collections})
+#_iter _method intersection_collection.read_stream()
+#	_local base_stream << _self.base_collection.read_stream()
+#	_local other_stream << _self.other_collection
+#	
+#	_return _self.combining_read_stream(base_stream, other_collection)
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_method intersection_collection.predicate_filtered_read_stream(pred)
+#	_local base_stream << _self.base_collection.predicate_filtered_read_stream(pred)
+#	_local other_stream << _self.other_collection
+#	
+#	_return _self.combining_read_stream(base_stream, other_stream)
+#_endmethod
+#$
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_method intersection_collection.spatial_filtered_read_stream(geom_name, selector, args)
+#	_local base_stream << _self.base_collection.spatial_filtered_read_stream(geom_name, selector, args)
+#	_local other_stream << _self.other_collection
+#	
+#	_return _self.combining_read_stream(base_stream, other_stream)
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_method intersection_collection.combining_read_stream(base_stream, other_collection)
+#	_return intersection_read_stream.new(base_stream, other_collection)
+#_endmethod
+#$

@@ -1,0 +1,137 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-31
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:method_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog to select a method that will be used to create a
+## method_collection. The developer should have created a
+## method named :rwan_methods on the exemplar to make this
+## work. 
+##
+def_slotted_exemplar(:method_dialog,
+	{
+		{:items,  _unset},
+		{:holder, _unset}
+	},
+	:model)
+$
+
+message_handler.new(:method_dialog).add_uses(:model, :gen_graphics)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method method_dialog.set_holder(holder)
+	.holder << holder
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method method_dialog.activate_in(container)
+	container.modality << :primary_modal
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100})
+	_self.build_top_label(rc)
+	_self.build_method_selection(rc)
+	panel_separator.new(rc, :col_alignment, :fill)
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method method_dialog.build_top_label(container)
+	text_window.new(container, 7, 50, _unset,
+			:horizontal_scrollbar?, _false,
+			:editable?, _false,
+			:contents, _self.message(:top_label),
+			:col_alignment, :fill,
+			:row_alignment, :fill )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method method_dialog.build_method_selection(container)
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	label_item.new(rc, _self.message(:source))
+	label_item.new(rc, .holder.name, :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:method))
+	.items[:method_choice] << text_choice_item.new(rc, _unset, :items, _self.method_items, :col_alignment, :fill)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method method_dialog.build_buttons(container)
+	## 
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method method_dialog.ok()
+	_local new_col << _self.construct_method_filter()
+	.parent_model.add_collection(new_col)
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method method_dialog.construct_method_filter()
+	_local vec << .items[:method_choice].value
+	_local new_col << .holder.collection.follow_method(_scatter vec)
+	_return new_col
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method method_dialog.cancel()
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method method_dialog.method_items
+	_local items << rope.new()
+	_local sw_col << .holder.collection.expose()
+	_local methods << sw_col.record_exemplar.rwan_methods
+	_if methods.empty?
+	_then
+		items.add( {_unset, _self.message(:no_method)} )
+	_else
+		_for i_vec _over methods.fast_elements()
+		_loop
+			(methd, args, external_name, target) << (_scatter i_vec)
+			items.add({{target, methd, args}, external_name})
+		_endloop
+		items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
+		items << rope.new_from(items)
+	_endif
+	_return items
+_endmethod
+$

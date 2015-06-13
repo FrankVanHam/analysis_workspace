@@ -1,0 +1,72 @@
+_package rwan
+$
+
+#remex(:runner_plugin)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Publishes actions to visiualise results of a collection,
+## either in the explorer, excel, map, etc.
+def_slotted_exemplar(:runner_plugin,
+	{
+	}, :base_plugin)
+$
+
+_pragma(classify_level=restricted, topic={analysis}, usage={subclass})
+runner_plugin.define_shared_constant( :dialog_exemplar_name,
+	:runner_dialog,
+	:public )
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_plugin.init_actions()
+	_self.add_action(sw_action.new(:explorer,
+				       :engine, _self.dialog,
+				       :action_message, :|send_to_explorer()|,
+				       :caption, _self.dialog.message(:explorer)))
+	_self.add_action(sw_action.new(:goto,
+				       :engine, _self.dialog,
+				       :action_message, :|goto()|,
+				       :caption, _self.dialog.message(:goto)))
+	_self.add_action(sw_action.new(:refresh_map,
+				       :engine, _self.dialog,
+				       :action_message, :|refresh_map()|,
+				       :image, {:refresh, :ui_resources},
+				       :caption, _self.dialog.message(:refresh_map)))	
+	_self.add_action(sw_action.new(:excel,
+				       :engine, _self.dialog,
+				       :action_message, :|export_to_excel()|,
+				       :image, {:export_to_excel, :ui_resources},
+				       :caption, _self.dialog.message(:export_to_excel)))	
+	_self.add_action(sw_action.new(:access,
+				       :engine, _self.dialog,
+				       :action_message, :|export_to_access()|,
+				       :image, {:export_to_access, :ui_resources},
+				       :caption, _self.dialog.message(:export_to_access)))	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_plugin.refresh_map()
+	_self.app_plugin.refresh_map()
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_plugin.run_in_background(who, meth, args, descr)
+	_self.dialog.run_in_background(who, meth, args, descr)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_plugin.explore(set)
+	_self.app_plugin.explore(set)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_plugin.goto(bounds)
+	_return _self.app_plugin.goto(bounds)
+_endmethod
+$

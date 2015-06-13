@@ -1,0 +1,164 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:record_set)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Analysis collection that holds a set of records. So there is
+## database directly behind the collection.
+##
+## The asumption is that all elements in the set are of a same
+## collection. 
+def_slotted_exemplar(:record_set,
+	{
+		{:base_set, _unset}
+	}, :base_record_collection)
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method record_set.new(dsm, base_set)
+	_return _clone.init(dsm, base_set)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method record_set.init(dsm, base_set)
+	.base_set << rwo_set.new_from(base_set)
+	_return _super.init(dsm)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method record_set.origin_is_sw_collection?
+	## Answer if a smallworld collection is as the base of self.
+	_local ae << .base_set.an_element()
+	_if ae _isnt _unset
+	_then
+		_return ae.is_a_datastore_object?
+	_else
+		_return _false
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_method record_set.serial_slots()
+	_local (keys, values) << _super.serial_slots()
+	keys.add_all_last({:base_set})
+	_local urns << rope.new_for(.base_set.size)
+	_for i_rec _over .base_set.fast_elements()
+	_loop
+		urns.add(urn_manager.get_urn_from_object(i_rec))
+	_endloop 
+	values.add_all_last({urns})
+	_return keys, values
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_private _method record_set.init_from_serial(dsm, base_cols, urn_rope)
+    _super.init_from_serial(dsm, base_cols)
+    .base_set << rwo_set.new(urn_rope.size)
+    _for i_urn _over urn_rope.fast_elements()
+    _loop
+	    _local rec << urn_manager.get_object_from_urn(i_urn)
+	    _if rec _isnt _unset
+	    _then
+		    .base_set.add(rec)
+	    _endif
+    _endloop
+    urn_rope.empty()
+    _return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method record_set.equals?(other)
+	_return _self.is_class_of?(other) _andif
+		other.equals_in_details?(.base_set)	
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method record_set.equals_in_details?(other_set)
+	_if .base_set.size <> other_set.size _then _return _false _endif
+	
+	_local s << equality_set.new_from(other_set)
+	_local eq? << s.includes_all?(.base_set)
+	s.empty()
+	_return eq?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections}) 
+_method record_set.size
+	_return .base_set.size
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method record_set.size_is_fast?
+	_return _true  
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_iter _method record_set.fast_elements()
+	_for i_rec _over .base_set.fast_elements()
+	_loop
+		_loopbody(i_rec)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method record_set.expose()
+	_return .base_set.an_element().source_collection
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method record_set.includes?(rec)
+	_return .base_set.includes?(rec)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method record_set.discard()
+	.base_set.empty()
+	.base_set << _unset 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method record_set.read_stream()
+	_return .base_set.read_stream()
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method record_set.description
+	_return _self.message(:description, .base_set.size, _self.expose().external_name)
+_endmethod
+$

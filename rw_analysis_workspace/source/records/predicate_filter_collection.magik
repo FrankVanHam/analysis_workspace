@@ -1,0 +1,149 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:predicate_filter_collection)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## A collection that runs over the base collection and filters
+## it with a predicate.
+##
+def_slotted_exemplar(:predicate_filter_collection,
+	{
+		{:pred, _unset}
+	}, :base_record_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_collection.new(dsm, base_col, pred)
+	_return _clone.init(dsm, base_col, pred)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method predicate_filter_collection.init(dsm, base_col, pred)
+	.pred << pred
+	_return _super.init(dsm, base_col)  
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.serial_slots()
+	_local (keys, values) << _super.serial_slots()
+	keys.add_all_last({:pred})
+	_local s << internal_text_output_stream.new()
+	.pred.store_on(s)
+	values.add_all_last({s.string})
+	_return keys, values
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method predicate_filter_collection.init_from_serial(dsm, base_cols, pred_string)
+    _super.init_from_serial(dsm, base_cols)
+    .pred << pred_string.evaluate()
+    _return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_collection.equals?(other)
+	_return _self.is_class_of?(other) _andif
+		other.equals_in_details?(.base_collections, .pred)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.equals_in_details?(base_cols, pred)
+	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
+	_return .pred.is_equivalent_to?(pred)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method predicate_filter_collection.includes?(rec)
+	_return _self.base_collection.includes?(rec) _andif
+		.pred.test?(rec)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method predicate_filter_collection.size
+	_return _self.base_collection.size_filtered_by_predicate(.pred)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method predicate_filter_collection.size_is_fast?
+	_return _self.base_collection.size_is_fast_filtered_by_predicate?(.pred)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_iter _method predicate_filter_collection.fast_elements()
+	_for i_rec _over _self.base_collection.fast_elements_filtered_by_predicate(.pred)
+	_loop
+		_loopbody(i_rec)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method predicate_filter_collection.read_stream()
+	_return _self.base_collection.predicate_filtered_read_stream(.pred)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_collection.predicate_filtered_read_stream(pred)
+	_local new_pred << .pred _and pred
+	_return _self.base_collection.predicate_filtered_read_stream(new_pred)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_iter _method predicate_filter_collection.fast_elements_filtered_by_predicate(pred)
+	_local new_pred << .pred _and pred
+	_for i_rec _over _self.base_collection.fast_elements_filtered_by_predicate(new_pred)
+	_loop
+		_loopbody(i_rec)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.size_filtered_by_predicate(pred)
+	_local new_pred << .pred _and pred
+	_return _self.base_collection.size_filtered_by_predicate(new_pred)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.size_is_fast_filtered_by_predicate?(pred)
+	_local new_pred << .pred _and pred
+	_return _self.base_collection.size_is_fast_filtered_by_predicate?(new_pred)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_collection.description
+	_return _self.message(:description, _self.expose().external_name, .pred)
+_endmethod
+$

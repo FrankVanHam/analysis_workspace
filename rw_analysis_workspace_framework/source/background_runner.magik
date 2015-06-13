@@ -1,0 +1,124 @@
+_package rwan
+$
+
+#remex(:background_runner)
+
+_pragma(classify_level=advanced, topic={analysis})
+##
+## Simple helper object that runs methods in the background will
+## letting a counter run to show the amount of time elapsed.
+##
+def_slotted_exemplar(:background_runner,
+	{
+		{:thread, _unset},
+		{:busy_label, _unset},
+		{:time_label, _unset}
+	},
+	:model)
+$
+
+message_handler.new(:background_runner).add_uses(:model, :gen_graphics)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method background_runner.new(busy_label, time_label)
+	_return _clone.init(busy_label, time_label)	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method background_runner.init(busy_label, time_label)
+	.busy_label << busy_label
+	.time_label << time_label
+
+	_super.init()
+	_self.update_initial_labels()
+	_return  _self 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method background_runner.update_initial_labels()
+	.busy_label.label << _self.message(:not_busy)
+	.time_label.label << _self.message(:no_time_passed)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method background_runner.cancel_run()
+	_if .thread _isnt _unset
+	_then
+	     .thread.kill(:kill)
+	     .thread << _unset
+	     .busy_label.label << _self.message(:interrupted)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method background_runner.run_in_background(receiver, meth, args, descr)
+	_if .thread _isnt _unset
+	_then
+		.thread.kill(:kill)
+	_endif
+	.thread << _proc(me,receiver,  meth, args, descr)
+			   me.perform(:|running_in_background()|, receiver, meth, args, descr)
+		   _endproc.fork_at(3, _self, receiver, meth, args, descr)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method background_runner.running_in_background(receiver, meth, args, descr)
+	_self.changed(:start_running)
+	.busy_label.label << _self.message(:running_with, _unset, descr)
+	_local start_time << system.elapsed_seconds()
+	_local timer_thr << _self.start_timer_thread(start_time)
+	_protect
+		receiver.perform(meth, _scatter args)
+	_protection
+		.thread << _unset
+		timer_thr.kill(:kill)
+		.busy_label.label << _self.message(:finished_with, _unset, descr)
+		_self.update_timer(start_time)
+		_self.changed(:ended_running)
+	_endprotect
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method background_runner.start_timer_thread(start_time)
+	_local thr << _proc(dialog, start_time)
+			      dialog.run_timer_loop(start_time)
+		      _endproc.fork_at(_thisthread.vm_priority-1, _self, start_time)
+	_return thr 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method background_runner.run_timer_loop(start_time)
+	_loop
+		_thisthread.sleep(1000)
+		_self.update_timer(start_time)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method background_runner.update_timer(start_time)
+	_local dt << system.elapsed_seconds() - start_time
+	_local str << _self.time_to_string(dt)
+	.time_label.label << _self.message(:running_for, _unset, str)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method background_runner.time_to_string(time)
+	_return time_interval.new_seconds(time).write_string
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method background_runner.running?
+	_return .thread _isnt _unset 
+_endmethod
+$

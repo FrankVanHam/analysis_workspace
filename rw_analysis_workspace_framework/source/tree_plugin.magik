@@ -1,0 +1,31 @@
+_package rwan
+$
+
+#remex(:tree_plugin)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Placeholder for the tree_dialog in the framework.
+def_slotted_exemplar(:tree_plugin, 
+	{
+	}, :base_plugin)
+$
+
+_pragma(classify_level=restricted, topic={analysis}, usage={subclass})
+tree_plugin.define_shared_constant( :dialog_exemplar_name,
+	:tree_dialog,
+	:public )
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_plugin.tree_selected(_optional data)
+	_self.databus_make_data_available(:selection, data)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_plugin.init_actions()
+	
+_endmethod
+$

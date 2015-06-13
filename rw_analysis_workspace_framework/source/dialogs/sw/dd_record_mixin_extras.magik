@@ -1,0 +1,37 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-17
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package sw
+$
+
+_pragma(classify_level=advanced, topic={roos,analytics})
+_method dd_record_mixin.rwan_methods
+	##
+	## Backstop method for the realworld analysis framework to
+	## supply custom build navigation methods.
+	##
+	## Return a vector of vectors with:
+	## { methd, args, external_name, target}
+	## methd:         is the method name to invoke. Note that the method
+	##                should return records from one and the same collection.
+	## args:          are the arguments of the method
+	## external_name: descriptive string to tell the user what this does.
+	## target:        the target collection of the objects what will be
+	##                returned from the method.
+	_return {}
+_endmethod
+$

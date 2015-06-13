@@ -1,0 +1,245 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-18
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+#remex(:workspace_holder)
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+##
+## Holder of all workspaces.
+##
+def_slotted_exemplar(:workspace_holder,
+	{
+		{:dirty?,            _unset},
+		{:dsm,               _unset, :readable},
+		{:workspaces,        _unset},
+		{:current_workspace, _unset}
+	})
+$
+
+serial_structure_mixin.add_child(workspace_holder)
+$
+
+workspace_holder.define_shared_constant(:serial_structure, :slotted, :public)
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.new_empty()
+	_return _clone.init_empty()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.new()
+	_return _clone.init()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_private _method workspace_holder.init()
+	.dirty? << _false 
+	.current_workspace << :initial
+	.workspaces << hash_table.new_with(
+			       .current_workspace, workspace.new(:initial))
+	_return _self 	 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_private _method workspace_holder.init_empty()
+	.dirty? << _false 
+	.current_workspace << _unset 
+	.workspaces << hash_table.new()
+	_return _self 	 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.set_dataset_manager(dsm)
+	.dsm << dsm
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.dirty?
+	_return .dirty? 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.serial_slots()
+    _local keys   << rope.new_with(:current_workspace, :workspaces)
+    _local values << rope.new_with(.current_workspace, .workspaces)
+    _return keys, values
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.new_from_serial(keys,values)
+    _return _clone.init_from_serial(_scatter values)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_private _method workspace_holder.init_from_serial(current_workspace, workspaces)
+	.dirty? << _false 
+	.current_workspace << current_workspace
+	.workspaces << workspaces
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.gui_items
+	_local items << rope.new()
+	_for i_ws _over .workspaces.fast_elements()
+	_loop
+		items.add({i_ws.name, i_ws.name.write_string})
+	_endloop
+	_return items
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.empty?
+	_return .workspaces.empty?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.is_top?(col)
+	## Answer if col is a top collection. This is true if no other
+	## collection refers to col.
+	_for i_holder _over _self.holders.fast_elements()
+	_loop
+		_if i_holder.base_collections.includes?(col)
+		_then
+			_return _false
+		_endif
+	_endloop
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.delete_workspace(name)
+	_local workspace << .workspaces.remove_key(name)
+	_for i_holder _over workspace.holders.fast_elements()
+	_loop
+		i_holder.discard()
+	_endloop
+	_self.set_dirty()
+	.current_workspace << .workspaces.a_key()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.save()
+	.dsm.store(_self)
+	_self.set_clean()	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.has_workspace?(name)
+	_return .workspaces.includes_key?(name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.nr_of_workspaces
+	_return .workspaces.size
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.create_workspace(name)
+	.workspaces[name] << workspace.new(name)
+	.current_workspace << name
+	_self.set_dirty()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.pick_workspace(name)
+	_if .workspaces.includes_key?(name).not
+	_then
+		condition.raise(:error, :string, write_string("unknown ", name))
+	_endif
+	.current_workspace << name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.holders
+	_return .workspaces[.current_workspace].holders
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.current_workspace
+	_return .workspaces[.current_workspace]
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.current_workspace_name
+	_return .current_workspace
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.set_dirty()
+	.dirty? << _true 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.set_clean()
+	.dirty? << _false 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.dirty?
+	_return .dirty? _orif _self.workspace_dirty?
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_private _method workspace_holder.workspace_dirty?
+	_for i_ws _over .workspaces.fast_elements()
+	_loop
+		_if i_ws.dirty? _then _return _true _endif
+	_endloop
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace_holder.set_clean()
+	.dirty? << _false
+	_for i_ws _over .workspaces.fast_elements()
+	_loop
+		i_ws.set_clean()
+	_endloop
+_endmethod
+$

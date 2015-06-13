@@ -1,0 +1,10 @@
+_package sw
+$
+
+_pragma(classify_level=restricted, topic={dd})
+_method dd_enumerator.name << new_name
+	## Danger, use with care. Do not rename existing enumerators,
+	## only rename it right after creation.
+	.name << new_name
+_endmethod
+$

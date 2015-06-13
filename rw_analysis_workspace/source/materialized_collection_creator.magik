@@ -1,0 +1,780 @@
+_package rwan
+$
+
+#remex(:materialized_collection_creator)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Specialist that will create a materialized collection. It
+## will create a new collection that stores all records in some
+## analysis collection. The main method is create().
+##
+def_slotted_exemplar(:materialized_collection_creator,
+	{
+		{:dsm,               _unset},
+		{:settings,          _unset},
+		{:source_collection, _unset},
+		{:sw_collection,     _unset},
+		{:target_ds,         _unset},
+		{:target_collection, _unset},
+		{:has_geom?,         _unset}
+	})
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_collection_creator.new(dsm)
+	## dsm is analysis_dataset_manager.
+	_return _clone.init(dsm)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.init(dsm)
+	.dsm << dsm
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_collection_creator.create(col, settings)
+	##
+	## Create a new collection to store the analysis collection col.
+	## 
+	.target_ds << .dsm.actual_dataset
+	.target_ds.switch(:write)
+	_local ok? << _false 
+	_protect
+		_self.do_create(col, settings)
+		ok? << _true 
+	_protection
+		_if _not ok?
+		_then
+			.target_ds.rollback()
+		_else
+			.target_ds.commit()
+		_endif 
+	_endprotect
+	_return .target_collection
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_collection_creator.do_create(col, settings)
+	.settings << settings
+	.source_collection << col
+	.sw_collection << col.expose()
+	.has_geom? << _false
+	_self.validate()
+	_self.drop_if_existing()
+	map << _self.create_enums()
+	
+	_self.create_collection(map)
+	_self.sync_fields()
+	_self.create_indexes()
+	_self.create_geometry_fields()
+	_self.finalise()
+	_self.fill_collection()
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.validate()
+	_self.ensure_no_double_names()
+	_self.ensure_no_forbidden_fields()
+	_self.ensure_no_heterogeneous_joins()
+	_self.ensure_join_aspect_available()
+	_self.ensure_aspect_field_is_no_join()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.ensure_no_double_names()
+	_local s << set.new()
+	_for i_field, int_name _over _self.field_elements()
+	_loop
+		_if s.includes?(int_name)
+		_then
+			condition.raise(:error, :string, "No double fields " + int_name)
+		_endif
+		s.add(int_name)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.ensure_no_forbidden_fields()
+	_for i_field, int_name _over _self.field_elements()
+	_loop
+		_if _self.skip_field_for_creation?(i_field)
+		_then
+			condition.raise(:error, :string, "Forbidden field as input " + int_name)
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.ensure_no_heterogeneous_joins()
+	_for i_field, int_name _over _self.field_elements()
+	_loop
+		_if i_field.is_join? _andif i_field.heterogeneous?
+		_then
+			condition.raise(:error, :string, "No heterogeneous joins " + int_name)
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.ensure_join_aspect_available()
+	_for i_field, int_name, ext_name, join_aspect _over _self.field_elements()
+	_loop
+		_if i_field.is_join? _andif
+		    i_field.join_type _isnt :text _andif
+		    i_field.simple_result?
+		_then
+			_if join_aspect _is _unset
+			_then 
+				condition.raise(:error, :string, "No aspect field defined for " + int_name)
+			_endif 
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.ensure_aspect_field_is_no_join()
+	_for i_field, int_name, ext_name, join_aspect _over _self.field_elements()
+	_loop
+		_if join_aspect _isnt _unset
+		_then
+			_local result_table << i_field.result_table
+			_if result_table.field(join_aspect).is_join?
+			_then 
+				condition.raise(:error, :string, "Aspect field can not be join " + int_name)
+			_endif
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.drop_if_existing()
+	_if .target_ds.collections.includes_key?(_self.new_collection_name)
+	_then
+		_self.report(:dropping_table, _self.new_collection_name)
+		drop_rwo_table(.target_ds, _self.new_collection_name, _true,_true,_false)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.create_enums()
+	## always create new enumerators for each table. Return a map
+	## that maps the field name to the matching enumerator
+	
+	_self.report(:creating_enums)
+	_local enum_map << property_list.new()
+	_for i_field _over _self.field_elements()
+	_loop
+		_if i_field.is_physical? _orif i_field.is_derived?
+		_then 
+			_if i_field.type.enumerator _isnt _unset
+			_then
+				_local enum_name << i_field.type.enumerator.name
+				_local new_enum << _self.create_unique_enum(enum_name, i_field)
+				enum_map[i_field.name] << new_enum
+			_endif
+		_endif 
+	_endloop 
+	_return enum_map
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.create_collection(enum_map)
+	## Core creator method for the new collection.
+	
+	_self.report(:creating_table, _self.new_collection_external_name)
+	
+	_self.verify_key_match()
+	.has_geom? << _self.has_geometry?()
+	_local field_defs << _self.create_field_defs(enum_map)
+	_local nkeys << .sw_collection.descriptor.nkeys
+	_if .has_geom?
+	_then 
+		.target_ds.define_rwo_table(
+			_self.new_collection_name,
+			field_defs,
+			nkeys,
+			.target_ds.files[1].name)
+	_else
+		.target_ds.define_user_table(
+			_self.new_collection_name,
+			field_defs,
+			nkeys,
+			.target_ds.files[1].name)		
+	_endif 
+	.target_collection << .target_ds.collection(_self.new_collection_name)
+	.target_collection.descriptor.external_name << _self.new_collection_external_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.create_field_defs(enum_map)
+	_local field_defs << rope.new()
+	_for i_field, int_name, ext_name, join_aspect _over _self.field_elements()
+	_loop
+		_if _not i_field.is_geometry?
+		_then
+			(type, size) << _self.type_and_size(i_field, join_aspect)
+			
+			type << enum_map[i_field.name].default(type)
+			field_defs.add( {int_name, type, size})
+		_endif 
+	_endloop
+	_return field_defs
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.sync_fields()
+	_for i_field, int_name, ext_name, join_aspect _over _self.field_elements()
+	_loop
+		_local new_field << .target_collection.field(int_name)
+		_if new_field _is _unset _then _continue _endif 
+		_if new_field.is_physical?
+		_then
+			_if _not new_field.is_key?
+			_then
+				new_field.mandatory? << _false
+			_endif
+			
+			_if join_aspect _isnt _unset
+			_then
+				old_field << i_field.result_table.field(join_aspect)
+			_else
+				old_field << i_field
+			_endif 
+			_if old_field.is_physical? _orif old_field.is_derived?
+			_then 
+				new_field.unset_value << old_field.unset_value
+				new_field.external_name << ext_name
+				new_field.stored_unit << old_field.stored_unit
+			_endif 
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.create_indexes()
+	_for i_vec _over _self.indexes()
+	_loop
+		_self.report(:adding_index, _scatter i_vec)
+		.target_collection.add_index(i_vec)
+	_endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.create_geometry_fields()
+	## Create the geometry fields. ignore the meatball.
+	
+	_self.report(:adding_geometry_fields)
+	_for i_field, int_name, ext_name _over _self.field_elements()
+	_loop
+		_if _not i_field.is_geometry? _then _continue _endif
+		
+		_if i_field.name _is :meatball _then _continue _endif
+		_if i_field.has_topology?
+		_then
+			_if .target_ds.manifold_name(i_field.manifold_name,_true) _is _unset
+			_then
+				_local code << _self.derive_unique_manifold_code()
+				.target_ds.define_manifold(i_field.manifold_name, code)
+			_endif 
+		_endif 
+		.target_ds.add_geometry_field(.target_collection.name, int_name, i_field.geom_type, i_field.manifold_name)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.has_geometry?()
+	_local has_geom? << _false 
+	_for i_field, int_name, ext_name _over _self.field_elements()
+	_loop
+		_if _not i_field.is_geometry? _then _continue _endif
+		_if i_field.name _is :meatball _then _continue _endif
+		
+		has_geom? << _true
+		_leave 
+	_endloop
+	_return has_geom?
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.finalise()
+	## set the exemplar and the visible fields
+	_if .has_geom?
+	_then 
+		.target_collection.descriptor.record_exemplar << rwo_record
+	_else
+		.target_collection.descriptor.record_exemplar << user_ds_record
+	_endif
+	_local vfields << rope.new()
+	_for i_field, int_name, ext_name _over _self.field_elements()
+	_loop
+		vfields.add(int_name)
+	_endloop
+	.target_collection.descriptor.visible_field_names << vfields
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.fill_collection()
+	## Actually copy the records from the source to the new
+	## materialization collection
+	
+	_local map << _self.field_map()
+	_local exe_map << _self.execution_map(map)
+	_local det << .target_collection.new_detached_record()
+	_local c << 0
+	_self.report(:start_filling_the_collection)
+	_for i_rec _over .source_collection.fast_elements()
+	_loop
+		_self.safe_insert(det, i_rec, map, exe_map)
+		_if ((c+<<1) _mod 100) = 0
+		_then
+			_self.report(:filling_the_collection, c)
+		_endif 
+	_endloop
+	_self.report(:end_filling_the_collection, c)
+	_self.log(:end_filling_the_collection, c)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.field_map()
+	_local map << hash_table.new()
+	_for i_field, int_name, ext_name, join_aspect _over _self.field_elements()
+	_loop
+		_if join_aspect _is _unset
+		_then
+			map[int_name] << {:self, i_field.name}
+		_else 
+			map[int_name] << {:join, i_field.name, join_aspect}
+		_endif 
+	_endloop
+	_return map 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.safe_insert(detached, source_rec, field_map, exe_map)
+	_try _with c
+		_handling information, warning _with _proc() _endproc 
+		_self.do_safe_insert(detached, source_rec, field_map, exe_map)
+	_when error
+		_self.log(_self.message(:error_inserting, source_rec, c.report_contents_string))
+	_endtry
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.do_safe_insert(detached, source_rec, field_map, exe_map)
+	_self.fillup_detached(detached, source_rec, field_map, exe_map)
+	_local new_rec << .target_collection.insert(detached)
+	_if .has_geom?
+	_then
+		_self.insert_geometry(new_rec, source_rec, field_map)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.fillup_detached(detached, source_rec, field_map, exe_map)
+	_for i_field _over .target_collection.physical_fields()
+	_loop
+		_local (what, source_field, remote_source_field, enum?, vec?) << (_scatter exe_map[i_field])
+		_if what _is :continue
+		_then
+			_continue
+		_elif what _is :value
+		_then
+			value << source_rec.perform(source_field.name)
+			_if value _isnt _unset
+			_then
+				_if remote_source_field _isnt _unset
+				_then
+					value << value.perform(remote_source_field.name)
+				_endif
+			_endif
+			_if value _isnt _unset 
+			_then
+				_if enum?
+				_then
+					value << value.write_string
+				_endif
+				_if vec?
+				_then
+					_local max << i_field.type.size
+					_if value.size > max
+					_then
+						value << value.slice(1,max)
+					_endif
+				_endif
+			_endif
+		_elif what _is :size
+		_then
+			value << source_rec.perform(source_field.name).size
+		_else
+			condition.raise(:error, :string, "huh?")
+		_endif
+		_if value _is _unset
+		_then
+			value << _self.any_value(i_field)
+		_endif 
+		detached.perform(i_field.chevronned_name, value)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.any_value(fd)
+	_local value << fd.unset_value
+	_if value _is _unset
+	_then
+		_local cs << fd.type.class.class_name
+		_if cs _is :ds_char16_vector
+		_then
+			value << ""
+		_else
+			value << 0
+		_endif
+	_endif
+	_return value 
+_endmethod
+$
+
+
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method materialized_collection_creator.fillup_detached(detached, source_rec, field_map, exe_map)
+#	_for i_field _over detached.physical_fields.fast_elements()
+#	_loop
+#		_local (what, source_field, 
+#		_local map_info << field_map[i_field.name]
+#		_if map_info _is _unset _then _continue _endif
+#		
+#		_local (who, source_field_name, join_aspect) << (_scatter map_info)
+#		_local source_field << source_rec.field(source_field_name)
+#		_if source_field.is_physical? _orif
+#		    source_field.is_derived?
+#		_then 
+#			value << source_rec.perform(source_field_name)
+#			_if value _isnt _unset _andif
+#			    source_field.type.enumerator _isnt _unset
+#			_then
+#				value << value.write_string 
+#			_endif
+#		_elif source_field.is_join?
+#		_then
+#			_if source_field.join_type _is :text
+#			_then
+#				value << source_rec.perform(source_field_name)
+#			_elif source_field.simple_result?
+#			_then
+#				_local other_source_field << source_rec.field(join_aspect)
+#				_local other_rec << source_rec.perform(source_field_name)
+#				_if other_rec _isnt _unset
+#				_then
+#					value << other_rec.perform(join_aspect)
+#					_if value _isnt _unset _andif
+#					    other_source_field.type.enumerator _isnt _unset
+#					_then
+#						value << value.write_string
+#					_endif 
+#				_else
+#					value << _unset
+#				_endif
+#			_else
+#				value << source_rec.perform(source_field_name).size
+#			_endif 
+#		_endif
+#		_if i_field.type.is_vector? _andif
+#		    value _isnt _unset 
+#		_then
+#			_if value.size > i_field.type.size
+#			_then
+#				value << value.slice(1,i_field.type.size)
+#			_endif 
+#		_endif 
+#		detached.perform(i_field.chevronned_name, value)
+#	_endloop 
+#_endmethod
+#$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.execution_map(field_map)
+	_local exe_map << property_list.new()
+	_for i_field _over .target_collection.physical_fields()
+	_loop
+		_local map_info << field_map[i_field.name]
+		_if map_info _is _unset
+		_then
+			exe_map[i_field] << {:continue}
+			_continue
+		_endif
+		
+		_local (who, source_field_name, join_aspect) << (_scatter map_info)
+		_local vec? << i_field.type.is_vector?
+		
+		_local source_field << .sw_collection.field(source_field_name)
+		_if source_field.is_physical? _orif
+		    source_field.is_derived?
+		_then
+			_local enum? << source_field.type.enumerator _isnt _unset
+			exe_map[i_field] << {:value, source_field, _unset, enum?, vec?}
+			
+		_elif source_field.is_join?
+		_then
+			_if source_field.join_type _is :text
+			_then
+				exe_map[i_field] << {:value, source_field, _unset, _false, vec?}
+			_elif source_field.simple_result?
+			_then
+				_local other_source_field << source_field.result_table.field(join_aspect)
+				_local enum? << other_source_field.type.enumerator _isnt _unset
+				exe_map[i_field] << {:value, source_field, other_source_field, enum?, vec?}
+			_else
+				exe_map[i_field] << {:size, source_field}
+			_endif 
+		_endif
+	_endloop
+	_return exe_map
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.insert_geometry(new_rec, source_rec, field_map)
+	_handling self_intersecting _with _proc() _endproc
+	_for i_field _over new_rec.geometry_fields.fast_elements()
+	_loop
+		_local map_info << field_map[i_field.name]
+		_if map_info _is _unset _then _continue _endif
+		
+		_local (who, source_field_name) << (_scatter map_info)
+		
+		_local geom << source_rec.geometry(source_field_name)
+		_if geom _isnt _unset
+		_then
+			_dynamic !current_world! << new_rec.dataset.world
+			new_rec.make_geometry(i_field.name, geom)
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.derive_unique_manifold_code()
+	_local code << 0
+	_for i_code _over .target_ds.manifolds()
+	_loop
+		code << code.max(i_code)
+	_endloop
+	_return code + 1
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.verify_key_match()
+	_local key_field_names << .sw_collection.key_field_names
+	_local all_field_names << rope.new()
+	_for i_field _over _self.field_elements()
+	_loop
+		_if i_field.is_physical? _orif i_field.is_derived?
+		_then
+			all_field_names.add(i_field.name)
+		_endif
+	_endloop
+	_local field_names << all_field_names.slice(1,key_field_names.size)
+	_if _not field_names.eq?(key_field_names)
+	_then
+		condition.raise(:error, :string, "All keys should be included")
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.create_unique_enum(enum_name, fd)
+	## Create a new enumerator with a new unique name. Enumerators
+	## are ot shared across materialized collection.
+	_for i_name _over _self.possible_enum_names(enum_name)
+	_loop 
+		_if .target_ds.get_field_type(i_name) _is _unset
+		_then
+			new_enum << fd.type.enumerator.copy()
+			new_enum.name << i_name
+			.target_ds.new_enumerated_type(new_enum,
+						       fd.type.phys_type)
+			_return i_name
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _iter _method materialized_collection_creator.possible_enum_names(name)
+	_local max << 32
+	_local running_post_fix << 0
+	_loop
+		_local post_fix << _if running_post_fix = 0
+				   _then >> ""
+				   _else >> running_post_fix.write_string
+				   _endif
+		_local total_size << name.size + post_fix.size
+		_if total_size > max
+		_then
+			_local to_trim << total_size - max
+			new_name << write_string(name.slice(1,name.size-to_trim), post_fix)
+		_else
+			new_name << write_string(name, post_fix)
+		_endif
+		_loopbody(new_name)
+		running_post_fix +<< 1
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.new_collection_name
+	_return .settings.internal_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.new_collection_external_name
+	_return .settings.external_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _iter _method materialized_collection_creator.field_elements()
+	## yield
+	## 1) the field in the original table
+	## 2) the new internal name
+	## 3) the new external name
+	## 4) if the field is a 1:1 join field, this is the field in the
+	##    joined object thwt should be used to retrieve the value.
+	_for field, int_name, ext_name, join_aspect _over .settings.field_properties()
+	_loop
+		_loopbody(field, int_name, ext_name, join_aspect)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.type_and_size(fd, join_aspect)
+	## Return the type and size of the new resulting field. the
+	## values can be used directly to create the field in the
+	## table.
+	## Specials cases are the join fields. if it is 1:n relation
+	## then the resulting field is a number field. If the relation
+	## is a 1:1 relation then the join_aspect field will be used to
+	## determine the type.
+	##
+	_if fd.is_physical? _orif fd.is_derived?
+	_then 
+		_if fd.type.enumerator _isnt _unset
+		_then
+			type << fd.type.enumerator.name
+			size << fd.type.size
+		_else
+			(type,size) << _self.type_and_size_for_physical_field(fd)
+		_endif
+	_elif fd.is_join?
+	_then
+		_if fd.simple_result?
+		_then
+			_if fd.join_type _is :text
+			_then
+				type << :ds_char_vec
+				size << 40
+			_else 
+				_local result_table << fd.result_table
+				_local result_fd << result_table.field(join_aspect)
+				(type,size) << _self.type_and_size_for_physical_field(result_fd)
+			_endif 
+		_else
+			type << :ds_uint
+			size << 1
+		_endif 
+	_endif 
+	_return type, size 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.type_and_size_for_physical_field(fd)
+	_local type, size
+	_if fd.type.is_vector?
+	_then
+		type << fd.type.phys_type+:_vec
+		size << fd.type.size
+	_else
+		type << fd.type.phys_type
+		size << fd.type.size
+	_endif
+	_return type, size
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.skip_field_for_creation?(fd)
+	_local _constant forbidden << {:rwo_id, :ds!version, :meatball}
+	_return forbidden.includes?(fd.name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _iter _method materialized_collection_creator.indexes()
+	_for i_vec _over .settings.indexes()
+	_loop
+		_loopbody(i_vec)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.report(msg_id, _gather args)
+	_local str << _self.message(msg_id, _scatter args)
+	_self.changed(:report, str)
+_endmethod
+$
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.log(msg_id, _gather args)
+	_local str << _self.message(msg_id, _scatter args)
+	_self.changed(:log, str)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_collection_creator.message(msg_id, _gather args)
+	_return message_handler.new(_self.class_name).human_string(msg_id, _unset, _scatter args)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_collection_creator.changed(who, what, _gather data)
+	.dsm.changed(who, what, _scatter data)
+_endmethod
+$

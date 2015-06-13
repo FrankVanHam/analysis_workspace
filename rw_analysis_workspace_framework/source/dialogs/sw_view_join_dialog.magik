@@ -1,0 +1,137 @@
+_package rwan
+$
+
+
+#remex(:sw_view_join_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog to create a join collection. the resulting collection
+## will yield the records from the join of the original base
+## collection.
+##
+def_slotted_exemplar(:sw_view_join_dialog,
+	{
+		{:linked_field,  _unset}
+	},
+	:base_sw_view_dialog)
+$
+
+message_handler.new(:sw_view_join_dialog).add_uses(:base_sw_view_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method sw_view_join_dialog.set_holder(holder, dsm)
+	.holder << holder
+	.source_table << .holder.collection.expose()
+	.analysis_dsm << dsm
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_join_dialog.build_link_button(container)
+	.items[:link] << button_item.new_safe(container, _self.message(:link),
+					      _self, :|link()|,
+					      :row_alignment, :centre)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_join_dialog.build_result_collection(container)
+	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
+				:row_alignment, :fill)	
+	.items[:result_table] << text_item.new(rc, _self.message(:table_name))
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method sw_view_join_dialog.on_activation()
+	_self.set_source_table()
+	_self.manage_actions()
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_join_dialog.validate()
+	_super.validate()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_join_dialog.construct_view()
+	_local source_col << .source_table
+	_local ds_name << source_col.dataset.original_dataset_name
+	_local (int_name, ext_name) << _self.new_table_name
+	_local field_specs << _self.field_specs()
+	_local col << sw_view_collection.new_join(.analysis_dsm,
+						  int_name, ext_name,
+						  source_col, .linked_table,
+						  .linked_field,
+						  field_specs)
+	_return col
+_endmethod
+$
+
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method sw_view_join_dialog.link()
+	_local tree << .items[:source_tree].selection.an_element()
+	_local fd << tree.key
+	_if fd.result_table = .linked_table _then _return _endif 
+	
+	_self.unlink()
+	
+	_self.update_linked_table(fd)
+_endmethod
+$
+
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_join_dialog.update_linked_table(fd)
+	.linked_field << fd
+	.linked_table << fd.result_table
+
+	_self.set_linked_table()
+	_self.manage_actions()
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_join_dialog.manage_link_action()
+	_local tree << .items[:source_tree].selection.an_element()
+	_local join_sel? << _self.useable_join_field?(tree)
+	.items[:link].enabled? << join_sel?	
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_join_dialog.useable_join_field?(tree)
+	_if tree _is _unset _then _return _false _endif
+	_if _not tree.key.is_join? _then _return _false _endif
+	_if tree.key.join_type _is :text _then _return _false _endif
+	
+	_if _not tree.key.homogeneous? _then _return _false _endif
+	
+	# Filter out any special conditions for joins. These could
+	# probably be handled bt the view_creator somehow, but not in
+	# this release...
+	_local join << tree.key.joins()
+	_for i_vec _over join.conditions.fast_elements()
+	_loop
+		_if i_vec[1].is_class_of?(value_holder) _then _return _false _endif 
+		_if i_vec[3].is_class_of?(value_holder) _then _return _false _endif
+	_endloop
+	_return _true 
+_endmethod
+$
+
+

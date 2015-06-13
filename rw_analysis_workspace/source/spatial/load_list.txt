@@ -1,0 +1,6 @@
+base_spatial_collection
+
+spatial_collection
+spatial_binary_op_collection
+geometry_collection
+spatial_materialized_collection

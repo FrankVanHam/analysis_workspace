@@ -1,0 +1,48 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-17
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package user
+$
+
+
+_pragma(classify_level=advanced, topic={roos,analytics})
+_method min_road.rwan_methods
+	_local col << _self.dataset.collection(:hotel)
+	_return {
+			{:|a_hotel()|, _unset, "1 hotel", col},
+			{:|nr_hotels()|, {5}, "5 hotels", col},
+			{:|nr_hotels()|, {10}, "10 hotels", col}
+		}
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={roos,analytics})
+_method min_road.a_hotel()
+	_local col << _self.dataset.collection(:hotel)
+	_return col.an_element()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={roos,analytics})
+_method min_road.nr_hotels(nr)
+	_local col << _self.dataset.collection(:hotel)
+	_local str << col.read_stream()
+	_return str.get_n(nr)
+_endmethod
+$
+

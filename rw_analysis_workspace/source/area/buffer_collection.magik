@@ -1,0 +1,152 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:buffer_collection)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## A collection that represents a buffer around some other
+## collection. In its nature self is an area, can be big and
+## complex, but still an area.
+def_slotted_exemplar(:buffer_collection,
+	{
+		{:geom_name, _unset},
+		{:distance, _unset},
+		{:corner_style, _unset},
+		{:end_style,_unset}
+	}, :base_area_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_collection.new(dsm, base_col, geom_name, distance, corner_style, end_style)
+	_return _clone.init(dsm, base_col, geom_name, distance, corner_style, end_style)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method buffer_collection.init(dsm, base_col, geom_name, distance, corner_style, end_style)
+	.geom_name << geom_name
+	.distance << distance
+	.corner_style << corner_style
+	.end_style << end_style
+	_return _super.init(dsm, base_col)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_collection.serial_slots()
+	_local (keys, values) << _super.serial_slots()
+	keys.add_all_last({:geom_name, :distance, :corner_style, :end_style})
+	values.add_all_last({.geom_name, .distance, .corner_style, .end_style})
+	_return keys, values	
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_collection.init_from_serial(dsm, base_cols, geom_name, distance, corner_style, end_style)
+    _super.init_from_serial(dsm, base_cols)
+    .geom_name << geom_name
+    .distance << distance
+    .corner_style << corner_style
+    .end_style << end_style
+    _return _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_collection.equals?(other)
+	_return _self.is_class_of?(other) _andif
+		other.equals_in_details?(.base_collections, .geom_name, .distance, .corner_style, .end_style)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_collection.equals_in_details?(base_cols, geom_name, distance, corner_style, end_style)
+	_return _super.equals_in_details?(base_cols) _andif 
+		.geom_name = geom_name _andif
+		.distance = distance _andif
+		.corner_style = corner_style _andif
+		.end_style = end_style
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method buffer_collection.distance_value
+	_local world << _self.world
+	_local distance << .distance.value_in(world.unit)
+	_return distance 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_collection.area
+	## Return the area by converting the base collection to a
+	## geometry(set) and do the buffer() operation. Could return
+	## unset in case of degenerate area.
+	_return _self.convert_to_geometry()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_collection.convert_to_geometry(_optional bounds)
+	_handling geometry_analysis_skip_invalid _with _proc(c) c.report_contents_on(!output!) _endproc
+	
+	_local gs << _self.base_collection.convert_to_geometry(bounds, .geom_name)
+	_local world << _self.world
+	_local distance << _self.distance_value
+	_local gs_result << gs.buffer(distance, .corner_style, .end_style)
+	_if gs_result _isnt _unset
+	_then
+		gs_result.world << world
+	_endif 
+	_return gs_result
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_iter _method buffer_collection.fast_geometries(_optional bounds, geom_name)
+	_local area << _self.convert_to_geometry(bounds)
+	_loopbody(area) 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_collection.goto_bounds
+	_local gs << _self.base_collection.convert_to_geometry(_unset, .geom_name)
+	_local bounds << gs.bounds
+	_local distance << _self.distance_value
+	_local goto_bounds << bounds.sectors.buffer(distance, .corner_style).bounds
+	_return goto_bounds
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_collection.description
+	_local format << unit_specific_format.new_with_properties(.distance.unit,
+								  :float_decimal_places,0)
+	_local distance_string << format.format(.distance)
+	_if .geom_name _isnt _unset
+	_then 
+		_return _self.message(:description, .geom_name, distance_string)
+	_else
+		_return _self.message(:description_no_geom, distance_string)
+	_endif 
+_endmethod
+$

@@ -1,0 +1,493 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+#remex(:analysis_dataset_manager)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Dataset manager of the analysis dataset. Use it to open the
+## analysis dataset. It knows how to store analysis collections
+## and other analysis objects in the dataset.
+##
+## Self holds a ref count for the materialized collections so
+## that copies of a materialized collection can point to the
+## same data without actually copying the data.
+##
+def_slotted_exemplar(:analysis_dataset_manager,
+	{
+		{:ds_view,   _unset},
+		{:col_cache, _unset}
+	}, :dataset_manager)
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.open(name, path, _optional concurrency_mode)
+	_return _self.new(name).do_open(path, concurrency_mode)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.new(name)
+	_return _clone.init(name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method analysis_dataset_manager.init(name)
+	.col_cache << hash_table.new()
+	_return _super.init(name, _unset, _unset)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.actual_dataset
+	_return .ds_view
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.dataset_exemplar
+	_return .ds_view.exemplar
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method analysis_dataset_manager.do_open(path, concurrency_mode)
+	_local (filename, dir) << system.pathname_components(path)
+	_local gv << gis_ds_view.new(:write, :searchpath, {dir})
+	_local ok? << _false  
+	_protect
+		_self.int!do_open(gv, filename, concurrency_mode)
+		ok? << _true 
+	_protection
+		_if _not ok?
+		_then 
+			gv.discard()
+		_endif 
+	_endprotect 	
+	_return _self
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method analysis_dataset_manager.int!do_open(gv, filename, concurrency_mode)
+	_local mode << concurrency_mode.default(:single_user)
+	gv.add_file(filename, :mode, :existing,
+		    :world, ds_world.new(1000),
+		    :concurrency_mode, mode)
+	gv.select()
+	
+	gv.switch(:write)
+	_if gv.mode _isnt :write
+	_then
+		condition.raise(:db_view_not_writable, :view, gv)
+	_endif
+	gv.create_scratchpad( "memory::/")
+	gv.switch(:write)
+	
+	.ds_view << gv
+	.ds_view.view_name << .name
+	.ds_view.dataset_name << .name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method analysis_dataset_manager.dataset_path
+	_if .ds_view _isnt _unset
+	_then 
+		_local dir << .ds_view.searchpath[1]
+		_local file << .ds_view.files[1].name
+		_return system.pathname_from_components(file, dir)
+	_else
+		_return ""
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.store(workspace)
+	_local s << serial_xml_thing.thing_as_xml_string(workspace)
+	
+	.ds_view.switch(:write)
+	.ds_view.store_method_text(0,"xml", s)
+	.ds_view.commit()
+	
+	.ds_view.post()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.retrieve()
+	# Retrieve the workspace by evaluating the xml. Set the
+	# dynamic so that all elements can release to self during
+	# initialisation. 
+	_dynamic !current_analysis_dataset_manager! << _self
+	_local s << .ds_view.get_method_text(0, "xml")
+	_if s _isnt _unset
+	_then 
+		r << serial_xml_thing.xml_string_as_thing(s)
+	_else
+		r << rwan:workspace_holder.new()
+	_endif
+	r.set_dataset_manager(_self)
+	_return r
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.collection_at_oop(oop)
+	## this cache is used 
+	_return .col_cache[oop]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.cache_collection_at_oop(oop, col)
+	.col_cache[oop] << col
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.discard()
+	_if .ds_view _isnt _unset 
+	_then
+		.ds_view.discard()
+		_if ds_environment.views.includes?(.ds_view)
+		_then
+			write("nog really gone, is it?")
+		_endif 
+		.ds_view << _unset
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.ds_view
+	_return .ds_view
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.materialize_collection(base_col, settings)
+	_local creator  << materialized_collection_creator.new(_self)
+	_local new_col << creator.create(base_col, settings)
+	_return new_col
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.materialized_collection(table_name)
+	_return .ds_view.collections[table_name]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.discard_collection(table_name)
+	## discard the table. Note that is asumed that any enumerator
+	## is dedicated for one collection, so the enumerators are all
+	## deleted too.
+	_local col << .ds_view.collection(table_name)
+	_if col _isnt _unset
+	_then
+		.ds_view.switch(:write)
+		_for i_field _over col.all_fields.fast_elements()
+		_loop
+			_if i_field.type _isnt _unset _andif
+			    i_field.type.enumerator _isnt _unset
+			_then
+				_try
+					.ds_view.remove_type(i_field.type.enumerator.name)
+				_when dd_type_in_use
+
+				_endtry 
+			_endif
+		_endloop 
+		drop_rwo_table(.ds_view, table_name, _true,_true,_false)
+		.ds_view.commit()
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method analysis_dataset_manager.geom_field_map
+	_return property_list.new_with(:simple_point, :point,
+				       :simple_chain, :chain,
+				       :simle_area, :area,
+				       :point, :point,
+				       :chain, :chain,
+				       :area, :area)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.materialize_spatial(spatial_col)
+	## Materialize a spatial collection containing only
+	## geometries. Return the id that should be used to retrieve
+	## the collection with the method geometry_set(id).
+	
+	# bacially the geometries will be inserted in the :geom_holder table.
+	_handling self_intersecting, warning, information _with _proc() _endproc
+
+	_self.report(:converting_to_geometry)
+	_local gs << spatial_col.convert_to_geometry(_unset)
+	_if _not gs.is_collection?
+	_then
+		gs << geometry_set.new_with(gs)
+	_endif
+	.ds_view.switch(:write)
+	_local col << .ds_view.collections[:geom_holder]
+	_local recex << col.new_detached_record()
+	_local id << recex.make_sysid()
+	_local c << 0
+	
+	_local map << _self.geom_field_map
+	_for i_geom _over gs.fast_elements()
+	_loop
+		recex.id << id
+		recex.seq << c
+		_local holder << col.insert(recex)
+		_local geom_field << map[i_geom.geom_type]
+		_if geom_field _isnt _unset
+		_then
+			holder.make_geometry(geom_field, i_geom)
+			c +<< 1
+		_endif 
+		_if (c _mod 100) = 0 _then _self.report(:processed, c) _endif 
+	_endloop
+	.ds_view.commit()
+	_self.log(:processed, c)
+	_self.report(:processed, c)
+	_return id
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.geometry_set(id)
+	## Retrieve the collection that was stored with materialize_spatial()
+	_local gs << geometry_set.new()
+	_local col << .ds_view.collections[:geom_holder]
+	_local c << 0
+	_for i_rec _over col.all_at(id).fast_elements()
+	_loop
+		gs.add_all(i_rec.geometries(_false))
+		c +<< 1
+		_if (c _mod 100) = 0 _then _self.report( :processed, c) _endif 
+	_endloop
+	_self.log( :processed, c)
+	_self.report( :processed, c)
+	
+	_return gs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.discard_geometry_set(id)
+	.ds_view.switch(:write)
+	_local col << .ds_view.collections[:geom_holder]
+	_for i_rec _over col.all_at(id).fast_elements()
+	_loop
+		i_rec.delete()
+	_endloop
+	.ds_view.commit()
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.materialize_area(area_col)
+	## Store the area collection. Return the id to retrieve it
+	## later with the method area(id)
+	
+	_self.report(:converting_to_geometry)
+	_local area << area_col.convert_to_geometry(_unset)
+	.ds_view.switch(:write)
+	_local col << .ds_view.collections[:geom_holder]
+	_local recex << col.new_detached_record()
+	_local id << recex.make_sysid()
+	recex.id << id
+	recex.seq << 0
+	_local holder << col.insert(recex)
+	holder.make_geometry(:area, area)
+	.ds_view.commit()
+	_return id
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.area(id)
+	## Return the area that was stored with method materialize_area()
+	
+	_local col << .ds_view.collections[:geom_holder]
+	_local area << col.all_at(id).an_element().area
+	
+	_return area 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.discard_area(id)
+	 .ds_view.switch(:write)
+	_local col << .ds_view.collections[:geom_holder]
+	_for i_rec _over col.all_at(id).fast_elements()
+	_loop
+		i_rec.delete()
+	_endloop
+	.ds_view.commit()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.increase_ref_count(id)
+	_local rec << _self.ensure_ref_count_rec(id)
+	_local new_count << rec.count + 1
+	rec.count << new_count
+	.ds_view.commit()
+	_return new_count
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method analysis_dataset_manager.ensure_ref_count_rec(id)
+	## make sure there is a record to work on. Note that id can
+	## either be a string or an integer.
+	
+	_local col << .ds_view.collections[:ref_count]
+	_local key << id.write_string
+	_local rec << col.at(key)
+	_if rec _is _unset
+	_then
+		rec << col.insert({key, 0})
+	_endif
+	.ds_view.commit()
+	_return rec
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.decrease_ref_count(id)
+	_local rec << _self.ensure_ref_count_rec(id)
+	_local new_count << (rec.count - 1).max(0)
+	_if new_count = 0
+	_then
+		rec.delete()
+	_else
+		rec.count << new_count
+	_endif 
+	.ds_view.commit()
+	_return new_count
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={analysis})
+_method analysis_dataset_manager.update_ds()
+	.ds_view.switch(:write)
+	_for i_name _over .ds_view.user_table_names.fast_elements()
+	_loop
+		drop_rwo_table(.ds_view, i_name, _true)
+	_endloop
+	.ds_view.commit()
+	_self.create_geom_holder()
+	_self.create_ref_count()
+	.ds_view.commit()
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={analysis})
+_private _method analysis_dataset_manager.create_ref_count()
+	_local ds << .ds_view
+	ds.switch(:write)
+	_local file << .ds_view.files[1].name
+	desc << ds.define_user_table(
+			:ref_count,
+			{
+				{:name,  :ds_char16_vec, 32},
+				{:count, :ds_uint}
+			},
+			1, file)
+	desc.record_exemplar <<  ds_record
+	ds.commit()
+_endmethod
+$
+
+_pragma(classify_level=debug, topic={analysis})
+_private _method analysis_dataset_manager.create_geom_holder()
+	_local ds << .ds_view
+	ds.switch(:write)
+#	drop_rwo_table(ds, :geom_holder, _true,_true,_false)
+	_local file << .ds_view.files[1].name
+	desc << ds.define_rwo_table(
+			:geom_holder,
+			{
+				{:id,  :ds_uint},
+				{:seq, :ds_uint},
+				{:private?, :ds_bool}
+			},
+			2, file)
+	_if ds.manifold_name(:geom_holder,_true) _is _unset
+	_then
+		ds.define_manifold(:geom_holder, 0)
+	_endif
+	_for i_geom _over {:chain, :point, :area, :text}.fast_elements()
+	_loop 
+		ds.add_geometry_field(:geom_holder, i_geom, i_geom, :geom_holder)
+	_endloop
+	desc.record_exemplar << rwo_record
+	ds.commit()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.create_view(int_table_name,
+					     ext_table_name,
+					     tables,
+					     eqs,
+					     result_fields)
+	## Create a view with the given basic parameters.
+	
+	_local creator << view_creator.new()
+	_return creator.create_view(int_table_name,
+				    ext_table_name,
+				    tables,
+				    eqs,
+				    result_fields)
+_endmethod
+$
+ 
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method analysis_dataset_manager.report(msg_id, _gather args)
+	## Report by sending changes. GUI's should be dependent and
+	## hande the reports.
+	_self.changed(:report, _self.message(msg_id, _unset, _scatter args))
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method analysis_dataset_manager.log(msg_id, _gather args)
+	## Report by sending changes. GUI's should be dependent and
+	## hande the reports.
+	_self.changed(:log, _self.message(msg_id, _unset, _scatter args))
+_endmethod
+$

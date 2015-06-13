@@ -1,0 +1,62 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-28
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:binary_op_mix_test_case,
+	{},
+	:base_analysis_test_case)
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_mix_test_case.test_on_spatial_analysis_col()
+	_local dsm << analysis_dataset_manager.new(:temp)
+	_local pcol << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local area << _self.area_surrounding_parkers_piece(dsm)
+	_local pcol1 << pcol.filter_by_geometry(:coverage, :within, area)
+	_local geom << pcol1.spatial_collection(:coverage)
+	
+	_local mbcol << rwan:sw_collection.new(dsm, _self.map_feature)
+	_local touch_col << mbcol.filter_by_geometry(:building_area, :touching, geom)
+	_local overlay_col << mbcol.filter_by_geometry(:building_area, :overlaying, geom)
+	
+	_local and_col << touch_col.union(overlay_col)
+	_self.assert_is(and_col.size, 1, "There is one map feature adjecent to the park. 1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_mix_test_case.test_on_predicate_analysis_col()
+	_local dsm << analysis_dataset_manager.new(:temp)
+	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local pred1 << predicate.eq(:type, "Restaurant")
+	_local pred2 << predicate.eq(:cuisine, "Chinese")
+	_local pcol1 << pcol.filter_by_predicate(pred1)
+	_local pcol2 << pcol.filter_by_predicate(pred2)
+	_local and_col << pcol1.intersection(pcol2)
+	_self.assert_is(and_col.size, 5, "There are 5 Chinese restaurants.a")
+	
+	_local pcol3 << pcol.filter_by_predicate(pred1 _and pred2)
+	_self.assert_is(pcol3.size, 5, "There are 5 Chinese restaurants.b")
+_endmethod
+$
+

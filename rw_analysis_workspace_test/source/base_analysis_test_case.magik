@@ -1,0 +1,156 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:base_analysis_test_case,
+	{
+	},
+	:test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.drafting_sectors(text)
+
+	_local coord << _self.drafting_text_coord(text)
+	_local box << bounding_box.new_centred(coord.x, coord.y, 5)
+	_local gs << _self.gv.collections[:drafting_lines].geometry_set(
+								  _self.gv.world,
+								  box )
+	gs << gs.select(:interacting_with, box)
+	_return gs.an_element()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.drafting_text_coord(text)
+	_local the_text << _if text.size > 30
+			   _then >> text.slice(1,30)
+			   _else >> text
+			   _endif 
+	_for i_rwo _over _self.gv.collections[:drafting_texts].fast_elements()
+	_loop
+		_for i_text _over i_rwo.geometries(_false).fast_elements()
+		_loop
+			_if i_text.string = the_text
+			_then
+				_return i_text.coord
+			_endif 
+		_endloop
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.area_surrounding_parkers_piece(dsm)
+	_local sectors << _self.drafting_sectors("test_finding_hotels_near_parks")
+	_local world << _self.hotel_collection.dataset.world
+	_local area <<  pseudo_area.new_for_world(sectors, world)
+	_return rwan:area_collection.new(dsm, area)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.min_road_collection
+	_return _self.gv.collections[:min_road]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.hotel_collection
+	_return _self.gv.collections[:hotel]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.office_collection
+	_return _self.gv.collections[:office]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.company_collection
+	_return _self.gv.collections[:company]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.poi_collection
+	_return _self.gv.collections[:pl_of_interest]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.roundabout_collection
+	_return _self.gv.collections[:roundabout]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.pub_rest_collection
+	_return _self.gv.collections[:pub_rest]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.park_collection
+	_return _self.gv.collections[:park]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.footpath_collection
+	_return _self.gv.collections[:footpath]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.gv
+	_return gis_program_manager.databases[:gis]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.map_feature
+	_return _self.mbv.collections[:map_feature]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.mbv
+	_return gis_program_manager.databases[:mapbase]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.haig_and_chesterton_set(dsm)
+	_local col << _self.min_road_collection
+	_local set << equality_set.new_with(
+			      col.select(predicate.eq(:name, "Haig Road")).an_element(),
+			      col.select(predicate.eq(:name, "Chesterton Road")).an_element())
+	
+	_return rwan:record_set.new(dsm, set)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.chesterton_roundabout_roads_geometry_set(dsm)
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local sectors << _self.drafting_sectors("test_topology_query")
+	_local an_area << pseudo_area.new(sectors)
+	_local area_col << rwan:area_collection.new(dsm, an_area)
+	_return rcol.filter_by_geometry( :centre_line, :interacting_with, area_col)
+_endmethod
+$

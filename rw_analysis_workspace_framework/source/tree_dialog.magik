@@ -1,0 +1,156 @@
+_package rwan
+$
+
+#remex(:tree_dialog)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Dialog that shows and handles the main tree in the middle of
+## the framework. The tree shows the workspace.
+def_slotted_exemplar(:tree_dialog, 
+	{
+		{:builder,   _unset},
+		{:tree_item, _unset}
+	}, :base_model)
+$
+
+message_handler.new(:tree_dialog).add_uses(:model)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_dialog.init(owner)
+	.builder << tree_builder.new(_self)
+	_return _super.init(owner)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.activate_in(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset,
+				:style, :nested,
+				:left_spacing, 7,
+				:resize?, _true  )
+	.tree_item << tree_item.new(rc,
+			      :model, _self,
+			      :distribute_spare_width, :always,
+			      :data_selector, :|get_tree()|,
+			      :select_notifier, :|tree_selected()|,
+			      :column_allow_sort?, _false,
+			      :column_heading_ids, {:description, :highlight_colour,
+						    :highlight?},
+			      :col_resize_values, {100,0,0},
+			      :column_widths, {100,30,30},
+			      :toggle_notifier, :|toggled()|,
+			      :editors, {{:name, in_place_value_editor}},
+			      :value_changed_notifier, :|name_changed()|,
+			      :edit_on_click?, _false,
+			      :col_alignment, :fill,
+			      :row_alignment, :fill)
+
+	.top_frame << container.top_frame
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_dialog.build_tree(holder)
+	_return .builder.tree(holder)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.get_tree()
+	_local trees << rope.new()
+	_for i_holder _over _self.top_holders.fast_elements()
+	_loop
+		_local tree << _self.build_tree(i_holder)
+		trees.add(tree)
+	_endloop 
+	 _return trees
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.tree_selected(tree_selection)
+	.owner.publish_selection(tree_selection.keys.as_simple_vector())
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.toggled(tree,row_index,event,value)
+	tree.value(:highlight?) << tree.value(:highlight?).not
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.name_changed(tree, key, new_value, old_value)
+	## 
+_endmethod
+$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method tree_dialog.renew()
+#	.tree_item.renew()
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method tree_dialog.refresh()
+#	.tree_item.refresh()
+#_endmethod
+#$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.select(holder)
+	
+	.tree_item.refresh()
+	
+	_local tree << .tree_item.tree_manager[holder]
+	.tree_item.selection.set_selection(tree, _unset)
+	.tree_item.ensure_selection_visibility()
+_endmethod
+$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method tree_dialog.any_selection?
+#	_return .tree_item.selection.empty?.not 
+#_endmethod
+#$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.holder_for(col)
+	_for i_holder _over _self.all_holders.fast_elements()
+	_loop
+		_if i_holder.collection _is col
+		_then
+			_return i_holder
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.note_workspace_holder_change(renew?)
+	_if renew?
+	_then
+		.tree_item.renew()
+	_else
+		.tree_item.refresh()
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.note_selection_change()
+	_local holders << _self.selected_holders
+
+	_local trees << rope.new_for(holders.size)
+	_for i_holder _over holders.fast_elements()
+	_loop
+		trees.add(.tree_item.tree_manager[i_holder])
+	_endloop
+	.tree_item.selection.empty()
+	.tree_item.selection.add_all(trees)
+_endmethod
+$

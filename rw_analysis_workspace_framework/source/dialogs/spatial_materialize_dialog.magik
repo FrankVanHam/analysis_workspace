@@ -1,0 +1,84 @@
+_package rwan
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog that materializes a geometry collection. This should
+## be used when the analysis is slow, it is basically a local
+## copy of the results so the next time the results are
+## required the collection is fast.
+##
+def_slotted_exemplar(:spatial_materialize_dialog,
+	{},
+	:base_materialize_dialog)
+$
+
+message_handler.new(:spatial_materialize_dialog).add_use(:base_materialize_dialog)
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_materialize_dialog.activate_in(container)
+	container.modality << :primary_modal
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100, 0})
+	_self.build_top_label(rc)
+	_self.build_tree(rc)
+	_self.build_progress(rc)
+	panel_separator.new(rc, :col_alignment, :fill)
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_materialize_dialog.build_tree(container)
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	label_item.new(rc, _self.message(:source_collection))
+	label_item.new(rc, .holder.name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_materialize_dialog.validate()
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_materialize_dialog.materialize()
+	_local new_col << _self.construct_materialized()
+	.parent_model.add_collection(new_col)
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_materialize_dialog.construct_materialized()
+	_self.create_log_stream()
+	_protect
+		.analysis_dsm.add_dependent(_self)
+		_self.log(_self.message(:started_at, _unset, date_time_now()))
+		_if .holder.is_area?
+		_then
+			col << area_materialized_collection.new(.analysis_dsm,
+								.holder.collection)
+		_elif .holder.is_spatial?
+		_then
+			col << spatial_materialized_collection.new(.analysis_dsm,
+								   .holder.collection)
+		_else
+			condition.raise(:error, :string, "Huh")
+		_endif
+		_self.log(_self.message(:ended_at, _unset, date_time_now()))
+	_protection
+		.analysis_dsm.remove_dependent(_self)
+		_self.close_log_stream()
+	_endprotect
+	_self.open_log()
+	_return col 
+_endmethod
+$
+

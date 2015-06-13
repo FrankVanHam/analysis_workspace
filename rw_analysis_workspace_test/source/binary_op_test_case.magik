@@ -1,0 +1,153 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-28
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+#remex(:binary_op_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:binary_op_test_case,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_test_case.the_two_collections(dsm)
+	_local sectors << _self.drafting_sectors("xor1")
+	_local an_area1 << pseudo_area.new(sectors)
+	_local area_col1 << rwan:area_collection.new(dsm, an_area1)
+	sectors << _self.drafting_sectors("xor2")
+	_local an_area2 << pseudo_area.new(sectors)
+	_local area_col2 << rwan:area_collection.new(dsm, an_area2)
+	
+	_local prcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local prcol1 << prcol.filter_by_geometry(:location, :within, area_col1)
+	_local prcol2 << prcol.filter_by_geometry(:location, :within, area_col2)
+	_return prcol, prcol1, prcol2, an_area1, an_area2
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_test_case.assert_pubs(results, _gather names)
+	_local s << equality_set.new_from(names)
+	_for i_rec _over results.fast_elements()
+	_loop
+		_if s.remove(i_rec.name).not
+		_then
+			_return _false
+		_endif 
+	_endloop
+	_return s.empty?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_test_case.test_xor()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)	
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.xor(prcol2)
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.xor(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_test_case.test_union()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)	
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.union(prcol2)
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn", "Cow and Calf")
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.union(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn", "Cow and Calf")
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_test_case.test_intersection()	
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.intersection(prcol2)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Cow and Calf")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.intersection(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Cow and Calf")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_test_case.test_subtraction1()	
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.subtraction(prcol2)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.subtraction(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_test_case.test_subtraction2()	
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol2.subtraction(prcol1)
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area2.subtraction(an_area1)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+
+

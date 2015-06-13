@@ -1,0 +1,5 @@
+base_area_collection
+area_collection
+buffer_collection
+area_binary_op_collection
+area_materialized_collection

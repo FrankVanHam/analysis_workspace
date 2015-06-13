@@ -1,0 +1,207 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-06
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:dataset_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:dataset_test_case,
+	{
+		{:ds, _unset},
+		{:file_name, _unset}
+	},
+	:base_analysis_test_case)
+$
+
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.set_up()
+	## 
+	##
+	_local source_path << smallworld_product.get_resource_file("analysis.ds",
+								  "data",
+								  rwan:analysis_dataset_manager.module_name)
+	_local (source_file,source_dir)  << system.pathname_components(source_path)
+	_local target_path << system.temp_file_name("munit_analysis.ds")
+	_local (target_file, target_dir) << system.pathname_components(target_path)
+	ds_environment.copy_datastore_file(source_dir, source_file, target_dir,
+					   :target_file, target_file,
+					   :source_concurrency_mode, :single_user,
+					   :concurrency_mode, :single_user)
+	.file_name << target_path
+	.ds << rwan:analysis_dataset_manager.open(:test, .file_name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.tear_down()
+	## 
+	##
+	.ds.discard()
+	system.unlink( .file_name, _true, _true)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_analysis_collection()
+	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
+	_return _self.basic_storage_test(rcol)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_geometry_collection()
+	_local area_col << _self.area_surrounding_parkers_piece(.ds)
+	_local area << area_col.area
+	_local gs << geometry_set.new_with(area)
+	_local geom << rwan:geometry_collection.new(.ds, gs)
+	_self.basic_storage_test(geom)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_area_collection()
+	_local area_col << _self.area_surrounding_parkers_piece(.ds)
+	_local retrieved_area << _self.basic_storage_test(area_col)
+	
+	_self.assert_true((area_col.area.area-retrieved_area.area.area).abs < 0.001, "Area should be the same")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_spatial_analysis_collection()
+	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
+	_local area_col << _self.area_surrounding_parkers_piece(.ds)
+	_local area << area_col.area
+	_local geom << rwan:area_collection.new(.ds, area)
+	_local hcol1 << hcol.filter_by_geometry(:location, :within, geom)
+	
+	_return _self.basic_storage_test(hcol1)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_predicate_filter()
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(.ds, col)
+	_local rcol1 << rcol.filter_by_predicate(predicate.eq(:road_type, "A-Road"))
+	_self.basic_storage_test(rcol1)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_analysis_set()
+	_local col << _self.haig_and_chesterton_set(.ds)
+	_self.basic_storage_test(col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_root_analysis()
+	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
+	_local acol << pcol.follow_join(:min_roads)
+	_local pcol1 << acol.root(_self.pub_rest_collection)
+	
+	_self.basic_storage_test(pcol1)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_binary_op()
+	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
+	_local pred1 << predicate.eq(:type, "Restaurant")
+	_local pred2 << predicate.eq(:cuisine, "Chinese")
+	_local pcol1 << pcol.filter_by_predicate(pred1)
+	_local pcol2 << pcol.filter_by_predicate(pred2)
+	_local and_col << pcol1.intersection(pcol2)
+	
+	_self.basic_storage_test(and_col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_follow_topology_analysis()
+	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
+	_local acol << pcol.follow_topology(:location, :min_road)
+	_self.basic_storage_test(acol)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_follow_join_analysis()
+	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
+	_local acol << pcol.follow_join(:min_roads)
+	_self.basic_storage_test(acol)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_spatial_operation()
+	
+	_local geom1 << rwan:area_collection.new(.ds, _self.park_collection.at(9492).coverage)
+	_local geom2 << rwan:area_collection.new(.ds, _self.poi_collection.at(9579).coverage)
+	_local subt << geom1.subtraction(geom2)
+	
+	_self.basic_storage_test(subt)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_spatial_collection()
+	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
+	_local rgeom << rcol.spatial_collection(:centre_line)
+	_self.basic_storage_test(rgeom)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_buffer()
+	_local geom1 << rwan:area_collection.new(.ds, _self.park_collection.at(9492).coverage)
+	_local subt << geom1.buffer(length_value.new(12,:m), :square, :truncate)
+	
+	_self.basic_storage_test(subt)	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.basic_storage_test(col)
+	## 
+	##
+	_local ws << workspace_holder.new()
+	_local holder << collection_holder.new(col, :name, _unset, _unset)
+	ws.current_workspace.add_holder(holder)
+	
+	.ds.store(ws)
+	_local ws_back << .ds.retrieve()
+	_local holders_back << ws_back.holders
+	_self.assert_is(1, holders_back.size, "One stored and one retrieved")
+	_local col_back << holders_back.an_element().collection
+	
+	_self.assert_true(col_back.is_class_of?(col), "Classes should match")
+	_self.assert_true(col.equals?(col_back), "what goes in, should come out")
+	
+	_return col_back
+_endmethod
+$

@@ -1,0 +1,34 @@
+_package sw
+$
+
+
+_if polygon_acp.method(:|rwan_do_buffer_geometry()|) _is _unset
+_then 
+	polygon_acp.define_method_synonym(:|rwan_do_buffer_geometry()|, :|do_buffer_geometry()|)
+_endif
+$
+
+_pragma(classify_level=restricted, topic={acp, geometry})
+_method polygon_acp.do_buffer_geometry(geometry, distance, corner_style, end_style)
+	## 
+	## helper method for buffer_geometry() to handle when a
+	## geom_acp_error condition occurs - retries buffering using a
+	## facetted geometry (if :facet_when_fails? is true) and/or
+	## raises the geom_acp_error condition, if applicable
+	##
+	_try
+		_return _self.rwan_do_buffer_geometry(geometry, distance, corner_style, end_style)
+	_when error
+		write("Error in ", _self, " do_buffer_geometry() ", geometry, distance, corner_style, end_style)
+		write("Continuing with orginal geometry")
+		!traceback!()
+		_if geometry.geom_category _is :area
+		_then 
+			_return pseudo_area.new(geometry)
+		_else
+			_return pseudo_area.new(geometry.bounds)
+		_endif 
+	_endtry
+_endmethod
+$
+

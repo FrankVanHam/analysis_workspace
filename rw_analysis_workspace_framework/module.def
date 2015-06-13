@@ -1,0 +1,8 @@
+rw_analysis_workspace_framework	1
+description
+	Realworld Analysis Workspace GUI
+end
+requires
+	rw_analysis_workspace
+end
+

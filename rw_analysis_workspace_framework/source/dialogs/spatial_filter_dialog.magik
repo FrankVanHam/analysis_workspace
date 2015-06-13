@@ -1,0 +1,232 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-31
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:spatial_filter_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog that constructs a spatial filter collection that does
+## a spatial interaction with another collection. use this to
+## find elements of collection A with a spatial relation to
+## elements of collection B.
+##
+def_slotted_exemplar(:spatial_filter_dialog,
+	{
+		{:items, _unset},
+		{:record_holder, _unset},
+		{:spatial_holder, _unset}
+	},
+	:model)
+$
+
+message_handler.new(:spatial_filter_dialog).add_uses(:model, :gen_graphics)
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.set_holder(holder, spatial_holder)
+	.record_holder << holder
+	.spatial_holder << spatial_holder
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.activate_in(container)
+	container.modality << :primary_modal
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100})
+	_self.build_top_label(rc)
+	_self.build_operation_selection(rc)
+	_self.build_explanatory_image(rc)
+	panel_separator.new(rc, :col_alignment, :fill) 
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.build_top_label(container)
+	text_window.new(container, 5, 50, _unset,
+			:horizontal_scrollbar?, _false,
+			:editable?, _false,
+			:contents, _self.message(:top_label),
+			:col_alignment, :fill,
+			:row_alignment, :fill )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.build_operation_selection(container)
+	## 
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	label_item.new(rc, _self.message(:source_holder))
+	label_item.new(rc, .record_holder.name, :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:geometry))
+	.items[:source_geometry_choice] << text_choice_item.new(rc, _unset, :items, {}, :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:operation))
+	.items[:operation_choice] << text_choice_item.new(rc, _unset,
+							  :items, _self.operation_items,
+							  :model, _self,
+							  :change_selector, :|operation_changed()|,
+							  :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:target))
+	label_item.new(rc, .spatial_holder.name, :col_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.build_explanatory_image(container)
+	.items[:explain] << image_item.new(container, _self.default_image, :col_alignment, :centre)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.build_buttons(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.on_activation()
+	_self.initialise_geometry_choice()
+	_self.update_image()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.initialise_geometry_choice()
+	_local choice << .items[:source_geometry_choice]
+	choice.items << items << _self.geom_field_items
+	choice.value_with_notify << _self.most_likely_geom_field(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.most_likely_geom_field(items)
+	_if items.size = 1
+	_then
+		_return items[1][1]
+	_endif 
+	_local _constant topo_cats << {:chain, :point, :area}
+	_for i_vec _over items.fast_elements()
+	_loop
+		_local geom_cat << i_vec[1].geom_category
+		_if topo_cats.includes?(geom_cat)
+		_then
+			_return i_vec[1]
+		_endif
+	_endloop
+	_return items[1][1]	 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.operation_changed()
+	_self.update_image()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.update_image()
+	_local op << .items[:operation_choice].value
+	_local img << smallworld_product.get_raster_image( :explain_ + op, _self.module_name )
+	.items[:explain].image << img
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.ok()
+	_local new_col << _self.construct_spatial_predicate()
+	.parent_model.add_collection(new_col)
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.construct_spatial_predicate()
+	_local source_geom << .items[:source_geometry_choice].value.name
+	_local operation << .items[:operation_choice].value
+	
+	_local new_col << .record_holder.collection.filter_by_geometry(source_geom, operation, .spatial_holder.collection)
+	_return new_col
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.cancel()
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.operation_items
+	_local _constant ops <<  {:interacting_with, :touching, :dividing, :overlaying, :overlapping, :within, :equal_to, :containing, :disjoint_from}
+	_local items << rope.new()
+	_for i_key _over ops.fast_elements()
+	_loop
+		items.add( {i_key, _self.message(i_key)} )
+	_endloop
+	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.source_geometry_items(col)
+	 _return _self.geom_field_items_for(col)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.geom_field_items
+	_return _self.geom_field_items_for(.record_holder.collection)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.geom_field_items_for(col)
+	_local sw_col << col.expose()
+	_local items << rope.new()
+	_for i_fd _over sw_col.descriptor.geometry_fields()
+	_loop
+		_if i_fd.name _is :meatball _then _continue _endif 
+		items.add( {i_fd, i_fd.external_name} )
+	_endloop
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
+	items << rope.new_from(items)
+	_return items
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.default_image
+	_return smallworld_product.get_raster_image( :explain_interacting_with, _self.module_name )
+_endmethod
+$

@@ -1,0 +1,89 @@
+_package rwan
+$
+
+#remex(:materialization_settings)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Holder for the settings that are required to create a record
+## collection materialization.
+##
+def_slotted_exemplar(:materialization_settings,
+	{
+		{:int_name, _unset},
+		{:ext_name, _unset},
+		{:indexes, _unset},
+		{:fields, _unset}
+	})
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_settings.new(int_name, ext_name)
+	_return _clone.init(int_name, ext_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialization_settings.init(int_name, ext_name)
+	.int_name << int_name
+	.ext_name << ext_name
+	.indexes  << rope.new()
+	.fields   << rope.new()
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_settings.indexes << indexes
+	.indexes << indexes
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_settings.add_field(i_field, int_name, ext_name, _optional join_aspect)
+	
+	_local prop << property_list.new_with(
+			:source_field, i_field,
+			:int_name, int_name,
+			:ext_name, ext_name,
+			:join_aspect, join_aspect)
+	.fields.add(prop)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_iter _method materialization_settings.field_properties()
+	_for i_props _over .fields.fast_elements()
+	_loop
+		field << i_props[:source_field]
+		int_name << i_props[:int_name]
+		ext_name << i_props[:ext_name]
+		join_aspect << i_props[:join_aspect]
+		_loopbody(field, int_name, ext_name, join_aspect)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_settings.internal_name
+	_return .int_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_settings.external_name
+	_return .ext_name
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_iter _method materialization_settings.indexes()
+	_for i_vec _over .indexes.fast_elements()
+	_loop
+		_loopbody(i_vec)
+	_endloop 
+_endmethod
+$

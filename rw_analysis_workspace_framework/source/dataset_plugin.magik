@@ -1,0 +1,86 @@
+_package rwan
+$
+
+#remex(:dataset_plugin)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+## Publishes the standard file actions, like open, close, new, etc.
+def_slotted_exemplar(:dataset_plugin,
+	{},
+	:base_plugin)
+$
+
+_pragma(classify_level=basic, topic={demo})
+##
+## defines the name of the dataset_manager.
+dataset_plugin.def_property( :dsm_name,
+	:type, :symbol, :default_value, :analysis,
+	:description, "Dataset Manager name" )
+$
+
+_pragma(classify_level=restricted, topic={analysis}, usage={subclass})
+dataset_plugin.define_shared_constant( :dialog_exemplar_name,
+	:dataset_dialog,
+	:public )
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_plugin.add_to_application(dsm)
+	_return _self.app_plugin.add_to_application(dsm)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_plugin.remove_from_application()
+	_return _self.app_plugin.remove_from_application(.workspace_holder.dsm)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method dataset_plugin.init_actions()
+	##
+	_self.add_action(sw_action.new(:new_file,
+				       :engine, _self.dialog,
+				       :action_message, {:|perform_safely()|, :|new_file()|},
+				       :image, {:new_file, _self.module_name}))
+	_self.add_action(sw_action.new(:save,
+				       :engine, _self.dialog,
+				       :action_message, {:|perform_safely()|, :|save()|},
+				       :image, {:save, :ui_resources}))
+	_self.add_action(sw_action.new(:save_as,
+				       :engine, _self.dialog,
+				       :action_message, {:|perform_safely()|, :|save_as()|},
+				       :image, {:save_as, _self.module_name}))
+	_self.add_action(sw_action.new(:open,
+				       :engine, _self.dialog,
+				       :action_message, {:|perform_safely()|, :|open()|},
+				       :image, {:open, :ui_resources}))
+	_self.add_action(sw_action.new(:close,
+				       :engine, _self.dialog,
+				       :action_message, {:|perform_safely()|, :|close()|},
+				       :image, {:close, :ui_resources}))
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_plugin.pre_activation()
+	_self.dialog.open_default_ds()
+	_return _super.pre_activation()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_plugin.on_deactivation()
+	_self.dialog.close()
+	_return _super.on_deactivation()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_plugin.terminate()
+	_self.dialog.close()
+	_super.terminate()
+_endmethod
+$
+

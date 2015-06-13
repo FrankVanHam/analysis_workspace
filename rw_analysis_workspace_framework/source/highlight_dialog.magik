@@ -1,0 +1,118 @@
+_package rwan
+$
+
+#remex(:highlight_dialog)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Main function is to highlight collections. The functionality
+## is very basic at the moment, simply a colored
+## line/symbol/area.
+def_slotted_exemplar(:highlight_dialog,
+	{
+	}, :base_model)
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method highlight_dialog.activate_in(container)
+	.top_frame << container.top_frame
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested)
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method highlight_dialog.set_highlight_colour()
+	_local colour_editor << sw:colour_palette_editor.new(_self, :|set_colour()|,
+							     _self.message(:pick_highlight_colour))
+	colour_editor.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method highlight_dialog.set_colour(action, clr)
+	_local holder << _self.selected_holder
+	_if clr _isnt _unset
+	_then
+		fill << fill_style.new_with_properties(:foreground_colour,clr)
+	_else
+		fill << _unset
+	_endif
+	holder[:fill_style] << fill
+	_self.current_workspace.set_dirty()
+	.owner.publish_workspace_holder()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method highlight_dialog.manage_actions()
+	_local any_sel? << _self.any_selection?
+	_local open? << _self.open?
+	
+	.owner.action(:colour).enabled? << open?  _andif any_sel?
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method highlight_dialog.map_damage_notify(graphics_context, map_view)
+	## Callback method from P_MAP_VIEW to allow us to render onto
+	## it.
+	_for i_col, i_style _over .owner.highlight_collections()
+	_loop
+		_local hset << _self.highlight_set(i_col, i_style, map_view.current_view_bounds)
+		map_view.draw_geometry_on(graphics_context, hset, _unset ,
+					  _unset, _true )
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_dialog.highlight_set(col, given_fill, window_bounds)
+	_local gs << col.convert_to_geometry(window_bounds)
+
+	_if _not gs.is_collection?
+	_then
+		gs << geometry_set.new_with(gs)
+	_endif
+	#show(gs, col, gs.size)
+	_local clr << given_fill.colour
+
+	_local thick << line_style.new_with_properties(
+				:width, 3,
+				:foreground_colour, clr)
+	_local fill << fill_style.new_with_properties( :foreground_colour, clr,
+						       :wash_percent, 50 )
+
+	_local sts << transient_style_system.new(clr)
+
+	sts.deferred? << col.origin_is_sw_collection?
+
+	_local pstyle << composite_point_style.new(
+				 {pseudo_chain.new(
+					  circle.new(coordinate.new(0,0),5))},
+				 {thick})
+
+	sts.set_default_style(:simple_point,
+			      pstyle)
+	sts.set_default_style(:point,
+			      pstyle)
+#	sts.set_default_style(:text,
+#			      thick)
+	sts.set_default_style(:area,
+			      fill)
+	sts.set_default_style(:chain,
+			      thick)
+
+	_local comp << composite_geometry_set.new({gs})
+	comp.style_system << sts
+	_return comp, clr
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method highlight_dialog.note_selection_change()
+	_self.manage_actions()
+_endmethod
+$

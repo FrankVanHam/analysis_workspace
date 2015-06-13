@@ -1,0 +1,306 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:sw_view_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Analysis collection that holds a view_collection.
+##
+def_slotted_exemplar(:sw_view_collection,
+	{
+		{:actual_view_collection, _unset},
+		{:int_name,               _unset},
+		{:ext_name,               _unset},
+		{:ds_name,                _unset},
+		{:table_names,            _unset},
+		{:linked_field_name,      _unset},
+		{:eqs,                    _unset},
+		{:field_specs,            _unset}
+	}, :base_source_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_view_collection.new_join(dsm,
+				    int_name, ext_name,
+				    source_table, linked_table,
+				    linked_field,
+				    field_specs)
+	##
+	## Create a view named INT_NAME that links SOURCE_TABLE to
+	## LINKED_TABLE by LINKED_FIELD. LINKED_FIELD is part of
+	## SOURCE_TABLE.
+	## FIELD_SPECS are a vector of vectors. The inner vector has
+	## the form: 
+	##              { table_name, old_int_name, new_int_name, new_ext_name }
+	##
+	_local tables << _self.convert_to_tables(source_table, linked_table, linked_field)
+	_local eqs << _self.convert_join_to_eqs(linked_field)
+	_return _clone.init(dsm,
+			    int_name, ext_name,
+			    tables,
+			    eqs,
+			    linked_field,
+			    field_specs)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_view_collection.new_eq(dsm,
+				  int_name, ext_name,
+				  tables,
+				  eqs,
+				  field_specs)
+	##
+	## Create a view named INT_NAME that links all TABLES with
+	## equations in EQS.
+	## EQS are a vector of vectors. The inner vector has
+	## the form:
+	##              { field1, operator, field2 }
+	## FIELD_SPECS are a vector of vectors. The inner vector has
+	## the form: 
+	##              { table_name, old_int_name, new_int_name, new_ext_name }
+	##
+	_return _clone.init(dsm,
+			    int_name, ext_name,
+			    tables,
+			    eqs,
+			    _unset,
+			    field_specs)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_collection.init(dsm,
+					 int_name, ext_name,
+					 tables,
+					 eqs,
+					 linked_field,
+					 field_specs)
+	.int_name << int_name
+	.ext_name << ext_name
+	.ds_name << tables.an_element().dataset.original_dataset_name
+	.table_names << tables.map(_proc(x) >> x.name _endproc)
+	.eqs << _self.convert_to_joins(eqs)
+	.linked_field_name << _if linked_field _isnt _unset
+			      _then >> linked_field.name
+			      _else >> _unset
+			      _endif 
+	.field_specs << field_specs
+
+	.dsm << dsm
+	_self.build_actual_view_collection()
+	
+	_return _super.init(dsm, _unset, int_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_collection.convert_to_joins(eqs)
+	_local join_specs << rope.new()
+	_for i_vec _over eqs.fast_elements()
+	_loop
+		_local fd1 << i_vec[1]
+		_local eq  << i_vec[2]
+		_local fd2 << i_vec[3]
+		join_specs.add( {fd1.owner.name, fd2.owner.name,
+				 fd1.name, eq, fd2.name})
+	_endloop 
+	_return join_specs
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_method sw_view_collection.serial_slots()
+	_local (keys, values) << _super.serial_slots()
+	keys.add_all_last({:int_name, :ext_name, :ds_name, :table_names, :eqs, :linked_field_name, :field_specs})
+	values.add_all_last({.int_name, .ext_name, .ds_name, .table_names, .eqs, .linked_field_name, .field_specs})
+	_return keys, values
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_private _method sw_view_collection.init_from_serial(dsm, base_cols,b,int_name, ext_name, ds_name, table_names, eqs, linked_field_name, field_specs)
+	
+	_super.init_from_serial(dsm, base_cols, int_name)
+	
+	.int_name << int_name
+	.ext_name << ext_name
+	.ds_name  << ds_name
+	.table_names << table_names
+	.eqs << eqs
+	.linked_field_name << linked_field_name
+	.field_specs << field_specs
+	
+	_self.build_actual_view_collection()
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method sw_view_collection.equals?(other)
+	_return _self.is_class_of?(other) _andif 
+		other.equals_in_details?(.int_name, .ext_name, .ds_name, .table_names, .eqs, .linked_field_name, .field_specs)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_method sw_view_collection.equals_in_details?(int_name, ext_name, ds_name, table_names, eqs, linked_field_name, field_specs)
+	_return .int_name = int_name _andif
+		.ext_name = ext_name _andif
+		.ds_name = ds_name _andif
+		.linked_field_name = linked_field_name _andif 
+		_self.vectors_eq?(.table_names, table_names) _andif
+		_self.vectors_eq?(.eqs, eqs) _andif
+		_self.vectors_eq?(.field_specs, field_specs)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_private _method sw_view_collection.vectors_eq?(v1, v2)
+	_if v1.size <> v2.size _then _return _false _endif
+	_for i_index, i_vec _over v1.fast_keys_and_elements()
+	_loop
+		vec2 << v2[i_index]
+		_if _not i_vec.eq?(vec2) _then _return _false _endif 
+	_endloop
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_collection.convert_join_to_eqs(jf)
+	_local join_specs << rope.new()
+	_local (j1, j2) << jf.joins()
+	_self.add_join_specs(j1, join_specs)
+	_if j2 _isnt _unset
+	_then
+		_self.add_join_specs(j2, join_specs)
+	_endif
+	_return join_specs
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_collection.add_join_specs(the_join, join_specs)
+	_for i_vec _over the_join.conditions.fast_elements()
+	_loop
+		_local fd1 << the_join.dd.collections[the_join.name1].field(i_vec[1])
+		_local eq << i_vec[2]
+		_local fd2 << the_join.dd.collections[the_join.name2].field(i_vec[3])
+		
+		join_specs.add({fd1, eq, fd2})
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_collection.convert_to_tables(source_table, linked_table, linked_field)
+	_local tables << rope.new()
+	tables.add(source_table)
+	_if linked_field.intermediate_table _isnt _unset
+	_then
+		tables.add(linked_field.intermediate_table)
+	_endif
+	tables.add(linked_table)
+	_return tables 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method sw_view_collection.build_actual_view_collection()
+	.actual_view_collection << .dsm.create_view(
+					   .int_name, .ext_name,
+					   _self.collections, 
+					   .eqs,
+					   .field_specs)
+	
+	_local col << .actual_view_collection
+	col.dataset.collections[col.name] << col
+	col.dataset.view_collections[col.name] << col
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_view_collection.origin_is_sw_collection?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_view_collection.is_sw_collection?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method sw_view_collection.actual_collection
+	_return .actual_view_collection
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_view_collection.discard()
+	_local col << .actual_view_collection
+	_if col _isnt _unset
+	_then
+		col.dataset.collections.remove_key(col.name)
+		col.dataset.view_collections.remove_key(col.name)
+		col.discard()
+		
+		.actual_view_collection << _unset
+	_endif
+	_super.discard()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method sw_view_collection.description
+	_local str << internal_text_output_stream.new()
+	str.write(.ext_name)
+	str.write( "( ")
+	_local comma? << _false 
+	_for i_col _over _self.collections.fast_elements()
+	_loop
+		_if i_col.descriptor.internal_table? _then _continue _endif 
+		_if (comma?^<< _true)
+		_then
+			str.write(" <-> ")
+		_endif
+		str.write( i_col.external_name)
+	_endloop 
+	str.write( " )")
+	_return str.string
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method sw_view_collection.collections
+	_local cols << rope.new()
+	_local ds << gis_program_manager.databases[.ds_name]
+	_for i_name _over .table_names.fast_elements()
+	_loop
+		_local col << ds.collections[i_name]
+		cols.add(col)
+	_endloop
+	_return cols
+_endmethod
+$

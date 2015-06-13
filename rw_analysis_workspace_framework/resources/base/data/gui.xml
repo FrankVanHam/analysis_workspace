@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gui>
+  <menu name="menubar" type="menubar">
+    <submenu name="file" mnemonic_id="file_m">
+      <action name="file.new_file"/>
+      <action name="file.open"/>
+      <action name="file.save"/>
+      <action name="file.save_as"/>
+      <separator/>
+      <action name="file.close"/>
+      <separator/>
+      <action name="exit" mnemonic_id="exit_m"/>
+    </submenu>
+    <submenu name="edit" mnemonic_id="edit_m">
+      <action name="construct.delete"/>
+      <action name="construct.copy"/>
+      <separator/>
+      <action name="highlight.colour"/>
+      <separator/>
+      <action name="construct.move_up"/>
+      <action name="construct.move_down"/>
+    </submenu>
+    <submenu name="workarea" mnemonic_id="workarea_m">
+      <submenu name="add_spatial" mnemonic_id="add_spatial_m">
+	<action name="construct.add_collections"/>
+	<action name="construct.add_trail"/>
+	<action name="construct.add_geom_selection"/>
+	<action name="construct.add_collection_selection"/>
+	<action name="construct.add_explorer_content"/>
+	<action name="construct.add_explorer_selection"/>
+	<action name="construct.add_scrapbook"/>
+      </submenu>
+      <submenu name="filter" mnemonic_id="filter_m">
+	<action name="construct.spatial_filter"/>
+	<action name="construct.distance_filter"/>
+	<action name="construct.predicate_filter"/>
+      </submenu>
+      <submenu name="follow" mnemonic_id="follow_m">
+	<action name="construct.follow_topology"/>
+	<action name="construct.follow_join"/>
+	<action name="construct.follow_method"/>
+	<action name="construct.follow_root"/>
+      </submenu>
+      <submenu name="spatial" mnemonic_id="spatial_m">
+	<action name="construct.create_spatial"/>
+	<action name="construct.create_buffer"/>
+      </submenu>
+      <submenu name="set" mnemonic_id="set_m">
+	<action name="construct.intersection"/>
+	<action name="construct.subtraction"/>
+	<action name="construct.union"/>
+	<action name="construct.xor"/>
+      </submenu>
+      <submenu name="materialize" mnemonic_id="materialize_m">
+	<action name="construct.view_by_join"/>
+	<action name="construct.view_by_eq"/>
+	<action name="construct.materialize"/>
+	<action name="construct.materialize_spatial"/>
+      </submenu>
+    </submenu>
+  </menu>
+
+  <toolbar name="file">
+    <action name="file.new_file"/>
+    <action name="file.save"/>
+    <action name="file.save_as"/>
+    <action name="file.open"/>
+  </toolbar>
+  <toolbar name="add">
+    <action name="construct.add_collections"/>
+    <action name="construct.add_trail"/>
+    <action name="construct.add_geom_selection"/>
+    <action name="construct.add_collection_selection"/>
+    <action name="construct.add_explorer_content"/>
+    <action name="construct.add_explorer_selection"/>
+    <action name="construct.add_scrapbook"/>
+  </toolbar>
+  <toolbar name="collection">
+    <action name="construct.spatial_filter"/>
+    <action name="construct.distance_filter"/>
+    <action name="construct.predicate_filter"/>
+  </toolbar>
+  <toolbar name="follow">
+    <action name="construct.follow_topology"/>
+    <action name="construct.follow_join"/>
+    <action name="construct.follow_method"/>
+    <action name="construct.follow_root"/>
+  </toolbar>
+  <toolbar name="spatial">
+    <action name="construct.create_spatial"/>
+    <action name="construct.create_buffer"/>
+  </toolbar>
+  <toolbar name="set">
+    <action name="construct.intersection"/>
+    <action name="construct.subtraction"/>
+    <action name="construct.union"/>
+    <action name="construct.xor"/>
+  </toolbar>
+  <toolbar name="materialize">
+    <action name="construct.view_by_join"/>
+    <action name="construct.view_by_eq"/>
+    <action name="construct.materialize"/>
+    <action name="construct.materialize_spatial"/>
+  </toolbar>
+  <toolbar name="tree">
+    <action name="construct.delete"/>
+    <action name="construct.copy"/>
+    <section/>
+    <action name="highlight.colour"/>
+    <section/>
+    <action name="construct.move_up"/>
+    <action name="construct.move_down"/>
+  </toolbar>
+  
+  <dock name="top">
+    <toolbar name="file"/>
+    <toolbar name="add"/>
+    <toolbar name="collection"/>
+    <toolbar name="follow"/>
+    <toolbar name="spatial"/>
+    <toolbar name="set"/>
+    <toolbar name="materialize"/>
+    <toolbar name="tree"/>
+  </dock>
+  
+  <work_area>
+    <paned_window side_by_side="no" dynamic="no">
+      <plugin plugin_name="file"/>
+      <plugin plugin_name="highlight"/>
+      <plugin plugin_name="construct"/>
+      <plugin plugin_name="workspace"/>
+      <plugin plugin_name="tree" stretch="1"/>
+      <plugin plugin_name="runner"/>
+    </paned_window>
+  </work_area>
+  
+  <statusbar name="default">
+    <pane id="status_info" style="innie" width="200" springy="true"/>
+    <pane id="size_info" style="innie" width="175"/>
+    <progress_bar id="progress" style="innie" width = "200"/>
+  </statusbar>
+</gui>

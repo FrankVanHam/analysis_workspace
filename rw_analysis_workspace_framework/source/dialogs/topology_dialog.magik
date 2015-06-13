@@ -1,0 +1,243 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-11
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:topology_dialog)
+$
+
+_pragma(classify_level=basic, topic={demo})
+##
+## dialog to construct a topology collection to follow topology
+## of the source collection.
+##
+def_slotted_exemplar(:topology_dialog,
+	{
+		{:items, _unset},
+		{:holder, _unset}
+	}, :model )
+$
+
+message_handler.new(:topology_dialog).add_uses(:model, :gen_graphics) 
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.set_holder(holder)
+	.holder << holder
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.activate_in(container) 
+	container.modality << :primary_modal
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100})
+	_self.build_top_label(rc)
+	_self.build_topology_selection(rc)
+	panel_separator.new(rc, :col_alignment, :fill) 
+	_self.build_buttons(rc) 
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.build_top_label(container)
+	text_window.new(container, 5, 50, _unset,
+			:horizontal_scrollbar?, _false,
+			:editable?, _false,
+			:contents, _self.message(:top_label),
+			:col_alignment, :fill,
+			:row_alignment, :fill )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.on_activation() 
+	_self.initialise_geometry_choice()
+	_return _super(model).on_activation()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.initialise_geometry_choice()
+	_local choice << .items[:geometry_choice]
+	choice.items << items << _self.geom_field_items
+	choice.value_with_notify << _self.most_likely_geom_field(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.most_likely_geom_field(items)
+	_if items.size = 1
+	_then
+		_return items[1][1]
+	_endif 
+	_local _constant topo_cats << {:chain, :point, :area}
+	_for i_vec _over items.fast_elements()
+	_loop
+		_local geom_cat << i_vec[1].geom_category
+		_if topo_cats.includes?(geom_cat)
+		_then
+			_return i_vec[1]
+		_endif
+	_endloop
+	_return items[1][1]
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.build_topology_selection(container) 
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	label_item.new(rc, _self.message(:source_collection))
+	.items[:col] << label_item.new(rc, _self.collection_description, :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:geometry)) 
+	.items[:geometry_choice] << text_choice_item.new(rc, _unset, :items, {}, :model, _self, :change_selector, :|change_geometry()|, :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:topology) ) 
+	.items[:topology_choice] << text_choice_item.new(rc, _unset, :items, {}, :col_alignment, :fill)  
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.build_buttons(container) 
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok) , _self, :|ok()|, :min_width, 75) 
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel) , _self, :|cancel()|, :min_width, 75) 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.ok() 
+	_local col << _self.construct_topology_collection()
+	.parent_model.add_collection(col) 
+	_self.close() 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.construct_topology_collection() 
+	_local col << .items[:geometry_choice] .value.name
+	_local rwo_type << .items[:topology_choice] .value
+	_local topo_col << .holder.collection.follow_topology(col, rwo_type) 
+	_return topo_col
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.cancel() 
+	_self.close() 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.change_geometry(geom_field) 
+	.items[:topology_choice].items << _self.topology_items(geom_field)  
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.topology_items(geom_field) 
+	_local items << rope.new()
+	_local cols << _self.collections_for_topology(geom_field) 
+	_for i_col _over cols.fast_elements()
+	_loop
+		items.add({ i_col.name, i_col.external_name.copy()}) 
+	_endloop
+	items << items.as_sorted_collection(_proc(a, b) 
+						    _return a[2] _cf b[2]
+					    _endproc) 
+	items << rope.new_from(items) 
+	_if items.empty?
+	_then
+		items.add({ _unset, _self.message(:no_topology)})
+	_endif 
+	_return items
+_endmethod
+
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.collections_for_topology(geom_field) 
+	_local sw_col << .holder.collection.expose()
+	_local ds << sw_col.dataset
+	_if geom_field.mapped?
+	_then
+		fds << geom_field.mapped_geometry_fields.elements
+	_else
+		fds << {geom_field}
+	_endif
+	_local done << set.new_with(sw_col.descriptor)
+	_local cols << rope.new()
+	_for fd _over fds.fast_elements()
+	_loop
+		_if _not fd.has_topology? _then _continue _endif 
+		_local gs << ds.geometry_on_manifold(fd.manifold_code)
+		_for i_fd _over gs.fast_elements()
+		_loop
+			_local col << i_fd.owner
+			_if done.includes?(col).not
+			_then 
+				cols.add(col)
+				done.add(col)
+			_endif 
+		_endloop
+	_endloop 
+	_return cols
+_endmethod
+
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.geom_field_items
+	_return _self.geom_field_items_for(.holder.collection) 
+_endmethod
+
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.geom_field_items_for(col)
+	_local sw_col << col.expose()
+	_local fds << rope.new()
+	_for i_fd  _over sw_col.descriptor.geometry_fields()
+	_loop
+		_if i_fd.name _is :meatball
+		_then
+			_continue
+		_endif
+		fds.add({ i_fd, i_fd.external_name }) 
+	_endloop
+	fds << fds.as_sorted_collection(_proc(a, b) 
+						_return a[2] _cf b[2]
+					_endproc) 
+	fds << rope.new_from(fds)
+	_return fds
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.collection_description
+	_if .holder.is_record_collection?
+	_then
+		_return .holder.collection.expose().external_name
+	_else
+		_return _self.message(:geometry_collection)
+	_endif 
+_endmethod
+$

@@ -1,0 +1,59 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-27
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:spatial_analysis_col_test_case,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method simple_area_analyse_test_case.test_basic_area_analysis()
+
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local col << _self.min_road_collection
+	_local acol << rwan:sw_collection.new(dsm, col)
+	
+	_self.assert_is(col.size, acol.size, "basic size should be the same")
+
+	_local sectors << _self.drafting_sectors("test_basic_area_analysis")
+	_local an_area << pseudo_area.new(sectors)
+	_local area_col << rwan:area_collection.new(dsm, an_area)
+	_local acol2 << acol.filter_by_geometry( :centre_line, :within, area_col )
+	_self.assert_is( acol2.size, 2, "There should be two roads within")
+	
+	acol2 << acol.filter_by_geometry( :centre_line, :overlapping, area_col )
+	_self.assert_is( acol2.size, 2, "There should be 2 road overlapping")
+	
+	acol2 << acol.filter_by_geometry( :centre_line, :overlaying, area_col )
+	_self.assert_is( acol2.size, 4, "There should be 4 roads overlaying")
+	
+	acol2 << acol.filter_by_geometry( :centre_line, :touching, area_col )
+	_self.assert_is( acol2.size, 1, "There should be one road touching")
+
+	_local geom_col << rwan:geometry_collection.new(dsm, geometry_set.new_with(sectors))
+	acol2 << acol.filter_by_geometry( :centre_line, :dividing,  geom_col)
+	_self.assert_is( acol2.size, 3, "There should be 3 roads dividing")
+_endmethod
+$
+

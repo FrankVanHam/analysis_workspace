@@ -1,0 +1,150 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-30
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:framework)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## The framework holds analysis plugins. The title is dynamic
+## and shows the current workspace dataset.
+##
+def_slotted_exemplar(:framework,
+	{
+		{:dsm, _unset, :readable}
+	},
+	:gui_framework)
+$
+
+_pragma(classify_level=restricted)
+framework.define_shared_constant( :databus_consumer_data_types,
+	{ :workspace_holder },
+	:public )
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework.init_actions()
+	_self.add_action(sw_action.new(:exit,
+				       :engine, _self,
+				       :action_message, :|close()|))
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework.set_title(_optional dirty?)
+	dirty? << dirty?.default(_false)
+	_if .dsm _isnt _unset
+	_then 
+		_local source_path << .dsm.dataset_path
+		_local (source_file,source_dir)  << system.pathname_components(source_path)
+		_local idx << source_dir.index_of_seq("file::")
+		_if idx _is 1
+		_then
+			source_dir << source_dir.slice_to_end(7)
+		_endif
+		_if source_dir.size > 30
+		_then
+			source_dir << write_string(
+					      source_dir.slice(1,15),
+					      "...",
+					      source_dir.slice_to_end(source_dir.size-15))
+		_endif
+		_if dirty?
+		_then 
+			title << _self.message( :dirty_title, source_dir, source_file)
+		_else
+			title << _self.message( :title, source_dir, source_file)
+		_endif 
+	_else
+		title << _self.message( :title_for_empty_dialog)
+	_endif 
+	_self.title << title
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method framework.ace
+	_return .framework.ace
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method framework.set_holder()
+	_if .dsm _isnt _unset
+	_then 
+		_self.workspace_holder_plugin.set_holder_from_dsm(.dsm)
+	_else
+		_self.workspace_holder_plugin.create_new_holder()
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework.activate(_gather args)
+	_local ok? << _false
+	_protect
+		_super.activate(_scatter args)
+		ok? << _true
+	_protection
+		_if _not ok?
+		_then
+			_self.on_deactivation()
+		_endif
+	_endprotect
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework.on_deactivation()
+	#.framework.deactivated(_self)
+	_return _super.on_deactivation()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework.terminate()
+	.framework.deactivated(_self)
+	_super.terminate()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework.app_plugin
+	_return .framework
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method framework.sw_databus_data_available(data_type_name, data)
+	_if data_type_name _is :workspace_holder
+	_then
+		_self.set_title_for(data)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method framework.set_title_for(workspace_holder)
+	## todo dont set the title is the dirty flag is included allready.
+	.dsm << workspace_holder.dsm
+	_self.set_title(workspace_holder.dirty?)
+_endmethod
+$

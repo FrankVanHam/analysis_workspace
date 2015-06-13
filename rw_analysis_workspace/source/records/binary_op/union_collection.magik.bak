@@ -1,0 +1,76 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+#remex(:union_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Analysis collection that combines the two base
+## collections. note that it will never yield the same record
+## twice. 
+def_slotted_exemplar(:union_collection,
+	{}, :base_binary_op_collection)
+$
+
+
+message_handler.new(:union_collection).add_use(:base_binary_op_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method union_collection.operation
+	_return :union
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis, collections})
+_iter _method union_collection.read_stream()
+	_local base_stream << _self.base_collection.read_stream()
+	_local other_stream << _self.other_collection.read_stream()
+	
+	_return _self.combining_read_stream(_self.base_collection, base_stream, other_stream)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method union_collection.predicate_filtered_read_stream(pred)
+	_local base_stream << _self.base_collection.predicate_filtered_read_stream(pred)
+	_local other_stream << _self.other_collection.predicate_filtered_read_stream(pred)
+	
+	_return _self.combining_read_stream(_self.base_collection, base_stream, other_stream)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method union_collection.spatial_filtered_read_stream(geom_name, selector, args)
+	_local base_stream << _self.base_collection.spatial_filtered_read_stream(geom_name, selector, args)
+	_local other_stream << _self.other_collection.spatial_filtered_read_stream(geom_name, selector, args)
+	
+	_return _self.combining_read_stream(_self.base_collection, base_stream, other_stream)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method union_collection.combining_read_stream(base_collection, base_stream, other_stream)
+	_return union_read_stream.new(base_collection, base_stream, other_stream)
+_endmethod
+$

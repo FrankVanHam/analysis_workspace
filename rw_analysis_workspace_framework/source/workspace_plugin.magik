@@ -1,0 +1,31 @@
+_package rwan
+$
+
+#remex(:workspace_plugin)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Placeholder for the workspace dialog.
+def_slotted_exemplar(:workspace_plugin, 
+	{
+	}, :base_plugin)
+$
+
+_pragma(classify_level=restricted, topic={analysis}, usage={subclass})
+workspace_plugin.define_shared_constant( :dialog_exemplar_name,
+	:workspace_dialog,
+	:public )
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method workspace_plugin.init_actions()
+	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method workspace_plugin.workspace_holder_changed(_optional data)
+	_self.databus_make_data_available(:workspace_holder, data)
+_endmethod
+$
+

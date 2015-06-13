@@ -1,0 +1,66 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-24
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:root_collection)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Analysis collections that will yield one of the base
+## collections that self was derived from.
+## For example: say you start with a road, follow the topology
+## to a hotel, filter on a type of hotel, then an additional
+## rot collection can yield the roads that lead to the hotels
+## you required.
+## 
+def_slotted_exemplar(:root_collection,
+	{},
+	:base_follow_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method root_collection.new(dsm, base_col, target_col)
+	_return _clone.init(dsm, base_col, target_col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_iter _method root_collection.fast_elements()
+	_dynamic !root_query! << hash_table.new()
+	_local done << large_record_register.new(100)
+	_for i_rec _over _self.base_collection.fast_elements()
+	_loop
+		_local root << !root_query![.target_table_name]
+		
+		_if root _isnt _unset _andif
+		    _not done.includes?(root)
+		_then
+			_loopbody(root)
+			done.add(root)
+		_endif 
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method root_collection.description
+	_return _self.message(:description, _self.target_collection.external_name,
+			      _self.base_collection.expose().external_name)
+_endmethod
+$

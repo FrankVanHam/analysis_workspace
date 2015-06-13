@@ -1,0 +1,756 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        :
+##
+##
+## Date written    : 2014-12-29
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:construct_dialog)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Dialog that will add and create analysis collections.
+def_slotted_exemplar(:construct_dialog,
+	{},
+	:base_model)
+$
+
+message_handler.new(:construct_dialog).add_uses(:base_model)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.activate_in(container)
+	.top_frame << container.top_frame
+	rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :resize?, _true)
+	_return _unset
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.run_in_background(meth, descr)
+	.owner.run_in_background(_self, meth, {}, descr)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_collection(collection)
+	_self.add_collections({collection})
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_collections(collections)
+	_local workspace << _self.current_workspace
+
+	_local last_holder
+	_for i_col _over collections.fast_elements()
+	_loop
+		last_holder << _self.new_holder(i_col)
+		workspace.add_holder(last_holder)
+	_endloop
+	.owner.publish_workspace_holder()
+	.owner.publish_selection({last_holder})
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.new_holder(col)
+	_local clr << colour.called(:red)
+	_local fstyle << fill_style.new_with_properties(:foreground_colour,
+							clr)
+	_return collection_holder.new(col,
+				      _self.name_for_collection(col),
+				      clr,
+				      fstyle)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.name_for_collection(col)
+	_return col.description
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.delete()
+	## delete the collections, but only the top level collections
+	## to avoid creating inconsistencies.
+	_local to_del << _self.selected_top_holders.copy()
+	_if to_del.empty? _then _return _endif
+
+	_if _not _self.question_alert( :yes, :no,
+				       :sure_to_delete, to_del.size)
+	_then
+		_return
+	_endif
+	_local workspace << _self.current_workspace
+	_for i_holder _over to_del.fast_elements()
+	_loop
+		i_holder.discard()
+		workspace.remove_holder(i_holder)
+	_endloop
+	.owner.publish_workspace_holder()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_collections_from_dialog()
+	_local dia << object_control_dialog.new_dialog(_self)
+	dia.set_dataset(.owner.dataset, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.copy()
+	_local col << _self.selected_holder.collection
+	_local cp << col.copy()
+	_self.add_collection(cp)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.move_up()
+	_local workspace << _self.current_workspace
+	_local holders << _self.selected_top_holders
+	_for i_holder _over holders.fast_elements()
+	_loop
+		workspace.move_up(i_holder)
+	_endloop
+	.owner.publish_workspace_holder()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.can_move_up?
+	_local workspace << _self.current_workspace
+	_local holders << _self.selected_top_holders
+	_for i_holder _over holders.fast_elements()
+	_loop
+		_if workspace.can_move_up?(i_holder)
+		_then
+			_return _true
+		_endif
+	_endloop
+	_return _false
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.move_down()
+	_local workspace << _self.current_workspace
+	_local holders << _self.selected_top_holders
+	_for i_holder _over holders.fast_elements()
+	_loop
+		workspace.move_down(i_holder)
+	_endloop
+	.owner.publish_workspace_holder()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.can_move_down?
+	_local workspace << _self.current_workspace
+	_local holders << _self.selected_top_holders
+	_for i_holder _over holders.fast_elements()
+	_loop
+		_if workspace.can_move_down?(i_holder)
+		_then
+			_return _true
+		_endif
+	_endloop
+	_return _false
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_trail()
+	_local dsm << _self.dataset_manager
+	_local pseudo << _self.trail
+	_if pseudo.geom_category _is :area
+	_then
+		col << rwan:area_collection.new(dsm, pseudo)
+	_else
+		col  << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
+	_endif
+	_self.add_collection(col, _unset)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_geom_selection()
+	_local sel << .owner.map_selection
+	_local sel_by_type << hash_table.new()
+	_for i_geom _over sel.fast_elements()
+	_loop
+		sel_by_type.at_or_new_if_absent(i_geom.geom_category, rope).add(i_geom)
+	_endloop
+	_local dsm << _self.dataset_manager
+	_for gcat, set _over sel_by_type.fast_keys_and_elements()
+	_loop
+		_if gcat _is :area
+		_then
+			gs << _self.union_areas(set)
+			col << rwan:area_collection.new(dsm, gs)
+		_else
+			gs << geometry_set.new_from(set)
+			col  << rwan:geometry_collection.new(dsm, gs)
+		_endif
+		_self.add_collection(col, _unset)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.union_areas(areas)
+	_local un
+	_local world
+	_for i_area _over areas.fast_elements()
+	_loop
+		_if un _is _unset
+		_then
+			un << pseudo_area.new_for_world(i_area, i_area.world)
+		_else
+			w << un.world
+			un << _self.safe_union(un, i_area)
+			un.world << w
+		_endif
+	_endloop
+	_return un
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.safe_union(un, an_area)
+	_try
+		_handling error _with _proc(c)
+					      c.report_contents_on(!output!)
+					      !traceback!(!output!)
+		_endproc
+
+		new_un << un.union(an_area)
+
+	_when polygon_acp_invalid_area
+		new_un << un
+	_endtry
+	_return new_un
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_collection_selection()
+	_self.run_in_background(:|do_add_collection_selection()|, _self.message(:adding_selection_from_explorer))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.do_add_collection_selection()
+	_local dsm << _self.dataset_manager
+	_local sel << .owner.map_selection
+	_local cols << set.new()
+	_for i_geom _over sel.fast_elements()
+	_loop
+		_local rwo << i_geom.rwo
+		_if rwo _is _unset _then _continue _endif
+		cols.add(rwo.source_collection)
+	_endloop
+	_for i_col _over cols.fast_elements()
+	_loop
+		_local col << rwan:sw_collection.new(dsm, i_col)
+		_self.add_collection(col, _unset)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_explorer_content()
+	_self.run_in_background(:|do_add_explorer_content()|, _self.message(:adding_from_explorer))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.do_add_explorer_content()
+	_local dsm << _self.dataset_manager
+	_local (plug, sel) << (_scatter .owner.explorer_selection)
+	_for i_set _over  sel.rwo_sets()
+	_loop
+		_if i_set.is_kind_of?(ds_collection)
+		_then
+			col << rwan:sw_collection.new(dsm, i_set)
+		_else
+			col << rwan:record_set.new(dsm, i_set)
+		_endif
+		_self.add_collection(col, _unset)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_explorer_selection()
+	_local dsm << _self.dataset_manager
+	_local data << .owner.explorer_selection
+	_if data _is _unset
+	_then
+		_self.user_error(:please_select_records_in_explorer)
+	_endif
+	_local (plug, sel) << (_scatter data)
+	_if sel.is_records?
+	_then
+		set << rwo_set.new_from_iter(sel, :|records()|)
+		col << rwan:record_set.new(dsm, set)
+		_self.add_collection(col, _unset)
+	_else
+		_self.user_error(:please_select_records_in_explorer)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_scrapbook()
+	_local sel << .owner.scrapbook_results
+	_if sel _is _unset
+	_then
+		_self.user_error(:scrapbook_is_empty)
+	_else
+		_self.run_in_background(:|do_add_scrapbook()|, _self.message(:adding_from_scrapbook))
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.do_add_scrapbook()
+	_local dsm << _self.dataset_manager
+	_local sel << .owner.scrapbook_results
+	_local sel_by_table_name << hash_table.new()
+	_for i_rec_set _over sel.fast_elements()
+	_loop
+		_for i_rec _over i_rec_set.fast_elements()
+		_loop
+			sel_by_table_name.at_or_new_if_absent(
+				i_rec.source_collection.name,
+				rope).add(i_rec)
+		_endloop
+		_for set _over sel_by_table_name.fast_elements()
+		_loop
+			_local col << rwan:record_set.new(dsm, set)
+			_self.add_collection(col, _unset)
+		_endloop
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.trail
+	_local geom << .owner.map_trail.as_pseudo_geometry
+	_if geom _is _unset
+	_then
+		_self.user_error(:provide_trail)
+	_endif
+	_local w << geom.world
+	_if w _isnt _unset
+	_then
+		geom.world << w.dataset_worlds.an_element()
+	_endif
+	geom.style_info << _unset
+	_return geom
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_intersection()
+	_local holders << _self.selected_top_holders
+	_local holder1 << holders[1]
+	_local holder2 << holders[2]
+	_local new_col << holder1.collection.intersection(holder2.collection)
+	_self.add_collection(new_col)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_union()
+	_local holders << _self.selected_top_holders
+	_local holder1 << holders[1]
+	_local holder2 << holders[2]
+	_self.ensure_set_operation_makes_sense(holder1, holder2)
+	_local new_col << holder1.collection.union(holder2.collection)
+	_self.add_collection(new_col)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_xor()
+	_local holders << _self.selected_top_holders
+	_local holder1 << holders[1]
+	_local holder2 << holders[2]
+	_self.ensure_set_operation_makes_sense(holder1, holder2)
+	_local new_col << holder1.collection.xor(holder2.collection)
+	_self.add_collection(new_col)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_subtraction()
+	_local holders << _self.selected_top_holders
+	_local holder1 << holders[1]
+	_local holder2 << holders[2]
+	_self.ensure_set_operation_makes_sense(holder1, holder2)
+	_local dia << record_subtraction_dialog.new_dialog(_self)
+	dia.set_holders(holder1, holder2, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_spatial_subtraction()
+	_local (holder1,holder2) << _self.selected_spatial_and_spatial()
+	_self.ensure_set_operation_makes_sense(holder1, holder2)
+	_local dia << spatial_subtraction_dialog.new_dialog(_self)
+	dia.set_holder(holder1, holder2, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.ensure_set_operation_makes_sense(holder1, holder2)
+	_if holder1.collection.is_record_collection? _andif
+	    holder2.collection.is_record_collection?
+	_then
+		_if holder1.collection.expose() _isnt holder2.collection.expose()
+		_then
+			_self.user_error(:set_operator_must_have_same_base)
+		_endif
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.materialize_spatial()
+	_local holder << _self.selected_top_holder
+	_local dia << spatial_materialize_dialog.new_dialog(_self)
+	dia.set_holder(holder, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.materialize()
+	_local holder << _self.selected_top_holder
+	_local dia << record_materialize_dialog.new_dialog(_self)
+	dia.set_holder(holder, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_join_view()
+	_local holder << _self.selected_top_holder
+	_self.ensure_collection_is_sw_collection(holder)
+	_local dia << sw_view_join_dialog.new_dialog(_self)
+	dia.set_holder(holder, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_eq_view()
+	_local holders << _self.selected_top_holders
+	_self.ensure_collection_is_sw_collection(holders[1])
+	_self.ensure_collection_is_sw_collection(holders[2])
+	_local dia << sw_view_eq_dialog.new_dialog(_self)
+	dia.set_holder(holders[1], holders[2], _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.ensure_collection_is_sw_collection(holder)
+	_if _not holder.collection.is_sw_collection?
+	_then
+		_self.user_error(:view_only_possible_on_sw_collection)
+	_endif
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_spatial_collection()
+	_local holder << _self.selected_top_holder
+	_local dia << spatial_dialog.new_dialog(_self)
+	dia.set_holder(holder, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_buffer()
+	_local holder << _self.selected_top_holder
+	_local dia << buffer_dialog.new_dialog(_self)
+	dia.set_holder(holder, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.follow_topology()
+	_local holder << _self.selected_top_holder
+	_if holder.is_record_collection?
+	_then
+		dia << topology_dialog.new_dialog(_self)
+		dia.set_holder(holder, _self.dataset_manager)
+		dia.activate()
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.follow_root()
+	_local holder << _self.selected_top_holder
+	_if holder.is_record_collection?
+	_then
+		dia << root_dialog.new_dialog(_self)
+		dia.set_holder(holder, _self.dataset_manager)
+		dia.activate()
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.follow_join()
+	_local holder << _self.selected_top_holder
+	_if holder.is_record_collection?
+	_then
+		dia << join_dialog.new_dialog(_self)
+		dia.set_holder(holder, _self.dataset_manager)
+		dia.activate()
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.follow_method()
+	_local holder << _self.selected_top_holder
+	_if holder.is_record_collection?
+	_then
+		dia << method_dialog.new_dialog(_self)
+		dia.set_holder(holder, _self.dataset_manager)
+		dia.activate()
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_spatial_filter()
+	_local (col, geom) << _self.selected_col_and_spatial()
+	_if col _is _unset _orif geom _is _unset
+	_then
+		_self.user_error(:please_select_a_collection_and_geometry)
+	_endif
+	dia << spatial_filter_dialog.new_dialog(_self)
+	dia.set_holder(col, geom, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_distance_filter()
+	_local (col, geom) << _self.selected_col_and_spatial()
+	_if col _is _unset _orif geom _is _unset
+	_then
+		_self.user_error(:please_select_a_collection_and_geometry)
+	_endif
+	dia << distance_filter_dialog.new_dialog(_self)
+	dia.set_holder(col, geom, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_predicate_filter()
+	_local holder << _self.selected_top_holder
+	_local dia << predicate_filter_dialog.new_dialog(_self)
+	dia.set_holder(holder, _self.dataset_manager)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.selected_col_and_spatial()
+	_local holders << _self.selected_top_holders
+	_local holder, geom
+	_for i_holder _over holders.fast_elements()
+	_loop
+		_if i_holder.is_record_collection?
+		_then
+			holder << i_holder
+		_elif i_holder.is_spatial? _orif
+		      i_holder.is_area?
+		_then
+			geom << i_holder
+		_endif
+	_endloop
+	_return holder, geom
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.selected_col_and_col()
+	_local holders << _self.selected_top_holders
+	_local holder1, holder2
+	_for i_holder _over holders.fast_elements()
+	_loop
+		_if i_holder.is_record_collection?
+		_then
+			_if holder1 _is _unset
+			_then
+				holder1 << i_holder
+			_elif holder2 _is _unset
+			_then
+				holder2 << i_holder
+			_endif
+		_endif
+	_endloop
+	_return holder1, holder2
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.selected_spatial_and_spatial()
+	_local holders << _self.selected_top_holders
+	_local holder1, holder2
+	_for i_holder _over holders.fast_elements()
+	_loop
+		_if i_holder.is_spatial? _orif
+		    i_holder.is_area?
+		_then
+			_if holder1 _is _unset
+			_then
+				holder1 << i_holder
+			_elif holder2 _is _unset
+			_then
+				holder2 << i_holder
+			_endif
+		_endif
+	_endloop
+	_return holder1, holder2
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.selection_info()
+	_local holders << _self.selected_top_holders
+	_local colnr << swcolnr << reccolnr << spatialnr << areanr << 0
+	_for i_holder _over holders.fast_elements()
+	_loop
+		colnr +<< 1
+		_if i_holder.is_spatial?
+		_then
+			spatialnr +<< 1
+		_elif i_holder.is_area?
+		_then
+			areanr +<< 1
+		_else
+			reccolnr +<< 1
+			_if i_holder.collection.origin_is_sw_collection?
+			_then
+				swcolnr +<< 1
+			_endif
+		_endif
+	_endloop
+	_return colnr, swcolnr, reccolnr, spatialnr, areanr
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.selected_spatial()
+	_return _self.selected_spatial_and_spatial()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.dataset_manager
+	_return .owner.dataset_manager
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.ace_control
+	_return .owner.ace_control
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.ace
+	_return .owner.ace
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.note_workspace_holder_change(renew?)
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.note_selection_change()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.manage_actions()
+	_local (colnr, swcolnr, reccolnr, spatialnr, areanr) << _self.selection_info()
+		
+	_local any_top_sel? << (colnr >= 1)
+	_local any_sel? << _self.any_selection?
+	_local open? << _self.open?
+	.owner.action(:add_collections).enabled? << open?
+	.owner.action(:add_trail).enabled? << open?
+	.owner.action(:add_geom_selection).enabled? << open?
+	.owner.action(:add_collection_selection).enabled? << open?
+	.owner.action(:add_explorer_content).enabled? << open?
+	.owner.action(:add_explorer_selection).enabled? << open?
+	.owner.action(:add_scrapbook).enabled? << open?
+	.owner.action(:spatial_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)
+	.owner.action(:distance_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)
+	.owner.action(:predicate_filter).enabled? << open? _andif (reccolnr=1)
+
+	.owner.action(:follow_topology).enabled? << open? _andif (reccolnr=1)
+	.owner.action(:follow_join).enabled? << open?  _andif (reccolnr=1)
+	.owner.action(:follow_method).enabled? << open?  _andif (reccolnr=1)
+	.owner.action(:follow_root).enabled? << open?  _andif (reccolnr=1)
+
+	.owner.action(:create_spatial).enabled? << open? _andif (swcolnr=1) _and (colnr=1)
+	.owner.action(:create_buffer).enabled? << open?  _andif (colnr=1) _andif ((reccolnr=1) _orif (spatialnr=1) _orif (areanr=1))
+
+	.owner.action(:intersection).enabled? << open? _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
+	.owner.action(:subtraction).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
+	.owner.action(:union).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
+	.owner.action(:xor).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
+
+	.owner.action(:view_by_join).enabled? << open? _andif (swcolnr=1)
+	.owner.action(:view_by_eq).enabled? << open? _andif (swcolnr=2)
+	.owner.action(:materialize).enabled? << open? _andif (reccolnr=1)
+	.owner.action(:materialize_spatial).enabled? << open? _andif ((spatialnr=1) _orif (areanr=1))
+	.owner.action(:delete).enabled? << open? _andif any_top_sel?
+	.owner.action(:move_up).enabled? << open?  _andif any_top_sel?   _andif _self.can_move_up?
+	.owner.action(:move_down).enabled? << open?  _andif any_top_sel? _andif _self.can_move_down?
+	.owner.action(:copy).enabled? << open?  _andif any_sel?
+_endmethod
+$

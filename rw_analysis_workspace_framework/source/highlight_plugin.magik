@@ -1,0 +1,114 @@
+_package rwan
+$
+
+#remex(:highlight_plugin)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+## Publishes a colour action to colour a analysis
+## collection. Also passes thru the highlight rendering to the dialog.
+def_slotted_exemplar(:highlight_plugin,
+	{
+		{:highlighting?, _unset}
+	}, :base_plugin)
+$
+
+
+_pragma(classify_level=basic, topic={demo})
+##
+## defines the z-order of rendering of this plugin.
+highlight_plugin.def_property( :highlight_priority,
+	:type, :integer, :default_value, 50,
+	:description, "Z priority of highlight rendering" )
+$
+
+_pragma(classify_level=restricted, topic={analysis}, usage={subclass})
+highlight_plugin.define_shared_constant( :dialog_exemplar_name,
+	:highlight_dialog,
+	:public )
+$
+
+_pragma(classify_level=restricted, topic={analysis}, usage={subclass})
+_private _method highlight_plugin.init(_gather args)
+	.highlighting? << _false
+	_return _super.init(_scatter args)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method highlight_plugin.init_actions()
+	_self.add_action(sw_action.new(:colour,
+				       :engine, _self.dialog,
+				       :action_message, :|set_highlight_colour()|,
+				       :image, {:colour, _self.module_name}))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_plugin.note_workspace_holder_change(workspace_holder)
+	_local renew? << .workspace_holder _isnt workspace_holder
+	_if renew?
+	_then
+		_if workspace_holder.empty?
+		_then
+			# the new workspace is empty, so stop highlighting
+			_self.stop_highlighting()
+			.highlighting? << _false
+		_elif _not .highlighting?
+		_then
+			# the new isnt empty, but the previous was. So start highlighting
+			
+			_self.start_highlighting()
+			.highlighting? << _true
+		_endif
+	_endif
+	_return _super.note_workspace_holder_change(workspace_holder)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_plugin.stop_highlighting()
+	_local mm << _self.map_manager
+	mm.remove_post_renderer(_self)
+	mm.trigger_transient_redraw()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_plugin.start_highlighting()
+	_local mm << _self.map_manager
+	mm.add_post_renderer(_self, _self.highlight_priority, :transient_drawer)
+	mm.trigger_transient_redraw()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_plugin.map_manager
+	_return _self.app_plugin.map_manager
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_iter _method highlight_plugin.highlight_collections()
+	_for i_holder _over _self.all_holders.fast_elements()
+	_loop
+		_if i_holder.highlight?
+		_then
+			_local col << i_holder.collection
+			_local fill << i_holder.fill_style
+			_loopbody(col, fill)
+		_endif
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method highlight_plugin.map_damage_notify(graphics_context, map_view)
+	## Callback method from P_MAP_VIEW to allow us to render onto
+	## it. Only render on the main map.
+	_if map_view.map_manager.current_map_view _is map_view
+	_then 
+		_self.dialog.map_damage_notify(graphics_context, map_view)
+	_endif 
+_endmethod
+$

@@ -1,0 +1,572 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-30
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:tree_builder)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Specialist object that builds display_trees to all the
+## collections. The owner supplies the key and value of the tree.
+##
+def_slotted_exemplar(:tree_builder,
+	{
+		{:owner, _unset}
+	})
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method tree_builder.new(owner)
+	_return _clone.init(owner)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method tree_builder.init(owner)
+	.owner << owner
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.tree(holder)
+	## 
+	_return holder.display_tree_in(_self)
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_builder.display_tree(col)
+	_local holder << .owner.holder_for(col)
+	_return display_tree.new(holder, holder)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_builder.styled_string(_gather a)
+	_local ss << rope.new_from(a)
+	ss.add_all_last({:value, :name})
+	ss.add_all_last({:tab, :custom_draw, _self.custom_draw_renderer(),
+			 :tab, :toggle, :highlight?})
+	_return ss
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_sw_collection(col, sw_col)
+	_local tree << _self.display_tree(col)
+	_local image << _self.sw_collection_image(sw_col)
+	tree.styled_string << _self.styled_string(:image, image)
+	_return tree
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_materialized_collection(col, base_col, sw_col)
+	_local tree << _self.display_tree(col)
+	_local org_sw_col << base_col.expose()
+	_local image << _self.sw_collection_image(org_sw_col)
+	tree.styled_string << _self.styled_string(:image, {:materialize, _self.module_name},
+						  :image, image)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	tree.expanded? << _true 
+	_return tree
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_set(col, base_set)
+	_local sw_col << col.expose()
+	_local image << _self.sw_collection_image(sw_col)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, image)
+	_return tree
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_spatial_filter_collection(col, base_col, geom_name, selector, arg)
+	_local sw_col << base_col.expose()
+	_local image << _self.sw_collection_image(sw_col)
+	_local fd << sw_col.field(geom_name)
+	_local field_image << _self.sw_geom_field_image(fd)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, image, :image, field_image)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	_local operand_tree << _self.tree(arg)
+	tree.add_child(operand_tree)
+	
+	tree.expanded? << _true 
+	_return tree
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_distance_filter_collection(col, base_col, geom_name, distance, arg)
+	_local sw_col << base_col.expose()
+	_local image << _self.sw_collection_image(sw_col)
+	_local fd << sw_col.field(geom_name)
+	_local field_image << _self.sw_geom_field_image(fd)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, image,
+						  :image, {:distance, _self.module_name},
+						  :image, field_image)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	_local operand_tree << _self.tree(arg)
+	tree.add_child(operand_tree)
+	
+	tree.expanded? << _true 
+	_return tree
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_predicate_collection(col, base_col, pred)
+	_local sw_col << base_col.expose()
+	_local image << _self.sw_collection_image(sw_col)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, image)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	tree.expanded? << _true 
+	_return tree
+_endmethod
+$
+
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_builder.custom_draw_renderer()
+	_local lh << string_styles_holder.default_line_height
+	_local custom_drawer << custom_draw_renderer.new(
+					lh, lh, _self, :|custom_draw_highlight_colour()|)
+	custom_drawer.data << pixel_bounding_box.new_with_size(
+				      0, 0, lh, lh).outline
+	
+	_return custom_drawer
+_endmethod
+$
+
+
+
+_method tree_builder.custom_draw_highlight_colour(p_canvas, p_x, p_y,
+					   p_text_style, p_cust_drw_rndr, p_display_tree)
+	# if the fill_style property is not set, use the colour property
+	# to generate one
+	l_fill_style << p_display_tree.value(:fill_style)
+	_if l_fill_style _isnt _unset
+	_then 
+		# retrieve outline from .data slot
+		_local l_outline << p_cust_drw_rndr.data
+		# fill the outline with the area
+		p_canvas.fill_rline(l_fill_style, p_x + 1, p_y + 1, l_outline)
+		# use the standard method to draw the outline
+		p_cust_drw_rndr.render_outline(p_canvas, p_x, p_y)
+	_endif 
+_endmethod
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_topology_collection(col, base_col, target_col, geom_name)
+	_local tree << _self.display_tree(col)
+	_local image << _self.sw_collection_image(target_col)
+	tree.styled_string << _self.styled_string(:image, image)
+	
+	_local sw_col << base_col.expose()
+	_local operation_tree << display_tree.new(_unset)
+	_local fd << sw_col.field(geom_name)
+	_local field_image << _self.sw_geom_field_image(fd)
+	
+	operation_tree.styled_string << {:image, field_image, :black, fd.external_name, "By Topology"}
+	tree.add_child(operation_tree)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	tree.expanded? << _true 
+	_return tree
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_root_collection(col, base_col, target_col)
+	_local tree << _self.display_tree(col)
+	_local image << _self.sw_collection_image(target_col)
+	tree.styled_string << _self.styled_string(:image, image)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	tree.expanded? << _true 
+	_return tree
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_method_analysis(col, base_col, target_col, methd)
+	_local tree << _self.display_tree(col)
+	_local image << _self.sw_collection_image(target_col)
+	tree.styled_string << _self.styled_string(:image, image)
+	
+	_local sw_col << base_col.expose()
+	_local operation_tree << display_tree.new(_unset)
+	operation_tree.styled_string << {:image, {:method, _self.module_name}, methd.write_string}
+	tree.add_child(operation_tree)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	tree.expanded? << _true 
+	_return tree	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_join_analysis(col, base_col, target_col, jf_name)
+	_local tree << _self.display_tree(col)
+	_local image << _self.sw_collection_image(target_col)
+	tree.styled_string << _self.styled_string(:image, image)
+	
+	_local sw_col << base_col.expose()
+	_local operation_tree << display_tree.new(_unset)
+	_local fd << sw_col.field(jf_name)
+	_local field_image << {:relationship_field, :ui_resources}
+	operation_tree.styled_string << {:image, field_image, :black, fd.external_name, "By Join"}
+	tree.add_child(operation_tree)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	tree.expanded? << _true 
+	_return tree	
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_binary_op_collection(col, base_col, other_col, op)
+	_local tree << _self.display_tree(col)
+	_local sw_col << base_col.expose()
+	_local image << _self.sw_collection_image(sw_col)
+	tree.styled_string << _self.styled_string(:image, {op, _self.module_name}, :image, image)
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	_local other_tree << _self.tree(other_col)
+	tree.add_child(other_tree)
+	
+	tree.expanded? << _true 
+	_return tree	
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_sw_view_collection(col)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, {:view_collection, _self.module_name})
+	_return tree	
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_spatial_operation_collection(col, base_col, other_col, op)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, {op, _self.module_name})
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	_local other_tree << _self.tree(other_col)
+	tree.add_child(other_tree)
+	
+	tree.expanded? << _true 
+	_return tree	
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_area_operation_collection(col, base_col, other_col, op)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, {op, _self.module_name})
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	_local other_tree << _self.tree(other_col)
+	tree.add_child(other_tree)
+	
+	tree.expanded? << _true 
+	_return tree	
+_endmethod
+$
+
+
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_spatial_collection(col, base_col, geom_name)
+	##
+	_local sw_col << base_col.expose()
+	_local fd << sw_col.field(geom_name)
+	_local image << _self.sw_collection_image(sw_col)
+	_local field_image << _self.sw_geom_field_image(fd)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, field_image)
+#	tree.styled_string << {:image, image, sw_col.external_name,
+#			       :image, field_image, :black, fd.external_name}
+	
+	_local child << _self.tree(base_col)
+	tree.add_child(child)
+	tree.expanded? << _true
+	_return tree 
+_endmethod
+$
+
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_buffer(col,base_col,geom_name,distance)
+	_if geom_name _isnt _unset
+	_then 
+		_local sw_col << base_col.expose()
+		_local fd << sw_col.field(geom_name)
+		_local image << _self.sw_collection_image(sw_col)
+		_local geom_field_image << _self.sw_geom_field_image(fd)
+		field_image << {:image, {:buffer, _self.module_name}, :image, geom_field_image}
+	_else
+		field_image << {:image, {:buffer, _self.module_name}}
+	_endif 
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string("Buffer", _scatter field_image)
+	
+	_local child << _self.tree(base_col)
+	tree.add_child(child)
+	tree.expanded? << _true
+	_return tree 
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_area_collection(col, area)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, :area)
+	_return tree
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_area_materialized_collection(col, base_col) 
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, {:materialize_spatial, _self.module_name},
+						  :image, :area)
+	
+	_local child << _self.tree(base_col)
+	tree.add_child(child)
+	tree.expanded? << _true
+	_return tree
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_geometry_collection(col, geometry)
+	_local tree << _self.display_tree(col)
+	_if geometry.is_collection?
+	_then 
+		a_geom << geometry.an_element()
+	_else
+		a_geom << geometry
+	_endif 
+	tree.styled_string << _self.styled_string(:image, a_geom.geom_category)
+	_return tree
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_spatial_materialized_collection(col, base_col)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, {:materialize_spatial, _self.module_name})
+	
+	_local base_tree << _self.tree(base_col)
+	tree.add_child(base_tree)
+	
+	tree.expanded? << _true 
+	_return tree
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_builder.sw_collection_image(col)
+	_local image << col.record_exemplar.legend_info_for(_unset)
+	_if image _is _unset _orif image _is :use_default
+	_then
+		image << {:collection, :ui_resources}
+	_endif
+	_return image
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_builder.sw_geom_field_image(fd)
+	## 
+	## 
+	_return fd.icon_scheme
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method sw_collection.display_tree_in(owner)
+	_return owner.display_tree_for_sw_collection(_self, _self.actual_collection)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method materialized_collection.display_tree_in(owner)
+	_return owner.display_tree_for_materialized_collection(_self, _self.base_collection, _self.actual_collection)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method spatial_filter_collection.display_tree_in(owner)
+	_return owner.display_tree_for_spatial_filter_collection(_self, _self.base_collection, .geom_name, .selector, .arg)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method distance_filter_collection.display_tree_in(owner)
+	_return owner.display_tree_for_distance_filter_collection(_self, _self.base_collection, .geom_name, .distance, .arg)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method predicate_filter_collection.display_tree_in(owner)
+	_return owner.display_tree_for_predicate_collection(_self, _self.base_collection, .pred)
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method geometry_collection.display_tree_in(owner)
+	_return owner.display_tree_for_geometry_collection(_self,.geometry)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method spatial_collection.display_tree_in(owner)
+	_return owner.display_tree_for_spatial_collection(_self, _self.base_collection, .geom_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method topology_collection.display_tree_in(owner)
+	_return owner.display_tree_for_topology_collection(_self, _self.base_collection, _self.target_collection, .geom_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method root_collection.display_tree_in(owner)
+	_return owner.display_tree_for_root_collection(_self, _self.base_collection, _self.target_collection)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method record_set.display_tree_in(owner)
+	_return owner.display_tree_for_set(_self, .base_set)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method method_collection.display_tree_in(owner)
+	_return owner.display_tree_for_method_analysis(_self, _self.base_collection, _self.target_collection, .methd)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method join_collection.display_tree_in(owner)
+	_return owner.display_tree_for_join_analysis(_self, _self.base_collection, _self.target_collection, .methd)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method buffer_collection.display_tree_in(owner)
+	_return owner.display_tree_for_buffer(_self,_self.base_collection, .geom_name, .distance)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method area_collection.display_tree_in(owner)
+	_return owner.display_tree_for_area_collection(_self,.area)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method area_materialized_collection.display_tree_in(owner)
+	_return owner.display_tree_for_area_materialized_collection(_self, _self.base_collection)
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_binary_op_collection.display_tree_in(owner)
+	_return owner.display_tree_for_binary_op_collection(_self,_self.base_collection, _self.other_collection, _self.operation)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method spatial_binary_op_collection.display_tree_in(owner)
+	_return owner.display_tree_for_spatial_operation_collection(_self,_self.base_collection, _self.other_collection, .operation)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method area_binary_op_collection.display_tree_in(owner)
+	_return owner.display_tree_for_area_operation_collection(_self,_self.base_collection, _self.other_collection, .operation)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method spatial_materialized_collection.display_tree_in(owner)
+	_return owner.display_tree_for_spatial_materialized_collection(_self,_self.base_collection)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method sw_view_collection.display_tree_in(owner)
+	_return owner.display_tree_for_sw_view_collection(_self)
+_endmethod
+$

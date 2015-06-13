@@ -1,0 +1,45 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-17
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+
+#remex(:join_collection)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Analysis collection that follows over a join to another
+## collection
+##
+def_slotted_exemplar(:join_collection,
+	{},
+	:method_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method join_collection.new(dsm, base_col, target_col, join_field_name)
+	_return _clone.init(dsm, base_col, target_col, join_field_name, _unset)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method join_collection.description
+	_return _self.message(:description, _self.target_collection.external_name, .methd, _self.base_collection.expose().external_name)
+_endmethod
+$
+

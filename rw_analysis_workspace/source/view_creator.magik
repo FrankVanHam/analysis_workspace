@@ -1,0 +1,90 @@
+_package rwan
+$
+
+#remex(:view_creator)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Specialist that creates a view collection. Main method is
+## create_view().
+##
+def_slotted_exemplar(:view_creator,
+	{})
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method view_creator.new()
+	_return _clone 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method view_creator.create_view(int_table_name,
+				 ext_table_name,
+				 source_tables,
+				 eqs,
+				 result_fields)
+	## INT_TABLE_NAME: is a string
+	## EXT_TABLE_NAME: is a string
+	## SOURCE_TABLES: list of collections
+	## EQS: list of vecs. Each vec is
+	##              { table_name1, table_name2, field1, op, field2 ... }
+	##              .. means more triples field,op,field can be added.
+	## RESULT_FIELDS: list of vecs. Each vec is
+	##              { table_name, old_int_name, new_int_name, new_ext_name }
+	##
+	_local ds   << source_tables.an_element().dataset
+	_local name << int_table_name
+	_local tables << _self.table_specs(source_tables)
+	_local joins  << eqs
+	_local fields << _self.field_specs(result_fields)
+	
+	_local col << view_collection.new_general(ds, name,
+						  tables,
+						  joins,
+						  fields,
+						  _unset)
+	_self.set_external_names(col, ext_table_name, result_fields)
+	
+	_return col
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method view_creator.table_specs(tables)
+	_local table_specs << rope.new()
+	_for i_table _over tables.fast_elements()
+	_loop 
+		table_specs.add({i_table, i_table.name, _unset})
+	_endloop 
+	_return table_specs
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method view_creator.field_specs(result_fields)
+	_local field_specs << rope.new_for(result_fields.size)
+	_for i_vec _over result_fields.fast_elements()
+	_loop
+		(table_name, old_int_name, new_int_name, new_ext_name) << (_scatter i_vec)
+		field_specs.add({table_name, old_int_name, new_int_name})
+	_endloop
+	_return field_specs 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method view_creator.set_external_names(col, ext_table_name, result_fields)
+	## Set the external names of the collection, both the
+	## collection itself and the fields.
+	_local descr << col.descriptor
+	descr.external_name << ext_table_name
+	_for i_vec _over result_fields.fast_elements()
+	_loop
+		(table_name, old_int_name, new_int_name, new_ext_name) << (_scatter i_vec)
+		descr.field(new_int_name).external_name << new_ext_name
+	_endloop 
+_endmethod
+$

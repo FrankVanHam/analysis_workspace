@@ -1,0 +1,3 @@
+:activate_framework	RW Analysis Workspace...
+:short_help_text	Starts the Realworld Analysis Workspace
+:browse_collection	Analysis Explorer Result
