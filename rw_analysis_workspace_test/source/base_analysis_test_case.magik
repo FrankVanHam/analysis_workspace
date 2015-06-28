@@ -115,9 +115,28 @@ _private _method base_analysis_test_case.footpath_collection
 	_return _self.gv.collections[:footpath]
 _endmethod
 $
+
 _pragma(classify_level=basic, topic={analysis})
 _private _method base_analysis_test_case.gv
 	_return gis_program_manager.databases[:gis]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.cable_collection
+	_return _self.ev.collections[:cable]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.customer_collection
+	_return _self.ev.collections[:customer]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.ev
+	_return gis_program_manager.databases[:electricity]
 _endmethod
 $
 

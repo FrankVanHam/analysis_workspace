@@ -43,6 +43,11 @@ _method runner_plugin.init_actions()
 				       :action_message, :|export_to_access()|,
 				       :image, {:export_to_access, :ui_resources},
 				       :caption, _self.dialog.message(:export_to_access)))	
+	_self.add_action(sw_action.new(:calc,
+				       :engine, _self.dialog,
+				       :action_message, :|report_sums()|,
+				       :image, {:calc, _self.module_name},
+				       :caption, _self.dialog.message(:calc)))	
 _endmethod
 $
 

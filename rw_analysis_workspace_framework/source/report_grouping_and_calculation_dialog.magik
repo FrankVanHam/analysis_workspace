@@ -1,0 +1,381 @@
+
+_package rwan
+$
+
+#remex(:report_grouping_and_calculation_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog to create a grouping and calculations for a record
+## collection. 
+## 
+def_slotted_exemplar(:report_grouping_and_calculation_dialog,
+	{
+		{:items,  _unset},
+		{:specs,  _unset},
+		{:holder, _unset}
+	},
+	:model)
+$
+
+message_handler.new(:report_grouping_and_calculation_dialog).add_uses(:model, :gen_graphics)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.init(_gather a)
+	.specs << rope.new()
+	_return _super.init(_scatter a)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.set_holder(holder)
+	.holder << holder
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.activate_in(container)
+	container.modality << :primary_modal
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {0,100})
+	_self.build_top_label(rc)
+	_self.build_trees(rc)
+	_self.build_add_remove_buttons(rc)
+	panel_separator.new(rc, :col_alignment, :fill)
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.build_top_label(container)
+	text_window.new(container, 4, 100, _unset,
+			:horizontal_scrollbar?, _false,
+			:editable?, _false,
+			:contents, _self.message(:top_label),
+			:col_alignment, :fill,
+			:row_alignment, :fill )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.build_trees(container)
+	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
+				:col_alignment, :fill,
+				:row_alignment, :fill)
+	.items[:source_table] << label_item.new(rc, .holder.name)
+	.items[:source_tree] << tree_item.new(rc,
+					      :model, _self,
+					      :distribute_spare_width, :always,
+					      :select_notifier, :|tree_selected()|,
+					      :value_changed_notifier, :|value_changed()|,
+					      :data_selector, :|get_source_tree()|,
+					      :grid_lines?, _true,
+					      :aspect, :source,
+					      :value_selector, :|string_value()|,
+					      :column_allow_sort?, _false,
+					      :column_heading_ids, {:operator, :field},
+					      :col_resize_values, {0,100},
+					      :column_widths, {80,100},
+					      :editor_required_notifier, :|editor_required()|,
+					      :col_alignment, :fill,
+					      :row_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.on_activation()
+	_if .specs.empty?
+	_then
+		.specs.add(grouping_element.new(:group, _unset))
+	_endif 
+	.items[:source_tree].renew()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.tree_selected()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.value_changed(tree, value_id, value)
+	_if value_id = :operator
+	_then
+		tree.value(:field) << _unset
+		.items[:source_tree].refresh()
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.get_source_tree()
+	_return _self.trees_for_specs()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.trees_for_specs()
+	_local trees << rope.new()
+	_for i_index, i_elem _over .specs.fast_keys_and_elements()
+	_loop
+		_local tree << _self.tree_for(i_index, i_elem)
+		trees.add(tree)
+	_endloop
+	_return trees
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.tree_for(index)
+	_local t << display_tree.new(index)
+	t.set_value_method(_self, :|get_tree_value()|, :|set_tree_value()|)
+	t.styled_string << {:value, :operator, :tab,
+			    :value, :field}
+	_return t
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.string_value(tree, value_id)
+	_local value << tree.value(value_id)
+	_if value_id _is :operator
+	_then 
+		_return _self.external_name_for_operator(value)
+	_else
+		_return _self.external_name_for_field(value)
+	_endif
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.get_tree_value(value_id, tree)
+	_if value_id _is :operator
+	_then 
+		_return .specs[tree.key].operator
+	_else
+		_return .specs[tree.key].field
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.set_tree_value(value, value_id, tree)
+	_if value_id _is :operator
+	_then 
+		.specs[tree.key].operator << value
+	_else
+		.specs[tree.key].field << value
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.add()
+	_local sel << .items[:source_tree].selection.an_element()
+	_local elem << grouping_element.new(:group, _unset)
+	_if sel _is _unset
+	_then 
+		.specs.add_last(elem)
+	_else
+		.specs.add_nth(elem, sel.key+1)
+	_endif 
+	.items[:source_tree].refresh()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.remove()
+	_local sel << .items[:source_tree].selection.an_element()
+	
+	.specs.remove_nth(sel.key)
+	.items[:source_tree].refresh()
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method report_grouping_and_calculation_dialog.editor_required( a_tree, row_index, value_id, an_agent )
+	_if value_id = :operator
+	_then
+		_return _self.operator_editor(a_tree, row_index, value_id, an_agent)
+	_elif value_id = :field
+	_then
+		_return _self.field_editor(a_tree, row_index, value_id, an_agent)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_private _method report_grouping_and_calculation_dialog.operator_editor(a_tree, row_index, value_id, an_agent)
+	_local _constant operators << {:group, :min, :max, :sum, :count, :average}
+	_local items << rope.new()
+	_for i_operator _over operators.fast_elements()
+	_loop
+		items.add({i_operator, _self.external_name_for_operator(i_operator)})
+	_endloop 			 
+	an_editor << in_place_choice_editor.new( an_agent, :items, items)
+	_return an_editor
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_private _method report_grouping_and_calculation_dialog.external_name_for_operator(operator)
+	_return _self.message(operator)
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_private _method report_grouping_and_calculation_dialog.field_editor(a_tree, row_index, value_id, an_agent)
+	_local sw_col << .holder.collection.expose()
+	_local items << rope.new()
+	_local operator << a_tree.value(:operator)
+	_for i_field _over sw_col.all_fields.fast_elements()
+	_loop
+		_if _not (i_field.is_physical? _orif i_field.is_derived?)
+		_then
+			_continue
+		_endif
+		_if {:ds!version, :rwo_id}.includes?(i_field.name)
+		_then
+			_continue
+		_endif
+		
+		_if (operator _isnt :group) _andif (operator _isnt :count) _andif (_not i_field.type.class.is_kind_of?(number_mixin))
+		_then
+			_continue
+		_endif 
+				
+		items.add( {i_field, _self.external_name_for_field(i_field)} )
+	_endloop
+		
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc)
+	items << rope.new_from(items)
+	_if operator _is :count
+	_then
+		items.add_first({_unset, _self.external_name_for_field(_unset)})
+	_endif 
+	an_editor << in_place_choice_editor.new( an_agent, :items, items)
+	_return an_editor
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_private _method report_grouping_and_calculation_dialog.external_name_for_field(field)
+	_if field _isnt _unset
+	_then 
+		_return field.external_name.copy()
+	_else
+		_return ""
+	_endif 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted)
+_private _method report_grouping_and_calculation_dialog.build_add_remove_buttons(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box )
+	.items[:add]    << image_button_item.new_safe(rc, _self.add_image,    _self, :|add()|,    :insensitive_image, _self.grey_add_image)
+	.items[:remove] << image_button_item.new_safe(rc, _self.remove_image, _self, :|remove()|, :insensitive_image, _self.grey_remove_image)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.build_buttons(container) 
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:run]   << button_item.new_safe(rc, _self.message(:run), _self, :|run()|, :min_width, 75)
+	.items[:close] << button_item.new_safe(rc, _self.message(:close), _self, :|close()|, :min_width, 75)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.run()
+	_self.ensure_valid_specs()
+	.parent_model.run_in_background(_self, :|perform_safely()|, {:|run_in_background()|},
+					_self.message(:reporting, _unset, .holder.name))
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.run_in_background()
+	_local engine << rwan:grouping_engine.new(.holder.collection)
+	_local result << engine.group(.specs)
+	_local reporter << rwan:grouping_reporter.new()
+	
+	_local file_name << _self.temp_file_name(.holder.name)
+	reporter.report(result, file_name)
+	system.start_command({"notepad", file_name})
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.temp_file_name(name)
+	_local file_name << system.temp_file_name(write_string(name, "_report.txt"))
+	_for i_index, i_char _over file_name.fast_keys_and_elements()
+	_loop
+		_if _not i_char.ascii_alphanumeric?
+		_then
+			file_name[i_index] << %_
+		_endif
+	_endloop
+	_return file_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method report_grouping_and_calculation_dialog.report_specs
+	_return .specs
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.ensure_valid_specs()
+	_for i_line, i_elem _over .specs.fast_keys_and_elements()
+	_loop
+		_if i_elem.operator _is _unset
+		_then
+			_self.user_error(:enter_valid_operator_at, _unset, i_line)
+		_endif
+		_if i_elem.operator _isnt :count _andif
+		    i_elem.field _is _unset
+		_then
+			_self.user_error(:enter_a_field_name_at, _unset, i_line)
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.manage_actions()
+	_local sel? << .items[:source_tree].selection.empty?.not
+	.items[:add].enabled? << _true
+	.items[:remove].enabled? << sel? _andif (.specs.size>1)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.add_image
+	_return smallworld_product.get_raster_image(:add, _self.module_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.grey_add_image
+	_return smallworld_product.get_raster_image(:add_grey, _self.module_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.remove_image
+	_return smallworld_product.get_raster_image(:remove, _self.module_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method report_grouping_and_calculation_dialog.grey_remove_image
+	_return smallworld_product.get_raster_image(:remove_grey, _self.module_name)
+_endmethod
+$

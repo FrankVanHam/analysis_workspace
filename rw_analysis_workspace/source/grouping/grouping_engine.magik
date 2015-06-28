@@ -1,0 +1,203 @@
+_package rwan
+$
+
+#remex(:grouping_engine)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+## Engine that process a collection and groups and sums the values.
+def_slotted_exemplar(:grouping_engine,
+	{
+		{:collection, _unset},
+		{:input,      _unset},
+		{:error_out,  _unset},
+		{:result,     _unset}
+	})
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method grouping_engine.new(col)
+	_return _clone.init(col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.init(col)
+	.collection << col
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method grouping_engine.group(report_struct, _optional error_stream)
+	.error_out << error_stream.default(!output!)
+	.input << _self.valid_input(report_struct)
+	.result << tree.new(_unset, grouping_calc.new())
+	_self.process_collection()
+	_return .result
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.valid_input(report_struct)
+	## Filter out multiple calculations on the same field. Each
+	## calculation will bubble up the tree so only the bottom
+	## calculation definition makes sense.
+	_local to_del << set.new()
+	_for i_index, i_elem _over report_struct.fast_keys_and_elements()
+	_loop
+		_for i_rev_index, i_rev_elem _over report_struct.keys_and_elements_in_reverse()
+		_loop
+			_if i_rev_index = i_index _then _leave _endif
+			
+			_if i_rev_elem.equals?(i_elem)
+			_then
+				to_del.add(i_rev_index)
+			_endif
+		_endloop 
+	_endloop
+	
+	_local input << rope.new()
+	_for i_index, i_elem _over report_struct.fast_keys_and_elements()
+	_loop
+		_if _not to_del.includes?(i_index)
+		_then
+			input.add(i_elem)
+		_endif
+	_endloop
+	_return input
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.process_collection()
+	_for i_rec _over .collection.fast_elements()
+	_loop
+		_self.safe_process_record(i_rec)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.safe_process_record(i_rec)
+	_try
+		_handling error, warning, information _with _self.report_condition_proc
+
+		_self.process_record(i_rec)
+		
+	_when error
+		
+	_endtry
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.process_record(i_rec)
+	#
+	# Note the cunning us of the top variable. top decends in the
+	# tree as the values get processed.
+	_local top << .result
+	_for i_elem _over .input.fast_elements()
+	_loop
+		_local field << i_elem.field
+		_local value << _self.safe_value(i_rec, field)
+		
+		_if i_elem.operator _is :group
+		_then
+			# Select a new top that matches <field,value>
+			top << _self.process_group(i_rec, field, value, top)
+		_else
+			_self.process_sum(i_rec, i_elem, value, top)
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.process_group(i_rec, field, value, top)
+	child_tree << _self.find_tree_if_absent_create(top, field, value)
+	_return child_tree
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.process_sum(i_rec, elem, value, top)
+	_local operator << elem.operator
+	_for i_tree _over top.branch_to_root()
+	_loop
+		_if operator _is :count
+		_then
+			i_tree.value.process_count(elem, value)
+		_elif operator _is :sum
+		_then
+			i_tree.value.process_sum(elem, value)
+		_elif operator _is :min
+		_then
+			i_tree.value.process_min(elem, value)
+		_elif operator _is :max
+		_then
+			i_tree.value.process_max(elem, value)
+		_elif operator _is :average
+		_then
+			i_tree.value.process_average(elem, value)
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.safe_value(rec, field)
+	_if field _is _unset
+	_then
+		_return _unset
+	_endif 
+	_try 
+		_handling error, warning, information _with _self.report_condition_proc
+		_return rec.perform(field.name)
+	_when error
+		_return  _unset
+	_endtry 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.find_tree_if_absent_create(top, field, value)
+	_local child_tree << _unset
+	_for i_child _over top.fast_children()
+	_loop
+		_if i_child.key.key = field _andif
+		    i_child.key.value = value
+		_then
+			child_tree << i_child
+			_leave
+		_endif
+	_endloop
+	_if child_tree _is _unset
+	_then
+		_local v << association.new(field, value)
+		child_tree << tree.new(v, grouping_calc.new(), top)
+	_endif
+	_return child_tree
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_engine.report_condition_proc
+	_local me << _self
+	_return _proc(cond)
+			_import me
+			me.report_condition(cond)
+		_endproc 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method grouping_engine.report_condition(cond)
+	cond.report_contents_on(.error_out)
+	!traceback!(.error_out)
+_endmethod
+$
+

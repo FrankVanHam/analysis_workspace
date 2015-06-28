@@ -6,3 +6,4 @@
 :highlighting			Highlighting the data
 :going_to			Going to: #1
 :sending_to_explorer		Sending collection to explorer
+:calc				Report in groups and sums

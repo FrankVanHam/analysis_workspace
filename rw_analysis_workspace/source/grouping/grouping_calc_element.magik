@@ -1,0 +1,65 @@
+_package rwan
+$
+
+#remex(:grouping_calc_element)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+def_slotted_exemplar(:grouping_calc_element,
+	## Holder for the value assocciated with a group_element.
+	{
+		{:group_element, _unset},
+		{:value, _unset, :writable}
+	})
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method grouping_calc_element.new(group_element)
+	_return _clone.init(group_element)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method grouping_calc_element.init(group_element)
+	.group_element << group_element
+	.value << _unset 
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method grouping_calc_element.operator
+	_return .group_element.operator
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method grouping_calc_element.field
+	_return .group_element.field
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method grouping_calc_element.matches?(other)
+	_return other.matches_in_detail?(.group_element)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method grouping_calc_element.matches_in_detail?(group_element)
+	_return .group_element.equals?(group_element)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method grouping_calc_element.value_as_number_and_unit()
+	_if .value.is_kind_of?(unit_value)
+	_then
+		_local base_unit << .value.dimensionality.base_unit
+		_local value << .value.value_in(base_unit)
+		_return value, base_unit.long_description
+	_else
+		_return .value
+	_endif
+_endmethod
+$

@@ -5,6 +5,8 @@ base_model
 
 runner_dialog
 runner_plugin
+report_grouping_and_calculation_dialog
+
 tree_dialog
 tree_plugin
 workspace_plugin
