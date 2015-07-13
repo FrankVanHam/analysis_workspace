@@ -30,9 +30,12 @@ _pragma(classify_level=restricted, topic={analysis})
 ##
 def_slotted_exemplar(:spatial_filter_dialog,
 	{
-		{:items, _unset},
-		{:record_holder, _unset},
-		{:spatial_holder, _unset}
+		{:items,          _unset},
+		{:holder,         _unset},
+		{:record_holder,  _unset},
+		{:spatial_holder, _unset},
+		{:geom_name,      _unset},
+		{:selector,       _unset}
 	},
 	:model)
 $
@@ -42,9 +45,14 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_dialog.set_holder(holder, spatial_holder)
-	.record_holder << holder
+_method spatial_filter_dialog.set_holder(holder,
+					 record_holder, spatial_holder, dsm,
+					 geom_name, selector )
+	.holder << holder
+	.record_holder << record_holder
 	.spatial_holder << spatial_holder
+	.geom_name << geom_name
+	.selector << selector
 _endmethod
 $
 
@@ -81,11 +89,15 @@ _private _method spatial_filter_dialog.build_operation_selection(container)
 	label_item.new(rc, .record_holder.name, :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:geometry))
-	.items[:source_geometry_choice] << text_choice_item.new(rc, _unset, :items, {}, :col_alignment, :fill)
+	.items[:source_geometry_choice] << text_choice_item.new(rc, _unset,
+								:items, {},
+								:model, _self,
+								:change_selector, :|geometry_changed()|,
+								:col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:operation))
 	.items[:operation_choice] << text_choice_item.new(rc, _unset,
-							  :items, _self.operation_items,
+							  :items, {},
 							  :model, _self,
 							  :change_selector, :|operation_changed()|,
 							  :col_alignment, :fill)
@@ -113,15 +125,36 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.on_activation()
 	_self.initialise_geometry_choice()
-	_self.update_image()
+	_self.initialise_selector_choice()
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.initialise_selector_choice()
+	 _local choice << .items[:operation_choice]
+	 choice.items << items << _self.operation_items
+	 _local op << _if .selector _is _unset
+		      _then
+			      >> items[1][1]
+		      _else
+			      >> .selector
+		      _endif
+	 choice.value_with_notify << op
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.initialise_geometry_choice()
 	_local choice << .items[:source_geometry_choice]
 	choice.items << items << _self.geom_field_items
-	choice.value_with_notify << _self.most_likely_geom_field(items)
+	_local fd << _if .geom_name _is _unset
+		     _then
+			     >>  _self.most_likely_geom_field(items)
+		     _else
+			     >> .record_holder.collection.expose().field(.geom_name)
+		     _endif
+	choice.value_with_notify << fd
 _endmethod
 $
 
@@ -145,10 +178,18 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_dialog.operation_changed()
+_method spatial_filter_dialog.operation_changed(value)
+	.selector << value
 	_self.update_image()
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.geometry_changed(value)
+	.geom_name << value.name
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.update_image()
@@ -161,18 +202,22 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.ok()
-	_local new_col << _self.construct_spatial_predicate()
-	.parent_model.add_collection(new_col)
+	_if .holder _is _unset
+	_then 
+		_local new_col << _self.construct_spatial_predicate()
+		.parent_model.add_collection(new_col)
+	_else
+		.holder.collection.update(.geom_name, .selector)
+		.parent_model.update_holder(.holder)
+	_endif 
 	_self.close()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.construct_spatial_predicate()
-	_local source_geom << .items[:source_geometry_choice].value.name
-	_local operation << .items[:operation_choice].value
-	
-	_local new_col << .record_holder.collection.filter_by_geometry(source_geom, operation, .spatial_holder.collection)
+	_local new_col << .record_holder.collection.filter_by_geometry(.geom_name, .selector,
+								       .spatial_holder.collection)
 	_return new_col
 _endmethod
 $

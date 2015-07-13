@@ -48,6 +48,28 @@ _private _method spatial_filter_collection.init(dsm, base_col, geom_name, select
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.editable?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.activate_editor_in(dialog, holder)
+	dialog.activate_spatial_filter_dialog(holder,
+					      _self.base_collection, .arg,
+					      .geom_name, .selector)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.update(geom_name, selector)
+	.geom_name << geom_name
+	.selector << selector
+_endmethod
+$
+
+
 _pragma(classify_level=restricted, topic={demo})
 _method spatial_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()

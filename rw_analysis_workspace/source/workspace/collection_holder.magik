@@ -50,6 +50,12 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.name << name
+	_return .name << name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.discard()
 	.collection.discard()
 _endmethod
@@ -99,6 +105,13 @@ _method collection_holder.is_record_collection?
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.editable?
+	_return .collection.editable?
+_endmethod
+$
+
+
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.collection
 	_return .collection
@@ -110,6 +123,13 @@ _method collection_holder.display_tree_in(builder)
 	_return .collection.display_tree_in(builder)
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.activate_editor_in(editor)
+	.collection.activate_editor_in(editor, _self)
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder[key]

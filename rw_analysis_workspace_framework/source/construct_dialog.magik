@@ -52,9 +52,16 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.update_holder(holder)
+	holder.name << _self.name_for_collection(holder.collection)
+	_self.current_workspace.set_dirty()
+	.owner.publish_workspace_holder()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.add_collections(collections)
 	_local workspace << _self.current_workspace
-
 	_local last_holder
 	_for i_col _over collections.fast_elements()
 	_loop
@@ -81,6 +88,13 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.name_for_collection(col)
 	_return col.description
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit()
+	_local holder << _self.selected_holder
+	holder.activate_editor_in(_self)
 _endmethod
 $
 
@@ -555,17 +569,34 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_spatial_filter()
-	_local (col, geom) << _self.selected_col_and_spatial()
-	_if col _is _unset _orif geom _is _unset
+_method construct_dialog.create_spatial_filter_dialog()
+	_local (col_holder, arg_holder) << _self.selected_col_and_spatial()
+	_if (col_holder _is _unset) _orif (arg_holder _is _unset)
 	_then
 		_self.user_error(:please_select_a_collection_and_geometry)
 	_endif
-	dia << spatial_filter_dialog.new_dialog(_self)
-	dia.set_holder(col, geom, _self.dataset_manager)
+	_self.do_activate_spatial_filter_dialog(_unset, col_holder, arg_holder)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.activate_spatial_filter_dialog(holder, base_col, arg,
+							geom_name, selector)
+	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_local arg_holder  << _self.current_workspace.holder_for(arg)
+	_self.do_activate_spatial_filter_dialog(holder, base_holder, arg_holder, geom_name, selector)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.do_activate_spatial_filter_dialog(holder, base_holder, arg_holder, _optional geom_name, selector)
+	_local dia << spatial_filter_dialog.new_dialog(_self)
+	dia.set_holder(holder, base_holder, arg_holder, _self.dataset_manager,
+		       geom_name, selector)
 	dia.activate()
 _endmethod
 $
+
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_distance_filter()
@@ -748,6 +779,8 @@ _method construct_dialog.manage_actions()
 	.owner.action(:view_by_eq).enabled? << open? _andif (swcolnr=2)
 	.owner.action(:materialize).enabled? << open? _andif (reccolnr=1)
 	.owner.action(:materialize_spatial).enabled? << open? _andif ((spatialnr=1) _orif (areanr=1))
+	
+	.owner.action(:edit).enabled? << open? _andif any_sel? _andif _self.selected_holder.editable?
 	.owner.action(:delete).enabled? << open? _andif any_top_sel?
 	.owner.action(:move_up).enabled? << open?  _andif any_top_sel?   _andif _self.can_move_up?
 	.owner.action(:move_down).enabled? << open?  _andif any_top_sel? _andif _self.can_move_down?

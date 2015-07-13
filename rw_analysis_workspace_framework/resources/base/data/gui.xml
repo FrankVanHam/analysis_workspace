@@ -12,6 +12,7 @@
       <action name="exit" mnemonic_id="exit_m"/>
     </submenu>
     <submenu name="edit" mnemonic_id="edit_m">
+      <action name="construct.edit"/>
       <action name="construct.delete"/>
       <action name="construct.copy"/>
       <separator/>
@@ -103,6 +104,7 @@
     <action name="construct.materialize_spatial"/>
   </toolbar>
   <toolbar name="tree">
+    <action name="construct.edit"/>
     <action name="construct.delete"/>
     <action name="construct.copy"/>
     <section/>

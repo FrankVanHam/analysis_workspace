@@ -77,7 +77,7 @@ _method construct_plugin.init_actions()
 	_self.add_action(sw_action.new(:spatial_filter,
 				       :engine, _self.dialog,
 				       :image, {:spatial, _self.module_name},
-				       :action_message, :|create_spatial_filter()|))
+				       :action_message, :|create_spatial_filter_dialog()|))
 	_self.add_action(sw_action.new(:distance_filter,
 				       :engine, _self.dialog,
 				       :image, {:distance, _self.module_name},
@@ -144,6 +144,10 @@ _method construct_plugin.init_actions()
 				       :image, {:materialize_spatial, _self.module_name},
 				       :action_message, :|materialize_spatial()|))
 	
+	_self.add_action(sw_action.new(:edit,
+				       :engine, _self.dialog,
+				       :action_message, :|edit()|,
+				       :image, {:edit_object, :ui_resources}))
 	_self.add_action(sw_action.new(:delete,
 				       :engine, _self.dialog,
 				       :action_message, :|delete()|,

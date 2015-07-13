@@ -72,6 +72,19 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_collection.editable?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _method base_collection.activate_editor_in(plugin)
+	## Callback method from the plugin to let the collection
+	## determine what editor to use.	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.origin_is_sw_collection?
 	_if _self.base_collection _isnt _unset 
 	_then

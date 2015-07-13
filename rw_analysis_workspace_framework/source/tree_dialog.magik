@@ -120,13 +120,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_dialog.holder_for(col)
-	_for i_holder _over _self.all_holders.fast_elements()
-	_loop
-		_if i_holder.collection _is col
-		_then
-			_return i_holder
-		_endif
-	_endloop 
+	_return _self.current_workspace.holder_for(col)
 _endmethod
 $
 
