@@ -570,18 +570,18 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_spatial_filter_dialog()
-	_local (col_holder, arg_holder) << _self.selected_col_and_spatial()
-	_if (col_holder _is _unset) _orif (arg_holder _is _unset)
+	_local (record_holder, arg_holder) << _self.selected_col_and_spatial()
+	_if (record_holder _is _unset) _orif (arg_holder _is _unset)
 	_then
 		_self.user_error(:please_select_a_collection_and_geometry)
 	_endif
-	_self.do_activate_spatial_filter_dialog(_unset, col_holder, arg_holder)
+	_self.do_activate_spatial_filter_dialog(_unset, record_holder, arg_holder)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.activate_spatial_filter_dialog(holder, base_col, arg,
-							geom_name, selector)
+_method construct_dialog.edit_spatial_filter_dialog(holder, base_col, arg,
+						    geom_name, selector)
 	_local base_holder << _self.current_workspace.holder_for(base_col)
 	_local arg_holder  << _self.current_workspace.holder_for(arg)
 	_self.do_activate_spatial_filter_dialog(holder, base_holder, arg_holder, geom_name, selector)
@@ -612,10 +612,24 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_predicate_filter()
-	_local holder << _self.selected_top_holder
+_method construct_dialog.create_predicate_filter_dialog()
+	_local record_holder << _self.selected_top_holder
 	_local dia << predicate_filter_dialog.new_dialog(_self)
-	dia.set_holder(holder, _self.dataset_manager)
+	_self.do_create_predicate_filter_dialog(_unset, record_holder)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit_predicate_filter_dialog(holder, base_col, predicate)
+	_local record_holder << _self.current_workspace.holder_for(base_col)
+	_self.do_create_predicate_filter_dialog(holder, record_holder)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.do_create_predicate_filter_dialog(holder, record_holder)
+	_local dia << predicate_filter_dialog.new_dialog(_self)
+	dia.set_holder(holder, record_holder, _self.dataset_manager)
 	dia.activate()
 _endmethod
 $

@@ -56,9 +56,9 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.activate_editor_in(dialog, holder)
-	dialog.activate_spatial_filter_dialog(holder,
-					      _self.base_collection, .arg,
-					      .geom_name, .selector)
+	dialog.edit_spatial_filter_dialog(holder,
+					  _self.base_collection, .arg,
+					  .geom_name, .selector)
 _endmethod
 $
 

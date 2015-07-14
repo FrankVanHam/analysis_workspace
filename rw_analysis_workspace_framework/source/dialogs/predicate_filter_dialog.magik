@@ -29,9 +29,10 @@ _pragma(classify_level=restricted, topic={analysis})
 ##
 def_slotted_exemplar(:predicate_filter_dialog,
 	{
-		{:items, _unset},
+		{:holder,              _unset},
+		{:items,               _unset},
 		{:predicate_component, _unset},
-		{:holder, _unset}
+		{:record_holder,       _unset}
 	},
 	:model)
 $
@@ -41,8 +42,9 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_dialog.set_holder(holder)
+_method predicate_filter_dialog.set_holder(holder, record_holder, dsm)
 	.holder << holder
+	.record_holder << record_holder
 _endmethod
 $
 
@@ -76,7 +78,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_dialog.build_source_label(container)
 	_local rc << rowcol.new(container, _unset, 4, _unset, :style, :nested, :col_alignment, :fill)
 	label_item.new(rc, _self.message(:source_collection))
-	label_item.new(rc, .holder.name)
+	label_item.new(rc, .record_holder.name)
 	label_item.new(rc, _self.message(:indexes))
 	text_choice_item.new(rc, _unset, :items, _self.index_items, :col_alignment, :fill,
 			    :balloon_help_text, _self.message(:indexes_balloon) )
@@ -94,11 +96,9 @@ _private _method predicate_filter_dialog.build_predicate_selection(container)
 	_local ace << .parent_model.ace
 	.predicate_component << query_predicate_component.new( :query, _self, :ace, ace)
 	.predicate_component.build_gui(rc)
-	.predicate_component.set_collection(.holder.collection.expose())
+	.predicate_component.set_collection(.record_holder.collection.expose())
 _endmethod
 $
-
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_dialog.build_buttons(container)
@@ -108,26 +108,31 @@ _private _method predicate_filter_dialog.build_buttons(container)
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _method predicate_filter_dialog.ok()
-	_local new_col << _self.construct_predicate_predicate()
-	.parent_model.add_collection(new_col)
+	_local pred << _self.construct_predicate()
+	_if .holder _is _unset
+	_then 
+		_local new_col << .record_holder.collection.filter_by_predicate(pred)
+		.parent_model.add_collection(new_col)
+	_else
+		.holder.collection.update(pred)
+		.parent_model.update_holder(.holder)
+	_endif 
 	_self.close()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.construct_predicate_predicate()
+_private _method predicate_filter_dialog.construct_predicate()
 	_local pred << .predicate_component.predicate()
 	_if pred _is _unset
 	_then
 		_self.user_error(:please_supply_a_predicate)
-	_endif 
-	_return .holder.collection.filter_by_predicate(pred)
+	_endif
+	_return pred
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method predicate_filter_dialog.cancel()
@@ -135,11 +140,10 @@ _method predicate_filter_dialog.cancel()
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_dialog.index_items
 	_local items << rope.new()
-	_local sw_col << .holder.collection.expose()
+	_local sw_col << .record_holder.collection.expose()
 	_local indexes << sw_col.all_index_names
 	_for i_vec _over indexes.fast_elements()
 	_loop
