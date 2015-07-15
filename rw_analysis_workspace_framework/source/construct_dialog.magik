@@ -599,14 +599,34 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_distance_filter()
-	_local (col, geom) << _self.selected_col_and_spatial()
-	_if col _is _unset _orif geom _is _unset
+_method construct_dialog.create_distance_filter_dialog()
+	_local (record_holder, arg_holder) << _self.selected_col_and_spatial()
+	_if record_holder _is _unset _orif arg_holder _is _unset
 	_then
 		_self.user_error(:please_select_a_collection_and_geometry)
 	_endif
+	_self.do_create_distance_filter_dialog(_unset, record_holder, arg_holder)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit_distance_filter_dialog(holder,
+						    base_col, arg,
+						    geom_name, distance, inverse?)
+	_local record_holder << _self.current_workspace.holder_for(base_col)
+	_local arg_holder    << _self.current_workspace.holder_for(arg)
+	_self.do_create_distance_filter_dialog(holder, record_holder, arg_holder,
+					       geom_name, distance, inverse?)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.do_create_distance_filter_dialog(holder, record_holder, arg_holder,
+								   _optional geom_name, distance, inverse?)
 	dia << distance_filter_dialog.new_dialog(_self)
-	dia.set_holder(col, geom, _self.dataset_manager)
+	dia.set_holder(holder, record_holder, arg_holder,
+		       _self.dataset_manager,
+		       geom_name, distance, inverse?)
 	dia.activate()
 _endmethod
 $

@@ -69,7 +69,6 @@ _method spatial_filter_collection.update(geom_name, selector)
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={demo})
 _method spatial_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
