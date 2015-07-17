@@ -1739,4 +1739,27 @@ _method tree_dialog.tree_selected(tree_selection)
 _endmethod
 $
 
+
+_pragma(classify_level=advanced, topic={roos,analytics})
+_method min_road.rwan_methods
+	##
+	## Backstop method for the realworld analysis framework to
+	## supply custom build navigation methods.
+	##
+	## Return a vector of vectors with:
+	## { methd, args, external_name, target}
+	## methd:         is the method name to invoke. Note that the method
+	##                should return records from one and the same collection.
+	## args:          are the arguments of the method
+	## external_name: descriptive string to tell the user what this does.
+	## target:        the target collection of the objects what will be
+	##                returned from the method.
+	_return {
+			{:method1, {}, "Methode 1", _self.dataset.collections[:hotel]},
+			{:method2, {}, "Methode 2", _self.dataset.collections[:road_works]}
+		}
+_endmethod
+$
+
+
 !global_auto_declare?! << _maybe 

@@ -47,6 +47,28 @@ _private _method method_collection.init(dsm, base_col, target_col, methd, args)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method method_collection.editable?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method method_collection.activate_editor_in(dialog, holder)
+	dialog.edit_follow_method_dialog(holder,
+					 _self.base_collection, .methd, .args)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method method_collection.update(target_col, methd, args)
+	.target_ds_name << target_col.dataset.original_dataset_name
+	.target_table_name << target_col.name
+	.methd << methd
+	.args << args
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={analysis})
 _method method_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
