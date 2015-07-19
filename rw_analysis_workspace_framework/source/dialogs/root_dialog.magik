@@ -28,8 +28,10 @@ _pragma(classify_level=restricted, topic={analysis})
 ##
 def_slotted_exemplar(:root_dialog,
 	{
-		{:items, _unset},
-		{:holder, _unset}
+		{:items,         _unset},
+		{:holder,        _unset},
+		{:record_holder, _unset},
+		{:target_collection, _unset}
 	},
 	:model)
 $
@@ -37,10 +39,11 @@ $
 message_handler.new(:root_dialog).add_uses(:model, :gen_graphics)
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
-_method root_dialog.set_holder(holder)
-	.holder << holder
+_method root_dialog.set_holder(holder, record_holder, dsm, target_col)
+	.holder        << holder
+	.record_holder << record_holder
+	.target_collection << target_col
 _endmethod
 $
 
@@ -57,12 +60,6 @@ _method root_dialog.activate_in(container)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method root_dialog.on_activation()
-	.items[:ok].enabled? << .items[:root_choice].value _isnt _unset 
-_endmethod
-$
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method root_dialog.build_top_label(container)
@@ -75,19 +72,20 @@ _private _method root_dialog.build_top_label(container)
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _private _method root_dialog.build_root_selection(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
 	label_item.new(rc, _self.message(:source_collection))
-	.items[:col] << label_item.new(rc, .holder.name, :col_alignment, :fill)
+	.items[:col] << label_item.new(rc, .record_holder.name, :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:root))
-	_local choice << text_choice_item.new(rc, _unset, :items, _self.root_items, :col_alignment, :fill)
+	_local choice << text_choice_item.new(rc, _unset, :items, {},
+					      :model, _self,
+					      :change_selector, :|root_changed()|,
+					      :col_alignment, :fill)
 	.items[:root_choice] << choice
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method root_dialog.build_buttons(container)
@@ -98,23 +96,61 @@ _private _method root_dialog.build_buttons(container)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method root_dialog.on_activation()
+	_self.initialise_target_choice()
+	.items[:ok].enabled? << .items[:root_choice].value _isnt _unset 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method root_dialog.initialise_target_choice()
+	_local items << _self.root_items
+	.items[:root_choice].items << items
+	_self.set_current_target_collection(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method root_dialog.set_current_target_collection(items)
+	_local value << _unset
+	_if items.size > 0
+	_then
+		value << items[1][1]
+	_endif
+	_if .target_collection _isnt _unset
+	_then
+		_for i_vec _over items.fast_elements()
+		_loop
+			_if i_vec[1] _is .target_collection
+			_then
+				value << i_vec[1]
+			_endif
+		_endloop
+	_endif
+	.items[:root_choice].value_with_notify << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method root_dialog.root_changed(value)
+	.target_collection << value
+_endmethod
+$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method root_dialog.ok()
-	_local new_col << _self.construct_root_filter()
-	.parent_model.add_collection(new_col)
+	_if .holder _is _unset
+	_then
+		_local new_col << .record_holder.collection.root(.target_collection)
+		.parent_model.add_collection(new_col)
+	_else
+		.holder.collection.update(.target_collection)
+		.parent_model.update_holder(.holder)
+	_endif 
 	_self.close()
 _endmethod
 $
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method root_dialog.construct_root_filter()
-	_local table << .items[:root_choice].value
-	_local new_col << .holder.collection.root(table)
-	_return new_col
-_endmethod
-$
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method root_dialog.cancel()
@@ -127,8 +163,8 @@ _method root_dialog.root_items
 	_local done << set.new()
 	_local items << rope.new()
 	
-	_local current_sw_col << .holder.collection.expose()
-	_for i_col _over .holder.collection.branch_to_root()
+	_local current_sw_col << .record_holder.collection.expose()
+	_for i_col _over .record_holder.collection.branch_to_root()
 	_loop
 		_local sw_col << i_col.expose()
 		_if current_sw_col _is sw_col _then _continue _endif

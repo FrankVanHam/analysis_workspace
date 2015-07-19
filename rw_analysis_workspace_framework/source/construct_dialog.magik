@@ -547,14 +547,28 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.follow_root()
-	_local holder << _self.selected_top_holder
-	_if holder.is_record_collection?
+_method construct_dialog.create_follow_root_dialog()
+	_local record_holder << _self.selected_top_holder
+	_if record_holder.is_record_collection?
 	_then
-		dia << root_dialog.new_dialog(_self)
-		dia.set_holder(holder, _self.dataset_manager)
-		dia.activate()
+		_self.activate_follow_root_dialog(_unset, record_holder)
 	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit_follow_root_dialog(holder, base_col, target_col)
+	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_self.activate_follow_root_dialog(holder, base_holder, target_col)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.activate_follow_root_dialog(holder, record_holder,
+							      _optional target_col)
+	dia << root_dialog.new_dialog(_self)
+	dia.set_holder(holder, record_holder, _self.dataset_manager, target_col)
+	dia.activate()
 _endmethod
 $
 
