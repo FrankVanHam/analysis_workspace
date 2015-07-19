@@ -138,21 +138,13 @@ _pragma(classify_level=restricted, topic={analysis})
 _method join_dialog.ok()
 	_if .holder _is _unset
 	_then 
-		_local new_col << _self.construct_join_filter()
+		_local new_col << record_holder.collection.follow_join(.join_field_name)
 		.parent_model.add_collection(new_col)
 	_else
 		.holder.collection.update(.join_field_name)
 		.parent_model.update_holder(.holder)
 	_endif 
 	_self.close()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method join_dialog.construct_join_filter()
-	_local name << .items[:join_choice].value
-	_local new_col << .record_holder.collection.follow_join(name)
-	_return new_col
 _endmethod
 $
 

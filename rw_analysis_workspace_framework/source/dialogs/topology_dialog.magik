@@ -28,8 +28,11 @@ _pragma(classify_level=basic, topic={demo})
 ##
 def_slotted_exemplar(:topology_dialog,
 	{
-		{:items, _unset},
-		{:holder, _unset}
+		{:items,         _unset},
+		{:holder,        _unset},
+		{:record_holder, _unset},
+		{:geom_name,     _unset},
+		{:target_collection, _unset}
 	}, :model )
 $
 
@@ -37,8 +40,11 @@ message_handler.new(:topology_dialog).add_uses(:model, :gen_graphics)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.set_holder(holder)
-	.holder << holder
+_method topology_dialog.set_holder(holder, record_holder, dsm, geom_name, target_col)
+	.holder        << holder
+	.record_holder << record_holder
+	.geom_name     << geom_name
+	.target_collection << target_col
 _endmethod
 $
 
@@ -65,42 +71,6 @@ _private _method topology_dialog.build_top_label(container)
 			:row_alignment, :fill )
 _endmethod
 $
-
-_pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.on_activation() 
-	_self.initialise_geometry_choice()
-	_return _super(model).on_activation()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.initialise_geometry_choice()
-	_local choice << .items[:geometry_choice]
-	choice.items << items << _self.geom_field_items
-	choice.value_with_notify << _self.most_likely_geom_field(items)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.most_likely_geom_field(items)
-	_if items.size = 1
-	_then
-		_return items[1][1]
-	_endif 
-	_local _constant topo_cats << {:chain, :point, :area}
-	_for i_vec _over items.fast_elements()
-	_loop
-		_local geom_cat << i_vec[1].geom_category
-		_if topo_cats.includes?(geom_cat)
-		_then
-			_return i_vec[1]
-		_endif
-	_endloop
-	_return items[1][1]
-_endmethod
-$
-
-
 _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.build_topology_selection(container) 
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
@@ -108,10 +78,16 @@ _private _method topology_dialog.build_topology_selection(container)
 	.items[:col] << label_item.new(rc, _self.collection_description, :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:geometry)) 
-	.items[:geometry_choice] << text_choice_item.new(rc, _unset, :items, {}, :model, _self, :change_selector, :|change_geometry()|, :col_alignment, :fill)
+	.items[:geometry_choice] << text_choice_item.new(rc, _unset, :items, {},
+							 :model, _self,
+							 :change_selector, :|geometry_changed()|,
+							 :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:topology) ) 
-	.items[:topology_choice] << text_choice_item.new(rc, _unset, :items, {}, :col_alignment, :fill)  
+	.items[:topology_choice] << text_choice_item.new(rc, _unset, :items, {},
+							 :model, _self,
+							 :change_selector, :|target_changed()|,
+							 :col_alignment, :fill)  
 _endmethod
 $
 
@@ -122,21 +98,97 @@ _private _method topology_dialog.build_buttons(container)
 	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel) , _self, :|cancel()|, :min_width, 75) 
 _endmethod
 $
-
 _pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.ok() 
-	_local col << _self.construct_topology_collection()
-	.parent_model.add_collection(col) 
-	_self.close() 
+_method topology_dialog.on_activation() 
+	_self.initialise_geometry_choice()
+	_self.initialise_target_choice()
+	_return _super(model).on_activation()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.construct_topology_collection() 
-	_local col << .items[:geometry_choice] .value.name
-	_local rwo_type << .items[:topology_choice] .value
-	_local topo_col << .holder.collection.follow_topology(col, rwo_type) 
-	_return topo_col
+_private _method topology_dialog.initialise_geometry_choice()
+	_local items << _self.geom_field_items
+	.items[:geometry_choice].items << items
+	_self.set_current_geom_field(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.initialise_target_choice()
+	_local geom_field << .record_holder.collection.expose().field(.geom_name)
+	_local items << _self.topology_items(geom_field)
+	.items[:topology_choice].items << items
+	_self.set_current_target_collection(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.set_current_target_collection(items)
+	_local value << _unset
+	_if items.size > 0
+	_then
+		value << items[1][1]
+	_endif
+	_if .target_collection _isnt _unset
+	_then
+		_for i_vec _over items.fast_elements()
+		_loop
+			_if i_vec[1] _is .target_collection
+			_then
+				value << i_vec[1]
+			_endif
+		_endloop
+	_endif
+	.items[:topology_choice].value_with_notify << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_dialog.set_current_geom_field(items)
+	_local value << _unset
+	_if items.size > 0
+	_then
+		value << items[1][1]
+		_local _constant topo_cats << {:chain, :point, :area}
+		_for i_vec _over items.fast_elements()
+		_loop
+			_local geom_cat << i_vec[1].geom_category
+			_if topo_cats.includes?(geom_cat)
+			_then
+				value << i_vec[1]
+				_leave 
+			_endif
+		_endloop
+	_endif
+	_if .geom_name _isnt _unset
+	_then
+		_for i_vec _over items.fast_elements()
+		_loop
+			_if i_vec[1].name = .geom_name
+			_then
+				value << i_vec[1]
+			_endif
+		_endloop
+	_endif
+	_if value _isnt _unset
+	_then 
+		.items[:geometry_choice].value_with_notify << value
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.ok()
+	_if .holder _is _unset
+	_then
+		_local col << .record_holder.collection.follow_topology(.geom_name, .target_collection)
+		.parent_model.add_collection(col)
+	_else
+		.holder.collection.update(.geom_name, .target_collection)
+		.parent_model.update_holder(.holder)
+	_endif 
+	_self.close() 
 _endmethod
 $
 
@@ -147,8 +199,15 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.change_geometry(geom_field) 
-	.items[:topology_choice].items << _self.topology_items(geom_field)  
+_method topology_dialog.geometry_changed(geom_field)
+	.geom_name << geom_field.name
+	.items[:topology_choice].items << _self.topology_items(geom_field)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.target_changed(value)
+	.target_collection << value
 _endmethod
 $
 
@@ -158,7 +217,7 @@ _method topology_dialog.topology_items(geom_field)
 	_local cols << _self.collections_for_topology(geom_field) 
 	_for i_col _over cols.fast_elements()
 	_loop
-		items.add({ i_col.name, i_col.external_name.copy()}) 
+		items.add({ i_col, i_col.external_name.copy()}) 
 	_endloop
 	items << items.as_sorted_collection(_proc(a, b) 
 						    _return a[2] _cf b[2]
@@ -166,16 +225,15 @@ _method topology_dialog.topology_items(geom_field)
 	items << rope.new_from(items) 
 	_if items.empty?
 	_then
-		items.add({ _unset, _self.message(:no_topology)})
+		items.add({_unset, _self.message(:no_topology)})
 	_endif 
 	_return items
 _endmethod
-
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.collections_for_topology(geom_field) 
-	_local sw_col << .holder.collection.expose()
+	_local sw_col << .record_holder.collection.expose()
 	_local ds << sw_col.dataset
 	_if geom_field.mapped?
 	_then
@@ -191,7 +249,8 @@ _private _method topology_dialog.collections_for_topology(geom_field)
 		_local gs << ds.geometry_on_manifold(fd.manifold_code)
 		_for i_fd _over gs.fast_elements()
 		_loop
-			_local col << i_fd.owner
+			_local dd << i_fd.owner
+			_local col << dd.dataset.collections[dd.name]
 			_if done.includes?(col).not
 			_then 
 				cols.add(col)
@@ -201,12 +260,11 @@ _private _method topology_dialog.collections_for_topology(geom_field)
 	_endloop 
 	_return cols
 _endmethod
-
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.geom_field_items
-	_return _self.geom_field_items_for(.holder.collection) 
+	_return _self.geom_field_items_for(.record_holder.collection) 
 _endmethod
 
 $
@@ -233,9 +291,9 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.collection_description
-	_if .holder.is_record_collection?
+	_if .record_holder.is_record_collection?
 	_then
-		_return .holder.collection.expose().external_name
+		_return .record_holder.collection.expose().external_name
 	_else
 		_return _self.message(:geometry_collection)
 	_endif 

@@ -45,6 +45,28 @@ _private _method topology_collection.init(dsm, base_col, geom_name, target_col)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method topology_collection.editable?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method topology_collection.activate_editor_in(dialog, holder)
+	dialog.edit_follow_topology_dialog(holder,
+					 _self.base_collection,
+					 .geom_name, _self.target_collection)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method topology_collection.update(geom_name, target_col)
+	.target_ds_name << target_col.dataset.original_dataset_name
+	.target_table_name << target_col.name
+	.geom_name << geom_name
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={analysis})
 _method topology_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()

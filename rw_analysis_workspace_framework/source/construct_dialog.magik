@@ -521,14 +521,28 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.follow_topology()
-	_local holder << _self.selected_top_holder
-	_if holder.is_record_collection?
+_method construct_dialog.create_follow_topology_dialog()
+	_local record_holder << _self.selected_top_holder
+	_if record_holder.is_record_collection?
 	_then
-		dia << topology_dialog.new_dialog(_self)
-		dia.set_holder(holder, _self.dataset_manager)
-		dia.activate()
+		_self.activate_follow_topology_editor(_unset, record_holder)
 	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit_follow_topology_dialog(holder, base_col, geom_name, target_col)
+	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_self.activate_follow_topology_editor(holder, base_holder, geom_name, target_col)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.activate_follow_topology_editor(holder, base_holder,
+								  _optional geom_name, target_col)
+	dia << topology_dialog.new_dialog(_self)
+	dia.set_holder(holder, base_holder, _self.dataset_manager, geom_name, target_col)
+	dia.activate()
 _endmethod
 $
 

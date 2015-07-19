@@ -114,10 +114,8 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.follow_topology(geom_name, rwo_type)
-	_local col << _self.expose()
-	_local target << col.dataset.collections[rwo_type]
-	_return topology_collection.new(.dsm, _self, geom_name, target)
+_method base_record_collection.follow_topology(geom_name, target_col)
+	_return topology_collection.new(.dsm, _self, geom_name, target_col)
 _endmethod
 $
 
