@@ -28,8 +28,10 @@ _pragma(classify_level=restricted, topic={analysis})
 ##
 def_slotted_exemplar(:join_dialog,
 	{
-		{:items, _unset},
-		{:holder, _unset}
+		{:items,           _unset},
+		{:holder,          _unset},
+		{:record_holder,   _unset},
+		{:join_field_name, _unset}
 	},
 	:model)
 $
@@ -37,10 +39,11 @@ $
 message_handler.new(:join_dialog).add_uses(:model, :gen_graphics)
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.set_holder(holder)
+_method join_dialog.set_holder(holder, record_holder, dsm, join_field_name)
 	.holder << holder
+	.record_holder << record_holder
+	.join_field_name << join_field_name
 _endmethod
 $
 
@@ -74,10 +77,13 @@ _private _method join_dialog.build_join_selection(container)
 	## 
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
 	label_item.new(rc, _self.message(:source_collection))
-	label_item.new(rc, .holder.name, :col_alignment, :fill)
+	label_item.new(rc, .record_holder.name, :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:join))
-	.items[:join_choice] << text_choice_item.new(rc, _unset, :items, _self.join_items, :col_alignment, :fill)
+	.items[:join_choice] << text_choice_item.new(rc, _unset, :items, {},
+						     :model, _self,
+						     :change_selector, :|join_field_name_changed()|,
+						     :col_alignment, :fill)
 _endmethod
 $
 
@@ -90,11 +96,54 @@ _private _method join_dialog.build_buttons(container)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method join_dialog.on_activation()
+	_local items << _self.join_items
+	.items[:join_choice].items << items
+	_self.set_current_join(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method join_dialog.join_field_name_changed(value)
+	.join_field_name << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method join_dialog.set_current_join(items)
+	_local value << _unset
+	_if items.size > 0
+	_then
+		value << items[1][1]
+	_endif 
+	_if .join_field_name _isnt _unset
+	_then
+		_for i_vec _over items.fast_elements()
+		_loop
+			_if i_vec[1] = .join_field_name
+			_then
+				value << i_vec[1]
+			_endif
+		_endloop
+	_endif 
+	_if value _isnt _unset
+	_then
+		.items[:join_choice].value_with_notify << value
+	_endif 
+_endmethod
+$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method join_dialog.ok()
-	_local new_col << _self.construct_join_filter()
-	.parent_model.add_collection(new_col)
+	_if .holder _is _unset
+	_then 
+		_local new_col << _self.construct_join_filter()
+		.parent_model.add_collection(new_col)
+	_else
+		.holder.collection.update(.join_field_name)
+		.parent_model.update_holder(.holder)
+	_endif 
 	_self.close()
 _endmethod
 $
@@ -102,11 +151,10 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method join_dialog.construct_join_filter()
 	_local name << .items[:join_choice].value
-	_local new_col << .holder.collection.follow_join(name)
+	_local new_col << .record_holder.collection.follow_join(name)
 	_return new_col
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method join_dialog.cancel()
@@ -117,7 +165,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method join_dialog.join_items
 	_local items << rope.new()
-	_local sw_col << .holder.collection.expose()
+	_local sw_col << .record_holder.collection.expose()
 	_if sw_col.join_fields.empty?
 	_then
 		items.add( {_unset, _self.message(:no_join)} )

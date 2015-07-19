@@ -545,14 +545,28 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.follow_join()
-	_local holder << _self.selected_top_holder
-	_if holder.is_record_collection?
+_method construct_dialog.create_follow_join_dialog()
+	_local record_holder << _self.selected_top_holder
+	_if record_holder.is_record_collection?
 	_then
-		dia << join_dialog.new_dialog(_self)
-		dia.set_holder(holder, _self.dataset_manager)
-		dia.activate()
+		_self.activate_follow_join_dialog(_unset, record_holder)
 	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit_follow_join_dialog(holder, base_col, join_field_name)
+	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_self.activate_follow_join_dialog(holder, base_holder, join_field_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.activate_follow_join_dialog(holder, record_holder,
+							      _optional join_field_name)
+	dia << join_dialog.new_dialog(_self)
+	dia.set_holder(holder, record_holder, _self.dataset_manager, join_field_name)
+	dia.activate()
 _endmethod
 $
 

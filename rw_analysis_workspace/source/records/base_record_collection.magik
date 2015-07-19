@@ -67,9 +67,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_join(join_name)
-	_local col << _self.expose()
-	_local target << col.field(join_name).result_table(col.dataset)
-	_return join_collection.new(.dsm, _self, target, join_name)
+	_return join_collection.new(.dsm, _self, join_name)
 _endmethod
 $
 
