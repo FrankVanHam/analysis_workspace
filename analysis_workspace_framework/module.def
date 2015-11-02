@@ -1,0 +1,8 @@
+analysis_workspace_framework	1
+description
+	Analysis Workspace GUI
+end
+requires
+	analysis_workspace
+end
+

@@ -1,0 +1,118 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2015-01-16
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:area_materialized_collection)
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:area_materialized_collection,
+	{
+		{:id, _unset}
+	}, :base_area_collection)
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_materialized_collection.new(dsm, base_col)
+	_return _clone.init(dsm, base_col)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_materialized_collection.init(dsm, base_col)
+	.id << dsm.materialize_area(base_col)
+	dsm.increase_ref_count(.id)
+	
+	_return _super.init(dsm, base_col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method area_materialized_collection.init_copy()
+	.dsm.increase_ref_count(.id)
+	_return _self
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_method area_materialized_collection.serial_slots()
+	_local (keys, values) << _super.serial_slots()
+	keys.add_all_last({:id})
+	values.add_all_last({.id})
+	_return keys, values
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_private _method area_materialized_collection.init_from_serial(dsm, base_col, id)
+	_super.init_from_serial(dsm, base_col)
+	.id << id
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_method area_materialized_collection.equals?(other)
+	_return _self.is_class_of?(other) _andif 
+		other.equals_in_details?(.base_collections, .id)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={demo})
+_method area_materialized_collection.equals_in_details?(base_cols, id)
+	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
+	
+	_return .id = id
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_materialized_collection.size
+	_return 1
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_materialized_collection.convert_to_geometry()
+	_return .dsm.area(.id)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_materialized_collection.discard()
+	_if .id _isnt _unset
+	_then
+		_local c << .dsm.decrease_ref_count(.id)
+		_if c = 0
+		_then 
+			.dsm.discard_area(.id)
+		_endif 
+		.id << _unset
+	_endif
+	_super.discard()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_materialized_collection.description
+	_return _self.message(:description, _self.base_collection.description)
+_endmethod
+
+

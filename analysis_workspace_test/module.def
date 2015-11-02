@@ -1,0 +1,10 @@
+analysis_workspace_test	1
+description
+	Unit tests for the Analysis Workspace core
+end
+requires
+	munit_image_latest
+end
+tests_modules
+	analysis_workspace
+end

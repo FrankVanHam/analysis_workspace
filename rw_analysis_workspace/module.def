@@ -1,9 +1,0 @@
-rw_analysis_workspace	1
-
-description
-	Realworld Analysis Workspace core
-end
-requires
-	lazy_record_collection
-end
-

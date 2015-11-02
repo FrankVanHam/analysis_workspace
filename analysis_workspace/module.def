@@ -1,0 +1,9 @@
+analysis_workspace	1
+
+description
+	Analysis Workspace core
+end
+requires
+	lazy_record_collection
+end
+

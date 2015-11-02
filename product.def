@@ -1,8 +1,8 @@
-rw_analysis_workspace layered_product
+analysis_workspace layered_product
 title
-	Realworld Analysis Workspace product
+	Analysis Workspace product
 end
 description
-	 Realworld Analysis Workspace for simple (spatial) analysis and visualisation
+	 Analysis Workspace for simple (spatial) analysis and visualisation
 end
 

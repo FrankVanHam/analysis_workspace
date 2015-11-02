@@ -1,0 +1,284 @@
+##
+## File            : $File$
+## SCM             : $URL$
+##
+## Copyright       : Realworld Systems
+##                   e-mail  : support@realworld-systems.com
+##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
+##                   tel     : +31(0)345 614406
+##                   fax     : +31(0)345 614319
+##
+## Contains        : 
+##
+##
+## Date written    : 2014-12-29
+## Date changed    : $Date$
+## Revision        : $Rev$
+
+_package rwan
+$
+
+#remex(:framework_plugin)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## The framework plugin is the link to the applicaton for the
+## Realworld Analysis Framework.
+##
+## It can fire up the framework, highlight, goto, get
+## selection, get from browser, etc.
+##
+def_slotted_exemplar(:framework_plugin,
+	{},
+	{:plugin})
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.init_actions()
+	_self.add_action(
+		sw_action.new(:activate_framework,
+			      :engine, _self,
+			      :short_help_text, _self.message(:short_help_text),
+			      :action_message, :|activate_framework()|))
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.activate_framework()
+	_local f << _self.get_dialog(:frame)
+	_if f _is _unset
+	_then 
+		f << rwan:framework.new(:activate_framework,_self,
+					:config_definition_file_name, "config.xml",
+					:gui_definition_file_name, "gui.xml",
+					:resource_module_name, _self.module_name)
+		_self.cache_dialog(:frame, f)
+	_endif 
+	f.activate(_self.application.top_frame)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.re_evaluate_map_worlds()
+	_local mm << _self.map_manager
+	_if mm _isnt _unset
+	_then
+		_for i_map _over mm.maps()
+		_loop
+			_local w << i_map.world.dataset_worlds.an_element()
+			_local aw << _self.application.get_application_world_for_world(w)
+			i_map.world << aw
+			_for i_view _over i_map.views()
+			_loop
+				i_view.render()
+			_endloop 
+		_endloop 
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.adjust_dsm_for_application(dsm)
+	## 
+	## The DSM is opened for the first time. It should adjust to
+	## the application specifics.
+	_local cs_name << _self.coordinate_system_for_internal_storage
+	_local cs << _self.database.coordinate_system(cs_name)
+	dsm.assign_coordinate_system(cs)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis}, usage={redefinable})
+_private _method framework_plugin.coordinate_system_for_internal_storage
+	## 
+	## Return the coordinate system that should be used for
+	## internal storage. Customers can redefine this to match the
+	## most likely coordinate system.
+	##
+	_local counter << equality_hash_table.new()
+	_for i_ds _over _self.database.version_managed_datasets.fast_elements()
+	_loop
+		_local cs << i_ds.world.coordinate_system
+		_if cs _isnt _unset
+		_then
+			_local name << cs.name
+			counter[name] << counter[name].default(0) + 1
+		_endif 
+	_endloop
+	_local max << _unset
+	_local the_one << _unset
+	_for i_cs, i_count _over counter.fast_keys_and_elements()
+	_loop
+		_if max _is _unset _orif
+		    max < i_count
+		_then
+			max << i_count
+			the_one << i_cs
+		_endif
+	_endloop
+	_return the_one
+_endmethod
+$
+
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework_plugin.add_to_application(dsm)
+	
+	## In the cst 4.3 there is no nice way to get a transaction
+	## group. Those methods are added in later TSB, so for now we sys!slot.
+	_local groups << _self.application.database.sys!slot(:transaction_groups)
+	_if groups[dsm.name] _is _unset
+	_then
+		_local soc << spatial_object_controller.new(dsm.name)
+		soc.add_dataset_manager(dsm)
+		_self.application.database.add_transaction_group(soc)
+		_self.re_evaluate_map_worlds()
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework_plugin.remove_from_application(dsm)
+	## In the cst 4.3 there is no nice way to get a transaction
+	## group. Those methods are added in later TSB, so for now we sys!slot.
+	_local groups << _self.application.database.sys!slot(:transaction_groups)
+	_local trg << groups[dsm.name]
+	_if trg _isnt _unset
+	_then
+		_self.application.database.remove_transaction_group(trg)
+		_self.re_evaluate_map_worlds()
+	_endif
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.map_manager
+	_return _self.get_service_provider( :map_manager )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.refresh_map()
+	_self.map_manager.current_map_document_gui.top_frame.raise()
+	_self.map_manager.current_map_view.render()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.deactivated(p_framework)
+	## 
+	## 
+	
+_endmethod
+$
+
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.map_trail
+	## Returns the current trail
+	## 
+	_if (info << _self.databus.request_data( :map_trail )) _isnt _unset
+	_then
+		(source, trail) << (_scatter info)
+	_endif 
+	_return trail
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.map_selection
+	## 
+	## 
+	_if (info << _self.databus.request_data( :map_selection )) _isnt _unset
+	_then
+		(map, selection) << (_scatter info)
+	_endif 
+	_return selection
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.explorer_selection
+	## 
+	## 
+	_local explorer << _self.get_service_provider(:explorer)
+	_if explorer _isnt _unset
+	_then
+		_local fw << explorer.dialogs[:explorer]
+		_if fw _isnt _unset
+		_then
+			sel << fw.databus.request_data(:explorer_selection)
+		_endif 
+	_endif
+	_return sel
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.explorer_content
+	## 
+	## 
+	_local explorer << _self.get_service_provider(:explorer)
+	_if explorer _isnt _unset
+	_then
+		_local fw << explorer.dialogs[:explorer]
+		_if fw _isnt _unset
+		_then
+			sel << fw.databus.request_data(:explorer_elements)
+		_endif 
+	_endif
+	_return sel
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.scrapbook_results
+	## 
+	##
+	_if ( scr << gis_program_manager.scrapbook()) _isnt _unset _andif
+	    ( result << scr.current_result ) _isnt _unset _andif 
+	    _not result.empty?
+	_then
+		_return result
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.ace_control
+	_local app << _self.application
+	_return app.get_ace_control_for(app.ace_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.goto(gs)
+	_local data << { gs, :new_window?, _false}
+	
+	_self.databus_make_data_available( :goto_request, data )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.ace
+	_local app << _self.application
+	_return gis_program_manager.ace(app.ace_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.explore(set)
+	_self.databus_make_data_available( :rwo_set,
+					   { _self,
+					     set,
+					     :ace_name,    _self.application.ace_name,
+					     :group_name,  _self.message(:browse_collection),
+					     :group_image, { :list, :ui_resources },
+					     :set_current?, _true } )
+_endmethod
+$
