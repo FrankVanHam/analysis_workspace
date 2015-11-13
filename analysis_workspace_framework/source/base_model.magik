@@ -116,3 +116,14 @@ _method base_model.note_workspace_holder_change()
 	
 _endmethod
 $
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_model.new_toolbar(container)
+	rc << toolbar.new(container, _false)
+	rc.col_spacing << 0
+	rc.row_spacing << 0
+	rc.outer_spacing << 2
+	_return rc
+_endmethod
+$

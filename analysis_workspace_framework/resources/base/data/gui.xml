@@ -20,6 +20,8 @@
       <separator/>
       <action name="construct.move_up"/>
       <action name="construct.move_down"/>
+      <separator/>
+      <action name="explorer.start_explorer"/>
     </submenu>
     <submenu name="workarea" mnemonic_id="workarea_m">
       <submenu name="add_spatial" mnemonic_id="add_spatial_m">
@@ -139,6 +141,6 @@
   <statusbar name="default">
     <pane id="status_info" style="innie" width="200" springy="true"/>
     <pane id="size_info" style="innie" width="175"/>
-    <progress_bar id="progress" style="innie" width = "200"/>
+    <!-- <progress_bar id="progress" style="innie" width = "200"/> -->
   </statusbar>
 </gui>

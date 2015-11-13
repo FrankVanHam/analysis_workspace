@@ -38,7 +38,6 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method base_plugin.init(_gather a)
 	 _super.init(_scatter a)
 	.selection << rope.new()
-	.workspace_holder << rwan:workspace_holder.new_empty()
 	 _local dialog << _self.dialog_exemplar.new(_self)
 	_self.cache_dialog(:dialog, dialog)
 	 _return _self
@@ -71,7 +70,12 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.current_workspace
-	_return .workspace_holder.current_workspace
+	_if .workspace_holder _isnt _unset
+	_then 
+		_return .workspace_holder.current_workspace
+	_else
+		_return _unset
+	_endif 
 _endmethod
 $
 
@@ -195,6 +199,11 @@ _pragma(classify_level=advanced, topic={analysis})
 _private _method base_plugin.note_workspace_holder_change(workspace_holder)
 	_local renew? << .workspace_holder _isnt workspace_holder
 	.workspace_holder << workspace_holder
-	_self.dialog.note_workspace_holder_change(renew?)
+
+	_local dialog << _self.dialog
+	_if dialog _isnt _unset
+	_then 
+		dialog.note_workspace_holder_change(renew?)
+	_endif 
 _endmethod
 $

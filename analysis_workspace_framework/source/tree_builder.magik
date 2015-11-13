@@ -89,8 +89,6 @@ _method tree_builder.display_tree_for_materialized_collection(col, base_col, sw_
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
-	
-	tree.expanded? << _true 
 	_return tree
 _endmethod
 $
@@ -121,8 +119,6 @@ _method tree_builder.display_tree_for_spatial_filter_collection(col, base_col, g
 	
 	_local operand_tree << _self.tree(arg)
 	tree.add_child(operand_tree)
-	
-	tree.expanded? << _true 
 	_return tree
 _endmethod
 $
@@ -143,8 +139,6 @@ _method tree_builder.display_tree_for_distance_filter_collection(col, base_col, 
 	
 	_local operand_tree << _self.tree(arg)
 	tree.add_child(operand_tree)
-	
-	tree.expanded? << _true 
 	_return tree
 _endmethod
 $
@@ -158,8 +152,6 @@ _method tree_builder.display_tree_for_predicate_collection(col, base_col, pred)
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
-	
-	tree.expanded? << _true 
 	_return tree
 _endmethod
 $
@@ -213,8 +205,6 @@ _method tree_builder.display_tree_for_topology_collection(col, base_col, target_
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
-	
-	tree.expanded? << _true 
 	_return tree
 _endmethod
 $
@@ -228,8 +218,6 @@ _method tree_builder.display_tree_for_root_collection(col, base_col, target_col)
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
-	
-	tree.expanded? << _true 
 	_return tree
 _endmethod
 $
@@ -248,8 +236,6 @@ _method tree_builder.display_tree_for_method_analysis(col, base_col, target_col,
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
-	
-	tree.expanded? << _true 
 	_return tree	
 _endmethod
 $
@@ -269,8 +255,6 @@ _method tree_builder.display_tree_for_join_analysis(col, base_col, target_col, j
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
-	
-	tree.expanded? << _true 
 	_return tree	
 _endmethod
 $
@@ -287,8 +271,6 @@ _method tree_builder.display_tree_for_binary_op_collection(col, base_col, other_
 	tree.add_child(base_tree)
 	_local other_tree << _self.tree(other_col)
 	tree.add_child(other_tree)
-	
-	tree.expanded? << _true 
 	_return tree	
 _endmethod
 $
@@ -312,8 +294,6 @@ _method tree_builder.display_tree_for_spatial_operation_collection(col, base_col
 	tree.add_child(base_tree)
 	_local other_tree << _self.tree(other_col)
 	tree.add_child(other_tree)
-	
-	tree.expanded? << _true 
 	_return tree	
 _endmethod
 $
@@ -328,8 +308,6 @@ _method tree_builder.display_tree_for_area_operation_collection(col, base_col, o
 	tree.add_child(base_tree)
 	_local other_tree << _self.tree(other_col)
 	tree.add_child(other_tree)
-	
-	tree.expanded? << _true 
 	_return tree	
 _endmethod
 $
@@ -351,7 +329,6 @@ _method tree_builder.display_tree_for_spatial_collection(col, base_col, geom_nam
 	
 	_local child << _self.tree(base_col)
 	tree.add_child(child)
-	tree.expanded? << _true
 	_return tree 
 _endmethod
 $
@@ -375,7 +352,6 @@ _method tree_builder.display_tree_for_buffer(col,base_col,geom_name,distance)
 	
 	_local child << _self.tree(base_col)
 	tree.add_child(child)
-	tree.expanded? << _true
 	_return tree 
 _endmethod
 $
@@ -397,7 +373,6 @@ _method tree_builder.display_tree_for_area_materialized_collection(col, base_col
 	
 	_local child << _self.tree(base_col)
 	tree.add_child(child)
-	tree.expanded? << _true
 	_return tree
 _endmethod
 $
@@ -424,8 +399,6 @@ _method tree_builder.display_tree_for_spatial_materialized_collection(col, base_
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
-	
-	tree.expanded? << _true 
 	_return tree
 _endmethod
 $

@@ -64,6 +64,15 @@ _private _method workspace.init(name)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace.name << new_name
+	## 
+	## 
+	.name << new_name
+_endmethod
+$
+
+
 _pragma(classify_level=basic, topic={demo})
 _method workspace.serial_slots()
     _local keys   << rope.new_with(:name, :holders, :create_date, :create_user)

@@ -114,7 +114,8 @@ _method workspace_holder.gui_items
 	_loop
 		items.add({i_ws.name, i_ws.name.write_string})
 	_endloop
-	_return items
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc)
+	_return items.as_simple_vector()
 _endmethod
 $
 
@@ -173,6 +174,18 @@ $
 _pragma(classify_level=basic, topic={demo})
 _method workspace_holder.create_workspace(name)
 	.workspaces[name] << workspace.new(name)
+	.current_workspace << name
+	_self.set_dirty()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace_holder.rename_workspace(name)
+	_local ws << .workspaces[.current_workspace]
+	ws.name << name
+	
+	.workspaces.remove_key(.current_workspace)
+	.workspaces[name] << ws
 	.current_workspace << name
 	_self.set_dirty()
 _endmethod

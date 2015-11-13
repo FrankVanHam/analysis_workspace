@@ -237,7 +237,13 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.dsm
-	_return .owner.workspace_holder.dsm
+	_local holder << .owner.workspace_holder
+	_if holder _isnt _unset
+	_then 
+		_return holder.dsm
+	_else
+		_return _unset
+	_endif 
 _endmethod
 $
 

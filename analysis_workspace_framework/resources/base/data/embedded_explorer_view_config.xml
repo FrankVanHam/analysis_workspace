@@ -1,0 +1,36 @@
+<config>
+    <plugins>
+        <plugin name="explorer_navigation_input"  class_name="explorer_navigation_input_view" />
+	<plugin name="explorer_search_input"  class_name="explorer_search_input_view">
+	    <properties>
+	        <property name="engine_plugin_name" value="search_engine"/>
+            </properties>
+        </plugin>
+
+        <plugin name="explorer_input_plugin"  class_name="explorer_input_plugin">
+            <plugin_data>
+                <handle plugin_name="explorer_search_input"/>
+		<handle plugin_name="explorer_navigation_input" default="yes"/>
+            </plugin_data>
+        </plugin>
+
+	<plugin name="explorer_group_output"  class_name="explorer_group_output_view" />
+	<plugin name="explorer_rwo_set_output"  class_name="explorer_rwo_set_output_view" />
+
+	<plugin name="explorer_output_plugin"  class_name="explorer_output_plugin">
+            <plugin_data>
+                <handle plugin_name="explorer_group_output" />
+		<handle plugin_name="explorer_rwo_set_output" />
+	    </plugin_data>
+        </plugin>
+
+	<plugin name="edit"  class_name="explorer_edit_plugin">
+	    <property name="render_priority" value="85"/>
+	</plugin>
+	
+	<plugin name="properties"  class_name="explorer_properties_plugin" />
+
+	<plugin name="export"  class_name="explorer_export_plugin" />
+
+    </plugins>
+</config>

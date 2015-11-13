@@ -1,4 +1,5 @@
 :colour				Colour...
+:edit				Edit...
 :new_file_title			Enter a new name for the Analysis dataset
 :move_up			Up
 :move_down			Down
@@ -23,6 +24,8 @@
 :subtraction			Subtraction
 :xor				Xor
 :view				Join 2 tables
+:view_by_join			Join 2 tables by join
+:view_by_eq			Join 2 tables equals fields
 :materialize			Materialize collection
 :materialize_spatial		Materialize spatial
 :yes				Yes

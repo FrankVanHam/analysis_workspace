@@ -57,6 +57,16 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_iter _method base_spatial_collection.fast_elements()
+	_for e _over _self.fast_geometries()
+	_loop
+		_loopbody(e)
+	_endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.buffer(geom_name, distance, _optional corner_style, end_style)
 	_return buffer_collection.new(.dsm, _self, geom_name, distance, corner_style, end_style)
 _endmethod

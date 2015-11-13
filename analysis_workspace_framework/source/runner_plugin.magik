@@ -23,11 +23,18 @@ _method runner_plugin.init_actions()
 	_self.add_action(sw_action.new(:explorer,
 				       :engine, _self.dialog,
 				       :action_message, :|send_to_explorer()|,
+				       :image, {:explorer, _self.module_name},
 				       :caption, _self.dialog.message(:explorer)))
 	_self.add_action(sw_action.new(:goto,
 				       :engine, _self.dialog,
 				       :action_message, :|goto()|,
+				       :image, {:goto_object, :ui_resources},
 				       :caption, _self.dialog.message(:goto)))
+	_self.add_action(sw_action.new(:goto_one,
+				       :engine, _self.dialog,
+				       :action_message, :|goto_one()|,
+				       :image, {:goto_one, _self.module_name},
+				       :caption, _self.dialog.message(:goto_one)))
 	_self.add_action(sw_action.new(:refresh_map,
 				       :engine, _self.dialog,
 				       :action_message, :|refresh_map()|,
@@ -66,7 +73,14 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method runner_plugin.explore(set)
-	_self.app_plugin.explore(set)
+	_self.databus_make_data_available( :rwo_set,
+					   { _self,
+					     set,
+					     :ace_name,    _self.application.ace_name,
+					     :group_name,  _self.message(:browse_collection),
+					     :group_image, { :list, :ui_resources },
+					     :set_current?, _true } )
+#	_self.app_plugin.explore(set)
 _endmethod
 $
 

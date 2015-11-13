@@ -2,6 +2,7 @@
 :export_to_access		       Exporting to Access...
 :explorer			Explorer...
 :goto				Goto
+:goto_one			Goto one object
 :highlight			Highlight
 :highlighting			Highlighting the data
 :going_to			Going to: #1

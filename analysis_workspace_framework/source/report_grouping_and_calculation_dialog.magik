@@ -31,6 +31,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method report_grouping_and_calculation_dialog.set_holder(holder)
+	_if holder _is _unset _then condition.raise(:error, :string, "holder can not be unset") _endif 
 	.holder << holder
 _endmethod
 $
@@ -313,15 +314,14 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method report_grouping_and_calculation_dialog.temp_file_name(name)
-	_local file_name << system.temp_file_name(write_string(name, "_report.txt"))
-	_for i_index, i_char _over file_name.fast_keys_and_elements()
+	_for i_index, i_char _over name.fast_keys_and_elements()
 	_loop
 		_if _not i_char.ascii_alphanumeric?
 		_then
-			file_name[i_index] << %_
+			name[i_index] << %_
 		_endif
 	_endloop
-	_return file_name
+	_return system.temp_file_name(write_string(name, "_report.txt"))
 _endmethod
 $
 

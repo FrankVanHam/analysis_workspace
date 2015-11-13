@@ -22,20 +22,26 @@ _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.activate_in(container)
 	.top_frame << container.top_frame
 	
-	_local rc << rowcol.new(container,  1, _unset, _unset, :style, :nested, :left_spacing, 7, :resize?, _true )
-	.owner.action(:explorer).place_control_on(rc, :dialog, :min_width, 75)
-	.owner.action(:goto).place_control_on(rc, :dialog, :min_width, 75)
-	.owner.action(:refresh_map).place_control_on(rc, :dialog)
-	.owner.action(:excel).place_control_on(rc, :dialog)
-	.owner.action(:access).place_control_on(rc, :dialog)
-	.owner.action(:calc).place_control_on(rc, :dialog)
+	_local rc << rowcol.new(container,  1, _unset, _unset,
+				:left_spacing, 7, 
+				:resize?, _true )
+	tb << _self.new_toolbar(rc)
+	.owner.action(:explorer).place_control_on(tb, :dialog)
+	separator_item.new(rc)
+	tb << _self.new_toolbar(rc)
+	.owner.action(:goto).place_control_on(tb, :dialog)
+	.owner.action(:goto_one).place_control_on(tb, :dialog)
+	.owner.action(:refresh_map).place_control_on(tb, :dialog)
+	separator_item.new(rc)
+	tb << _self.new_toolbar(rc)
+	.owner.action(:excel).place_control_on(tb, :dialog)
+	.owner.action(:access).place_control_on(tb, :dialog)
+	.owner.action(:calc).place_control_on(tb, :dialog)
+	separator_item.new(rc)
 	
 	.items[:busy_with] << label_item.new(rc, _unset ,
 					     :max_width, 100,
 					     :min_width, 100)
-	.items[:time_running] << label_item.new(rc, _unset ,
-					     :max_width, 10,
-					     :min_width, 10)
 	
 	.items[:interrupt] << image_button_item.new_safe(rc, _self.stop_image,
 							  _self, :|cancel_run()|,
@@ -43,7 +49,7 @@ _method runner_dialog.activate_in(container)
 							  :col_alignment, :right)
 	.items[:interrupt].set_property(:has_border?, _false)
 	
-	.runner << background_runner.new(.items[:busy_with], .items[:time_running])
+	.runner << background_runner.new(.items[:busy_with])
 	.runner.add_dependent(_self)
 _endmethod
 $
@@ -74,7 +80,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.report_sums()
-	_local holder << _self.selected_top_holder
+	_local holder << _self.selected_holder
 	_local dia << report_grouping_and_calculation_dialog.new_dialog(_self)
 	dia.set_holder(holder)
 	dia.activate()
@@ -103,6 +109,36 @@ _method runner_dialog.do_goto()
 	_if b _isnt _unset
 	_then 
 		.owner.goto(b)
+	_else
+		_self.user_error(:no_bounds_to_goto)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.goto_one()
+	_local descr <<  _self.selection_description()
+	_self.run_in_background(_self, :|do_goto_one()|, {}, _self.message(:going_to, _unset, descr))
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.do_goto_one()
+	_local bounds
+	_local holder << _self.selected_holder
+	_local col << holder.collection
+	_local element << col.an_element()
+	_if element _isnt _unset
+	_then
+		_try 
+			bounds << element.goto_bounds
+		_when error
+			bounds << element.bounds
+		_endtry 
+	_endif 
+	_if bounds _isnt _unset
+	_then 
+		.owner.goto(bounds)
 	_else
 		_self.user_error(:no_bounds_to_goto)
 	_endif 
@@ -216,6 +252,7 @@ _method runner_dialog.manage_actions()
 	
 	.owner.action(:explorer).enabled? << open? _andif record_sel?
 	.owner.action(:goto).enabled? << open? _andif select?
+	.owner.action(:goto_one).enabled? << open? _andif select?
 	.owner.action(:refresh_map).enabled? << _true 
 	.owner.action(:excel).enabled? << open? _andif record_sel?
 	.owner.action(:access).enabled? << open? _andif record_sel?
@@ -224,7 +261,6 @@ _method runner_dialog.manage_actions()
 	_local running? << _self.running?
 	.items[:interrupt].enabled? << running?
 	.items[:busy_with].enabled? << running?
-	.items[:time_running].enabled? << running?
 _endmethod
 $
 

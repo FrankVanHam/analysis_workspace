@@ -77,7 +77,7 @@ $
 _pragma(classify_level=restricted, topic={demo})
 _method distance_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last(  {:geom_name, :distance, :arg, :inverse?})
+	keys.add_all_last(  {:geom_name, :distance, :arg, :inverse})
 	values.add_all_last({.geom_name, .distance, .arg, .inverse?})
 	_return keys, values
 _endmethod
@@ -140,29 +140,7 @@ _method distance_filter_collection.includes?(rec)
 		_return _false
 	_endif
 	_local distance << _self.distance_value
-	_if _not .inverse?
-	_then
-		# if geon is near to any of them, then it is true.
-		_for i_geom _over .arg.fast_geometries()
-		_loop
-			_if geom.distance_to_within?(i_geom, distance)
-			_then
-				_return _true
-			_endif
-		_endloop
-		_return _false
-	_else
-		# geom should not be near to any of them. So none should be
-		# within the the distance.
-		_for i_geom _over .arg.fast_geometries()
-		_loop
-			_if geom.distance_to_within?(i_geom, distance)
-			_then
-				_return _false 
-			_endif
-		_endloop
-		_return _true 
-	_endif 
+	_return _self.allows?(geom, distance)
 _endmethod
 $
 
@@ -180,78 +158,71 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_iter _method distance_filter_collection.fast_geos(_optional bounds, geom_name)
+_method distance_filter_collection.convert_to_geometry()
+	_local gs << geometry_set.new()
+	_for i_geom _over _self.fast_geos()
+	_loop
+		gs.add(i_geom)
+	_endloop
+	_return gs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_iter _method distance_filter_collection.fast_geos()
 	_local distance << _self.distance_value
 	_for i_geom _over _self.base_collection.fast_geometries(.geom_name)
 	_loop
-		_local geom_coord << i_geom.bounds.centre
-		_local geom_bounds << bounding_box.new_centred(geom_coord.x, geom_coord.y, distance)
-		
-		_if _not .inverse?
+		_if _self.allows?(i_geom, distance)
 		_then
-			# If i_geom is near to any of them, then it should be yielded.
-			_for i_arg_geom _over .arg.fast_geometries()
-			_loop
-				_if i_geom.distance_to_within?(i_arg_geom, distance)
-				_then 
-					_loopbody(i_geom)
-				_endif
-			_endloop
-		_else
-			# i_geom shoul not be near to any of the .args elements, only
-			# then it is included.
-			_for i_arg_geom _over .arg.fast_geometries()
-			_loop
-				_if i_geom.distance_to_within?(i_arg_geom, distance)
-				_then
-					_leave
-				_endif
-			_finally
-				_loopbody(i_geom)
-			_endloop
+			_loopbody(i_geom)
 		_endif 
 	_endloop
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method distance_filter_collection.convert_to_geometry()
-	_local gs << geometry_set.new()
-	_local distance << _self.distance_value
+_private _method distance_filter_collection.allows?(geom, distance)
+	## 
+	## 
+	_local geom_coord << geom.bounds.centre
+	_local scan_bounds << bounding_box.new_centred(geom_coord.x, geom_coord.y, distance)
+	_dynamic !rwan_limit_bounds! << scan_bounds
 	
-	_for i_geom _over _self.base_collection.fast_geometries(.geom_name)
-	_loop
-		_local geom_coord << i_geom.bounds.centre
-		_local scan_bounds << bounding_box.new_centred(geom_coord.x, geom_coord.y, distance)
-		_dynamic !rwan_limit_bounds! << scan_bounds
-		_if _not .inverse?
-		_then
-			# if i_geom is near to any of the .args then add it to gs
-			_for i_arg_geom _over .arg.fast_geometries()
-			_loop
-				_if i_geom.distance_to_within?(i_arg_geom, distance)
-				_then
-					gs.add(i_geom)
-					_leave 
-				_endif
-			_endloop
-		_else
-			# if i_geom is near to any of the .args then it should not be
-			# added to gs
-			_for i_arg_geom _over .arg.fast_geometries()
-			_loop
-				_if i_geom.distance_to_within?(i_arg_geom, distance)
-				_then
-					_leave
-				_endif
-			_finally 
-				gs.add(i_geom)
-			_endloop
-		_endif 
-	_endloop
-	_return gs
+	_local allows? << _false 
+	_if _not .inverse?
+	_then
+		# if geon is near to any of them, then it is true.
+		_for i_geom _over .arg.fast_geometries()
+		_loop
+			_if geom = i_geom _then _continue _endif 
+			_if geom.distance_to_within?(i_geom, distance)
+			_then
+				allows? << _true
+				_leave 
+			_endif
+		_endloop
+	_else
+		# geom should not be near to any of them. So none should be
+		# within the the distance.
+		allows? << _true 
+		_for i_geom _over .arg.fast_geometries()
+		_loop
+			_if geom = i_geom _then _continue _endif 
+			_if geom.distance_to_within?(i_geom, distance)
+			_then
+				allows? << _false
+				_leave 
+			_endif
+		_endloop
+	_endif
+	_return allows?
 _endmethod
 $
+
+
+
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method distance_filter_collection.description
@@ -269,3 +240,4 @@ _method distance_filter_collection.description
 	_endif 
 _endmethod
 $
+

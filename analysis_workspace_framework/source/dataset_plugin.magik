@@ -78,7 +78,11 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_plugin.on_deactivation()
-	_self.dialog.close()
+	_local dialog << _self.dialog
+	_if dialog _isnt _unset
+	_then 
+		dialog.close()
+	_endif 
 	_return _super.on_deactivation()
 _endmethod
 $
