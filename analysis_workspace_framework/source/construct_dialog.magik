@@ -87,7 +87,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.name_for_collection(col)
-	_return col.description
+	_return col.description(_self.current_workspace)
 _endmethod
 $
 
@@ -374,11 +374,11 @@ _method construct_dialog.trail
 	_then
 		_self.user_error(:provide_trail)
 	_endif
-	_local w << geom.world
-	_if w _isnt _unset
-	_then
-		geom.world << w.dataset_worlds.an_element()
-	_endif
+#	_local w << geom.world
+#	_if w _isnt _unset
+#	_then
+#		geom.world << w.dataset_worlds.an_element()
+#	_endif
 	geom.style_info << _unset
 	_return geom
 _endmethod

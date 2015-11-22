@@ -14,7 +14,7 @@ def_slotted_exemplar(:tree_dialog,
 	}, :base_model)
 $
 
-message_handler.new(:tree_dialog).add_uses(:model)
+message_handler.new(:tree_dialog).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
@@ -41,6 +41,7 @@ _method tree_dialog.activate_in(container)
 			      :col_resize_values, {100,0,0},
 			      :column_widths, {100,30,30},
 			      :toggle_notifier, :|toggled()|,
+			      :key_pressed_notifier, :|key_pressed()|,
 			      :editors, {{:name, in_place_value_editor}},
 			      :value_changed_notifier, :|name_changed()|,
 			      :edit_on_click?, _false,
@@ -81,6 +82,39 @@ _method tree_dialog.toggled(tree,row_index,event,value)
 	_return _true 
 _endmethod
 $
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.key_pressed(event)
+	_if event.id _is %delete
+	_then
+		_self.delete()
+	_endif 
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.delete()
+	## delete the collections, but only the top level collections
+	## to avoid creating inconsistencies.
+	_local to_del << _self.selected_top_holders.copy()
+	_if to_del.empty? _then _return _endif
+
+	_if _not _self.question_alert( :yes, :no,
+				       :sure_to_delete, to_del.size)
+	_then
+		_return
+	_endif
+	_local workspace << _self.current_workspace
+	_for i_holder _over to_del.fast_elements()
+	_loop
+		i_holder.discard()
+		workspace.remove_holder(i_holder)
+	_endloop
+	.owner.publish_workspace_holder()
+_endmethod
+$
+
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_dialog.name_changed(tree, key, new_value, old_value)

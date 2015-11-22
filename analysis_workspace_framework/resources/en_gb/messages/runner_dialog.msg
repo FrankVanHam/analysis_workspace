@@ -8,3 +8,11 @@
 :going_to			Going to: #1
 :sending_to_explorer		Sending collection to explorer
 :calc				Report in groups and sums
+
+:explorer_tooltip		Show the selected collection in the explorer
+:goto_tooltip			Go to the bounds of the complete ocllection. Note: can be slow for complex collections
+:goto_one_tooltip		Go to one of the records in the collection
+:refresh_map_tooltip		Refresh the main map
+:excel_tooltip			Show the selected collection in Excel
+:access_tooltip			Show the selected collection in Access
+:calc_tooltip			Open the Report dialog to construct a calculation report on the selected collection

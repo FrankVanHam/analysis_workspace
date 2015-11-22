@@ -156,22 +156,11 @@ _private _method spatial_filter_collection.need_geometry(arg)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.need_geometry_with_dirty_bounds(arg, bounds)
-	_if arg.is_kind_of?(geometry_mixin)
-	_then
-		_return arg
-	_else 
-		_return arg.convert_to_geometry_with_dirty_bounds(bounds)
-	_endif 
-_endmethod
-$
-
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.description
-	_local sw_col << _self.expose()
-	_local fd << sw_col.field(.geom_name)
-	_return _self.message(:description, sw_col.external_name, fd.external_name, .selector.write_string)
+_method spatial_filter_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
+	_local target_name << translator.name_for_collection(.arg)
+	_return _self.message(:description, base_name, .selector.write_string, target_name)
 _endmethod
 $

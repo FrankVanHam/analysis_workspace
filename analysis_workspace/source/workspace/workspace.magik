@@ -113,6 +113,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={demo})
+_method workspace.name_for_collection(col)
+	_return _self.holder_for(col).name
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
 _method workspace.add_holder(holder)
 	.holders.add_last(holder)
 	.dirty? << _true 
@@ -208,7 +214,6 @@ _method workspace.all_holders
 	_return .holders
 _endmethod
 $
-
 
 _pragma(classify_level=basic, topic={demo})
 _method workspace.set_dirty()

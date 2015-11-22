@@ -263,6 +263,12 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method base_collection.description(name_translator)
+	_return _self.description
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
 _method base_collection.copy()
 	_return _clone.init_copy()
 _endmethod

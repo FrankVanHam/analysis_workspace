@@ -155,8 +155,9 @@ _method base_record_collection.convert_to_geometry_filtered_by_geometry(geom_nam
 		_endif
 		_if bounds _isnt _unset
 		_then 
-			sub_gs << sub_gs.select(:bounds_interacting_with, bounds).select(selector, args)
-		_endif 
+			sub_gs << sub_gs.select(:bounds_interacting_with, bounds)
+		_endif
+		sub_gs << sub_gs.select(selector, args)
 		gs.add_all(sub_gs)
 	_endloop
 	_return gs

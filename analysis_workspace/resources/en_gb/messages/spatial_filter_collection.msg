@@ -1,4 +1,4 @@
-:description		#1 filtered on #2 #@3 with target
+:description		#1  #@2 #3
 :interacting_with	Any interaction
 :touching		Touching
 :dividing		Dividing
