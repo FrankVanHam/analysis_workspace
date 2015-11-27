@@ -1,3 +1,20 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 _package rwan
 $
 
@@ -48,13 +65,23 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method workspace_dialog.workspace_items
-	_return _self.workspace_holder.gui_items
+	_if _self.workspace_holder _isnt _unset
+	_then 
+		_return _self.workspace_holder.gui_items
+	_else
+		_return {}
+	_endif 
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method workspace_dialog.current_workspace_name
-	_return _self.workspace_holder.current_workspace_name
+	_if _self.workspace_holder _isnt _unset
+	_then 
+		_return _self.workspace_holder.current_workspace_name
+	_else
+		_return _unset
+	_endif 
 _endmethod
 $
 

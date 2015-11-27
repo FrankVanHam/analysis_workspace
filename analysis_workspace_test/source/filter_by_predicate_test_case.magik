@@ -1,19 +1,19 @@
-##
-## File            : $File$
-## SCM             : $URL$
-##
-## Copyright       : Realworld Systems
-##                   e-mail  : support@realworld-systems.com
-##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
-##                   tel     : +31(0)345 614406
-##                   fax     : +31(0)345 614319
-##
-## Contains        : 
-##
-##
-## Date written    : 2014-12-24
-## Date changed    : $Date$
-## Revision        : $Rev$
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 _package rwan
 $
@@ -107,7 +107,7 @@ _method filter_by_predicate_test_case.test_topology_and_pred()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local rbcol << rwan:sw_collection.new(dsm, _self.roundabout_collection)
 	_local rbcol1 << rbcol.filter_by_predicate(predicate.eq(:name, "Chesterton"))
-	_local rcol << rbcol1.follow_topology(:location, :min_road)
+	_local rcol << rbcol1.follow_topology(:location, _self.min_road_collection)
 	_self.assert_is(rcol.size, 4, "There are 4 roads connected to the roundabout")
 	_local rcol1 << rcol.filter_by_predicate(_self.pred)
 	_self.assert_is( rcol1.size, 3, "c) There are 3 A-Roads at the chesteron roundabout")
@@ -121,7 +121,9 @@ _method filter_by_predicate_test_case.test_append_and_pred()
 	_local rcol1 << rcol.filter_by_predicate(predicate.eq(:name, "Chesterton Road"))
 	_local rcol2 << rcol.filter_by_predicate(predicate.eq(:name, "Haig Road"))
 	_local ap_col << rcol1.union(rcol2)
+	
 	rcol << ap_col.filter_by_predicate(_self.pred)
+	
 	_self.assert_is( rcol.size, 2, "There are 2 A-Roads in this set")	
 _endmethod
 $

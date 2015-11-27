@@ -40,7 +40,7 @@
 :follow_join			Join
 :follow_join_tooltip		Create a new record collection that is joined to the the selected record collection
 
-:follow_method			Customer Function
+:follow_method			Custom Function
 :follow_method_tooltip		Create a new record collection based on custom software written for the selected record collection
 
 :follow_root			Root records
@@ -69,7 +69,7 @@
 :view_by_join_tooltip		Create a new record collection that the result of joining two tables by a join
 
 :view_by_eq			Join 2 tables equals fields
-:view_by_eq			Create a new record collection that the result of joining two tables by matching fields
+:view_by_eq_tooltip		Create a new record collection that the result of joining two tables by matching fields
 
 :materialize			Materialize collection
 :materialize_tooltip		Create a new collection that is a materialised copy of the selected collection

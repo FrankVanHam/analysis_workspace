@@ -3,6 +3,7 @@
 :explorer			Explorer...
 :goto				Goto
 :goto_one			Goto one object
+:no_bounds_to_goto		The collection has no bounding box to goto. Either the collection is empty or the elements in the collection have no geometry.
 :highlight			Highlight
 :highlighting			Highlighting the data
 :going_to			Going to: #1
@@ -16,3 +17,4 @@
 :excel_tooltip			Show the selected collection in Excel
 :access_tooltip			Show the selected collection in Access
 :calc_tooltip			Open the Report dialog to construct a calculation report on the selected collection
+

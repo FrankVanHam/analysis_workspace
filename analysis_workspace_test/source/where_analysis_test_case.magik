@@ -1,19 +1,19 @@
-##
-## File            : $File$
-## SCM             : $URL$
-##
-## Copyright       : Realworld Systems
-##                   e-mail  : support@realworld-systems.com
-##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
-##                   tel     : +31(0)345 614406
-##                   fax     : +31(0)345 614319
-##
-## Contains        : 
-##
-##
-## Date written    : 2014-12-26
-## Date changed    : $Date$
-## Revision        : $Rev$
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 _package rwan
 $
@@ -46,7 +46,7 @@ _method where_analysis_test_case.test_pub_rest_with_a_road_access_with_current_r
 	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
 	_local acol << pcol.follow_join(:min_roads)
 	_self.assert_is(acol.expose().name, :min_road, "is min road")
-	_local rwcol << acol.follow_topology(:centre_line, :road_works)
+	_local rwcol << acol.follow_topology(:centre_line, _self.road_works_collection)
 	_self.assert_is(rwcol.expose().name, :road_works, "is")
 	_local rwcol1 << rwcol.filter_by_predicate(predicate.eq(:status, "Current"))
 	_local rcol << rwcol1.root(_self.min_road_collection)
