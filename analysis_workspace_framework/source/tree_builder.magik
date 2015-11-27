@@ -1,19 +1,19 @@
-##
-## File            : $File$
-## SCM             : $URL$
-##
-## Copyright       : Realworld Systems
-##                   e-mail  : support@realworld-systems.com
-##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
-##                   tel     : +31(0)345 614406
-##                   fax     : +31(0)345 614319
-##
-## Contains        : 
-##
-##
-## Date written    : 2014-12-30
-## Date changed    : $Date$
-## Revision        : $Rev$
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 _package rwan
 $
@@ -386,8 +386,11 @@ _method tree_builder.display_tree_for_geometry_collection(col, geometry)
 		a_geom << geometry.an_element()
 	_else
 		a_geom << geometry
+	_endif
+	_if a_geom _isnt _unset
+	_then 
+		tree.styled_string << _self.styled_string(:image, a_geom.geom_category)
 	_endif 
-	tree.styled_string << _self.styled_string(:image, a_geom.geom_category)
 	_return tree
 _endmethod
 $

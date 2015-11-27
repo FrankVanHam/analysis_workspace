@@ -1,19 +1,19 @@
-##
-## File            : $File$
-## SCM             : $URL$
-##
-## Copyright       : Realworld Systems
-##                   e-mail  : support@realworld-systems.com
-##                   address : Venusstraat 17, 4105 JH Culemborg, The Netherlands
-##                   tel     : +31(0)345 614406
-##                   fax     : +31(0)345 614319
-##
-## Contains        : 
-##
-##
-## Date written    : 2014-12-27
-## Date changed    : $Date$
-## Revision        : $Rev$
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 _package rwan
 $
@@ -127,7 +127,7 @@ _method spatial_analysis_col_mix_test_case.test_hotels_interacting_with_road()
 	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area << _self.area_surrounding_parkers_piece(dsm)
 	_local rcol1 << rcol.filter_by_geometry(:centre_line, :interacting_with, area)
-	_local hcol << rcol1.follow_topology(:centre_line, :hotel)
+	_local hcol << rcol1.follow_topology(:centre_line, _self.hotel_collection)
 	_local hcol1 << hcol.filter_by_geometry(:location, :within, area)
 	_self.assert_is(hcol1.size, 2, "there are two hotels in the area, interating with roads")
 	_local rgeom << rcol1.spatial_collection(:centre_line)
