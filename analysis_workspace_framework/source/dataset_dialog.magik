@@ -136,7 +136,7 @@ _method dataset_dialog.open_default_ds()
 	
 	_if _self.dsm _isnt _unset _then _return _endif
 	
-	_local path << .owner.ace.default("rw:path")
+	_local path << .owner.ace.default("rwan:path")
 	_if path _isnt _unset _andif path.empty?.not 
 	_then
 		_if system.file_exists?(path)
@@ -244,7 +244,7 @@ _method dataset_dialog.open_ds_file(path, _optional first_time?)
 	.owner.publish_workspace_holder(workspace_holder)
 	.owner.add_to_application(workspace_holder.dsm)
 	
-	.owner.ace.set_default("rw:path", path, _true, _true)
+	.owner.ace.set_default("rwan:path", path, _true, _true)
 _endmethod
 $
 

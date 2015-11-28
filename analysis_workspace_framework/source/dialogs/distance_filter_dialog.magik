@@ -49,7 +49,7 @@ _method distance_filter_dialog.set_holder(holder, record_holder, spatial_holder,
 	.spatial_holder << spatial_holder
 	.geom_name << geom_name
 	.distance << distance
-	.inverse? << inverse?
+	.inverse? << inverse?.default(_false)
 _endmethod
 $
 
