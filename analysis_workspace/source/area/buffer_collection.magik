@@ -138,15 +138,11 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method buffer_collection.description
+_method buffer_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
 	_local format << unit_specific_format.new_with_properties(.distance.unit,
 								  :float_decimal_places,0)
 	_local distance_string << format.format(.distance)
-	_if .geom_name _isnt _unset
-	_then 
-		_return _self.message(:description, .geom_name, distance_string)
-	_else
-		_return _self.message(:description_no_geom, distance_string)
-	_endif 
+	_return _self.message(:description, base_name, distance_string)
 _endmethod
 $
