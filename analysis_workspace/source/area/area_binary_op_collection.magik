@@ -96,6 +96,15 @@ _method area_binary_op_collection.convert_to_geometry()
 	_local area1 << _self.base_collection.convert_to_geometry()
 	_local area2 << _self.other_collection.convert_to_geometry()
 	_local methd << write_string(.operation+:|()|).as_symbol()
+
+	_if area1.is_collection?
+	_then
+		area1 << area1.areas_as_coverage()
+	_endif
+	_if area2.is_collection?
+	_then
+		area2 << area2.areas_as_coverage()
+	_endif
 	
 	_local area_result << area1.perform(methd, area2)
 	area_result.world << area1.world
@@ -103,8 +112,12 @@ _method area_binary_op_collection.convert_to_geometry()
 _endmethod
 $
 
+
 _pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_collection.description
-	_return _self.message(:description, .operation)
+_method area_binary_op_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
+	_local other_name << translator.name_for_collection(_self.other_collection)
+	_return _self.message(:description, .operation, base_name, other_name)
 _endmethod
 $
+
