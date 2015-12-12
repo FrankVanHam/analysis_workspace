@@ -60,6 +60,12 @@ _method area_materialized_collection.serial_slots()
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method area_materialized_collection.origin_is_sw_collection?
+	_return _false 
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={demo})
 _private _method area_materialized_collection.init_from_serial(dsm, base_col, id)
 	_super.init_from_serial(dsm, base_col)
