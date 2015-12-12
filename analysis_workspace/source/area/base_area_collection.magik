@@ -83,7 +83,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_area_collection.description
+_method base_area_collection.description(translator)
 	_return _self.message(:description)
 _endmethod
 $

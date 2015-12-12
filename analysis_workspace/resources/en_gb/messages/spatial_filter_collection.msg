@@ -1,10 +1,10 @@
-:description		#1  #@2 #3
-:interacting_with	Any interaction
-:touching		Touching
-:dividing		Dividing
-:overlaying		Overlaying
-:overlapping		Overlapping
-:within			Within
-:equal_to		Equal to
-:containing		Containing
-:disjoint_from		Disjoint
+:description		#1 #2 #@3 #4
+:interacting_with	any interaction with
+:touching		touching
+:dividing		dividing
+:overlaying		overlaying
+:overlapping		overlapping
+:within			within
+:equal_to		equal to
+:containing		containing
+:disjoint_from		disjoint

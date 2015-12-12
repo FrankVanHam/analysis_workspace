@@ -257,7 +257,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method base_collection.description
+_method base_collection.description(translator)
 	_return _self.class_name
 _endmethod
 $

@@ -1,2 +1,2 @@
-:description		#1 filtered within distance #3 of #2
-:description_inverse	#1 filtered outside distance #3 of #2
+:description		#1 filtered within distance #2 of #3
+:description_inverse	#1 filtered outside distance #2 of #3

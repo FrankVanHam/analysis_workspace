@@ -164,7 +164,8 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method predicate_filter_collection.description
-	_return _self.message(:description, _self.expose().external_name, .pred)
+_method predicate_filter_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
+	_return _self.message(:description, base_name, .pred)
 _endmethod
 $

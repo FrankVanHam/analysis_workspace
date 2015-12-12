@@ -148,9 +148,11 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method topology_collection.description
-	_return _self.message(:description, _self.target_collection.external_name,
-			      _self.base_collection.expose().external_name)
+_method topology_collection.description(translator)
+	_local base_name   << translator.name_for_collection(_self.base_collection)
+	_local target_name << translator.name_for_collection(_self.target_collection)
+	
+	_return _self.message(:description, target_name, base_name)
 _endmethod
 $
 

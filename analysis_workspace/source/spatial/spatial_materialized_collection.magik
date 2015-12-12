@@ -97,8 +97,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_materialized_collection.description
-	_return _self.message(:description, _self.base_collection.description)
+_method spatial_materialized_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
+	_return _self.message(:description, base_name)
 _endmethod
 $
 

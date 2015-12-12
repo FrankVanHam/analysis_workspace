@@ -118,7 +118,7 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_collection.description
+_method area_collection.description(translator)
 	_local world_unit << .area.world.unit.squared
 	_local area_value << unit_value(.area.area, world_unit)
 	area_value << area_value.convert_to(world_unit.base_unit)
