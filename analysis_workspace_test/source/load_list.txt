@@ -12,3 +12,4 @@ min_road_extras
 sw_view_collection_test_case
 grouping_test_case
 follow_analysis_test_case
+trace_analysis_test_case

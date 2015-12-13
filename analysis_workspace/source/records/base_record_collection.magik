@@ -120,6 +120,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.follow_trace(geom_name, target_col, stop_predicates, max_length)
+	_return trace_collection.new(.dsm, _self, geom_name, target_col, stop_predicates, max_length)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_predicate(pred)
 	_return predicate_filter_collection.new(.dsm, _self, pred)
 _endmethod
