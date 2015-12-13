@@ -144,7 +144,12 @@ _private _method method_collection.safe_list(rec)
 		_then
 			list << list_or_rec
 		_else
-			list << {list_or_rec}
+			_if list_or_rec _isnt _unset
+			_then 
+				list << {list_or_rec}
+			_else
+				list << {}
+			_endif 
 		_endif		
 
 	_when error

@@ -186,6 +186,12 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method construct_plugin.explorer_content
+	_return _self.app_plugin.explorer_content
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
 _method construct_plugin.scrapbook_results
 	_return _self.app_plugin.scrapbook_results
 _endmethod

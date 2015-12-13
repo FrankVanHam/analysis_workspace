@@ -134,6 +134,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.supply_point_collection
+	_return _self.ev.collections[:supply_point]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _private _method base_analysis_test_case.customer_collection
 	_return _self.ev.collections[:customer]
 _endmethod

@@ -298,17 +298,28 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.do_add_explorer_content()
+	# Add the explorer content, derived from the explorer
+	# selection.
+	#
 	_local dsm << _self.dataset_manager
-	_local (plug, sel) << (_scatter .owner.explorer_selection)
-	_for i_set _over  sel.rwo_sets()
+	_local data << .owner.explorer_selection
+	_if data _is _unset
+	_then
+		_self.user_error(:sorry_no_explorer)
+	_endif
+	_local (plug, sel) << (_scatter data)
+	_for i_elem _over  sel.explorer_elements()
 	_loop
-		_if i_set.is_kind_of?(ds_collection)
-		_then
-			col << rwan:sw_collection.new(dsm, i_set)
-		_else
-			col << rwan:record_set.new(dsm, i_set)
-		_endif
-		_self.add_collection(col, _unset)
+		_for i_set _over i_elem.rwo_sets()
+		_loop
+			_if i_set.is_kind_of?(ds_collection)
+			_then
+				col << rwan:sw_collection.new(dsm, i_set)
+			_else
+				col << rwan:record_set.new(dsm, i_set)
+			_endif
+			_self.add_collection(col, _unset)
+		_endloop 
 	_endloop
 _endmethod
 $
@@ -319,7 +330,7 @@ _method construct_dialog.add_explorer_selection()
 	_local data << .owner.explorer_selection
 	_if data _is _unset
 	_then
-		_self.user_error(:please_select_records_in_explorer)
+		_self.user_error(:sorry_no_explorer)
 	_endif
 	_local (plug, sel) << (_scatter data)
 	_if sel.is_records?

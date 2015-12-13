@@ -142,14 +142,6 @@ _method record_set.includes?(rec)
 _endmethod
 $
 
-
-_pragma(classify_level=basic, topic={analysis})
-_method record_set.discard()
-	.base_set.empty()
-	.base_set << _unset 
-_endmethod
-$
-
 _pragma(classify_level=basic, topic={analysis})
 _method record_set.read_stream()
 	_return .base_set.read_stream()
