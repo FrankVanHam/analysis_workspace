@@ -80,8 +80,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method root_collection.description
+_method root_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
 	_return _self.message(:description, _self.target_collection.external_name,
-			      _self.base_collection.expose().external_name)
+			      base_name)
 _endmethod
 $

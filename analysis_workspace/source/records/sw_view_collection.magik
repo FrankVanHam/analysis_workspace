@@ -273,7 +273,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method sw_view_collection.description
+_method sw_view_collection.description(translator)
 	_local str << internal_text_output_stream.new()
 	str.write(.ext_name)
 	str.write( "( ")
@@ -285,7 +285,8 @@ _method sw_view_collection.description
 		_then
 			str.write(" <-> ")
 		_endif
-		str.write( i_col.external_name)
+		_local name << translator.name_for_collection(i_col)
+		str.write(name)
 	_endloop 
 	str.write( " )")
 	_return str.string

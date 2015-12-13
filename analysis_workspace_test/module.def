@@ -3,7 +3,7 @@ description
 	Unit tests for the Analysis Workspace core
 end
 requires
-	munit_image_latest
+	simple_munit_gui
 end
 tests_modules
 	analysis_workspace

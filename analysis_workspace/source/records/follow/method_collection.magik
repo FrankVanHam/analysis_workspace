@@ -144,7 +144,12 @@ _private _method method_collection.safe_list(rec)
 		_then
 			list << list_or_rec
 		_else
-			list << {list_or_rec}
+			_if list_or_rec _isnt _unset
+			_then 
+				list << {list_or_rec}
+			_else
+				list << {}
+			_endif 
 		_endif		
 
 	_when error
@@ -155,8 +160,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method method_collection.description
-	_return _self.message(:description, _self.target_collection.external_name, .methd, _self.base_collection.expose().external_name)
+_method method_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
+	_return _self.message(:description, _self.target_collection.external_name, .methd, base_name)
 _endmethod
 $
 

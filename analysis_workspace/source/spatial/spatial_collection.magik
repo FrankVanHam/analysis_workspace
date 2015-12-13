@@ -98,8 +98,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_collection.description
-	_return _self.message(:description, .geom_name, _self.base_collection.expose().external_name)
+_method spatial_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
+	_return _self.message(:description, .geom_name, base_name)
 _endmethod
 $
 

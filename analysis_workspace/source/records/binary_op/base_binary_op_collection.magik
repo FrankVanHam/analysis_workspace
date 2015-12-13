@@ -114,9 +114,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_binary_op_collection.description
-	_local name1 << _self.base_collection.expose().external_name
-	_local name2 << _self.other_collection.expose().external_name
+_method base_binary_op_collection.description(translator)
+	_local name1 << translator.name_for_collection(_self.base_collection)
+	_local name2 << translator.name_for_collection(_self.other_collection)
 	
 	_return _self.message(:description, _self.operation, name1, name2)
 _endmethod

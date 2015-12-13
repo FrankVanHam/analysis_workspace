@@ -161,6 +161,7 @@ _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.description(translator)
 	_local base_name << translator.name_for_collection(_self.base_collection)
 	_local target_name << translator.name_for_collection(.arg)
-	_return _self.message(:description, base_name, .selector.write_string, target_name)
+	_return _self.message(:description, base_name, .geom_name,
+			      .selector.write_string, target_name)
 _endmethod
 $

@@ -92,3 +92,4 @@
 :scrapbook_is_empty		       The Scrapbook is empty
 :set_operator_must_have_same_base      Set operators only work when the base collections are identical. Please select two collections with the same root base collection.
 :view_only_possible_on_sw_collection   You can only create a view directly on an actual collection.
+:sorry_no_explorer		       Sorry, but we could not find the explorer in the application.

@@ -10,7 +10,7 @@
 :sending_to_explorer		Sending collection to explorer
 :calc				Report in groups and sums
 
-:explorer_tooltip		Show the selected collection in the explorer
+:explorer_tooltip		Show the selected collection in the Analysis explorer
 :goto_tooltip			Go to the bounds of the complete ocllection. Note: can be slow for complex collections
 :goto_one_tooltip		Go to one of the records in the collection
 :refresh_map_tooltip		Refresh the main map

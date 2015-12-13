@@ -221,22 +221,19 @@ _endmethod
 $
 
 
-
-
-
 _pragma(classify_level=basic, topic={analysis})
-_method distance_filter_collection.description
-	_local sw_col << _self.expose()
-	_local fd << sw_col.field(.geom_name)
+_method distance_filter_collection.description(translator)
+	_local base_name << translator.name_for_collection(_self.base_collection)
+	_local arg_name  << translator.name_for_collection(.arg)
 	
 	_local format << unit_specific_format.new_with_properties(.distance.unit,
 								  :float_decimal_places,0)
 	_local distance_string << format.format(.distance)
 	_if .inverse?
 	_then 
-		_return _self.message(:description_inverse, sw_col.external_name, fd.external_name, distance_string)
+		_return _self.message(:description_inverse, base_name, distance_string, arg_name)
 	_else
-		_return _self.message(:description, sw_col.external_name, fd.external_name, distance_string)
+		_return _self.message(:description, base_name, distance_string, arg_name)
 	_endif 
 _endmethod
 $
