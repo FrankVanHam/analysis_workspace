@@ -39,6 +39,12 @@ framework.define_shared_constant( :databus_consumer_data_types,
 	:public )
 $
 
+_pragma(classify_level=restricted)
+framework.define_shared_constant( :databus_producer_data_types,
+	{ :ace_context, :service_provider },
+	:public )
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method framework.init_actions()
 	_self.add_action(sw_action.new(:exit,
@@ -140,6 +146,19 @@ _method framework.sw_databus_data_available(data_type_name, data)
 	_endif 
 _endmethod
 $
+
+_pragma(classify_level=advanced, topic={analysis})
+_method framework.sw_databus_data_requested(data_type_name, _gather data)
+	_if data_type_name _is :ace_context
+	_then
+		_return .framework.ace_context
+	_elif data_type_name _is :service_provider
+	_then
+		_return .framework.get_service_provider(_scatter data)
+	_endif 
+_endmethod
+$
+
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method framework.set_title_for(workspace_holder)

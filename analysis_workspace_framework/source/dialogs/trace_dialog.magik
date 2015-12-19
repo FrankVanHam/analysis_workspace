@@ -1,0 +1,438 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:trace_dialog)
+$
+
+_pragma(classify_level=basic, topic={demo})
+##
+## dialog to construct a topology collection to follow topology
+## of the source collection.
+##
+def_slotted_exemplar(:trace_dialog,
+	{
+		{:items,             _unset},
+		{:holder,            _unset},
+		{:record_holder,     _unset},
+		{:geom_name,         _unset},
+		{:max_length,        _unset},
+		{:stop_queries,      _unset},
+		{:target_collection, _unset}
+	}, :model )
+$
+
+message_handler.new(:trace_dialog).add_uses(:model, :gen_graphics) 
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.set_holder(holder, record_holder, dsm, geom_name, stop_preds, max_length, target_col)
+	.holder        << holder
+	.record_holder << record_holder
+	.geom_name     << geom_name
+	.max_length    << max_length
+	.stop_queries << rope.new() # dont know how to go from predicate to query_definition
+	.target_collection << target_col
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.activate_in(container) 
+	container.modality << :primary_modal
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {25,0,0,75})
+	_self.build_top_label(rc)
+	_self.build_trace_selection(rc)
+	_self.build_length_item(rc)
+	_self.build_stop_queries(rc)
+	panel_separator.new(rc, :col_alignment, :fill) 
+	_self.build_buttons(rc) 
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.build_top_label(container)
+	text_window.new(container, 5, 50, _unset,
+			:horizontal_scrollbar?, _false,
+			:editable?, _false,
+			:contents, _self.message(:top_label),
+			:col_alignment, :fill,
+			:row_alignment, :fill )
+_endmethod
+$
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.build_trace_selection(container) 
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	label_item.new(rc, _self.message(:source_collection))
+	.items[:col] << label_item.new(rc, _self.collection_description, :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:geometry)) 
+	.items[:geometry_choice] << text_choice_item.new(rc, _unset, :items, {},
+							 :model, _self,
+							 :change_selector, :|geometry_changed()|,
+							 :col_alignment, :fill)
+	
+	label_item.new(rc, _self.message(:topology) ) 
+	.items[:topology_choice] << text_choice_item.new(rc, _unset, :items, {},
+							 :model, _self,
+							 :change_selector, :|target_changed()|,
+							 :col_alignment, :fill)  
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.build_length_item(container)
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	label_item.new(rc, _self.message(:max_length))
+	.items[:max_length] << ti << managed_value_text_item.new(rc, _unset, 
+								 :model, _self,
+								 :change_selector, :|max_length_changed()|,
+								 :col_alignment, :fill)
+	ti.manager << unit_value_manager.new(unit_manager.unit(:m))
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.build_stop_queries(container)
+	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
+				:row_alignment, :fill, :row_resize_values, {0,100},
+				:col_alignment, :fill, :col_resize_values, {0,100})
+	.items[:build_predicate] << button_item.new_safe(rc,_self.message(:build_predicate),
+						    _self,:|activate_predicate_builder()|,
+						    :min_width, 75)
+	.items[:list] << l << simple_list_item.new(rc,
+						   :model, :extended,
+						   :model, _self,
+						   :change_selector, :|predicate_selected()|,
+						   :row_alignment, :fill, :col_alignment, :fill)
+	_local br << rowcol.new(container, 1, _unset, _unset, :style, :button_box)
+#	.items[:edit_predicate] << button_item.new_safe(br, _self.message(:edit_predicate), _self, :|edit_predicate()|, :min_width, 75)
+	.items[:remove_predicate] << button_item.new_safe(br, _self.message(:remove_predicate), _self, :|remove_predicate()|, :min_width, 75)
+	.items[:remove_all_predicates] << button_item.new_safe(br, _self.message(:remove_predicates), _self, :|remove_all_predicates()|, :min_width, 75)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.build_buttons(container) 
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok) , _self, :|ok()|, :min_width, 75) 
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel) , _self, :|cancel()|, :min_width, 75) 
+_endmethod
+$
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.on_activation() 
+	_self.initialise_geometry_choice()
+	_self.initialise_target_choice()
+	_self.initialise_max_length()
+	_return _super(model).on_activation()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.initialise_geometry_choice()
+	_local items << _self.geom_field_items
+	.items[:geometry_choice].items << items
+	_self.set_current_geom_field(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.initialise_target_choice()
+	_if .geom_name _isnt _unset
+	_then 
+		_local geom_field << .record_holder.collection.expose().field(.geom_name)
+		_local items << _self.topology_items(geom_field)
+		.items[:topology_choice].items << items
+		_self.set_current_target_collection(items)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.initialise_max_length()
+	.items[:max_length].value << .max_length
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.activate_predicate_builder()
+	ed << rwan:trace_block_query_dialog.new_dialog(_self, .parent_model.owner, _true)
+	ed.add_dependent(_self)
+	ed.activate_relative_to(_self.message(:predicate_dialog_title), _self.top_frame)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.edit_predicate()
+	
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.predicate_selected()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.set_query(query_def)
+	.stop_queries.add(query_def)
+	_self.refresh_list()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.remove_predicate()
+	_local sel << .items[:list].selected_items.an_element()
+	.stop_queries.remove(sel)
+	_self.refresh_list()
+	_self.manage_actions()	
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.remove_all_predicates()
+	.stop_queries.empty()
+	_self.refresh_list()
+	_self.manage_actions()	
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.refresh_list()
+	_local list << .stop_queries.map(_proc(x) >> {x.query_title, x} _endproc)
+	.items[:list].items << list
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.max_length_changed(value)
+	.max_length << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.set_current_target_collection(items)
+	_local value << _unset
+	_if items.size > 0
+	_then
+		value << items[1][1]
+	_endif
+	_if .target_collection _isnt _unset
+	_then
+		_for i_vec _over items.fast_elements()
+		_loop
+			_if i_vec[1] _is .target_collection
+			_then
+				value << i_vec[1]
+			_endif
+		_endloop
+	_endif
+	.items[:topology_choice].value_with_notify << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.set_current_geom_field(items)
+	_local value << _unset
+	_if items.size > 0
+	_then
+		value << items[1][1]
+		_local _constant topo_cats << {:chain, :point, :area}
+		_for i_vec _over items.fast_elements()
+		_loop
+			_local geom_cat << i_vec[1].geom_category
+			_if topo_cats.includes?(geom_cat)
+			_then
+				value << i_vec[1]
+				_leave 
+			_endif
+		_endloop
+	_endif
+	_if .geom_name _isnt _unset
+	_then
+		_for i_vec _over items.fast_elements()
+		_loop
+			_if i_vec[1].name = .geom_name
+			_then
+				value << i_vec[1]
+			_endif
+		_endloop
+	_endif
+	_if value _isnt _unset
+	_then 
+		.items[:geometry_choice].value_with_notify << value
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.ok()
+	_if .holder _is _unset
+	_then
+		_local col << .record_holder.collection.follow_trace(.geom_name, .target_collection, _self.trace_stop_queries, _self.max_length)
+		.parent_model.add_collection(col)
+	_else
+		.holder.collection.update(.geom_name, _self.trace_stop_queries, _self.max_length, .target_collection)
+		.parent_model.update_holder(.holder)
+	_endif 
+	_self.close() 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.trace_stop_queries
+	_local be << browser_engine.new(.record_holder.collection.expose().dataset)
+	_local ph << nf_predicate_handler.new(be)	
+	_local preds << hash_table.new()
+	_for i_query _over .stop_queries.fast_elements()
+	_loop
+		_local ps << ph.parse_to_predicates(i_query.query_text)
+		preds.add_all(ps)
+	_endloop 
+	_return preds
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.max_length
+	_return .items[:max_length].value	
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.cancel() 
+	_self.close() 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.geometry_changed(geom_field)
+	.geom_name << geom_field.name
+	.items[:topology_choice].items << _self.topology_items(geom_field)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.target_changed(value)
+	.target_collection << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.topology_items(geom_field) 
+	_local items << rope.new()
+	_local cols << _self.collections_for_topology(geom_field) 
+	_for i_col _over cols.fast_elements()
+	_loop
+		items.add({ i_col, i_col.external_name.copy()}) 
+	_endloop
+	items << items.as_sorted_collection(_proc(a, b) 
+						    _return a[2] _cf b[2]
+					    _endproc) 
+	items << rope.new_from(items) 
+	_if items.empty?
+	_then
+		items.add({_unset, _self.message(:no_topology)})
+	_endif 
+	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.collections_for_topology(geom_field) 
+	_local sw_col << .record_holder.collection.expose()
+	_local ds << sw_col.dataset
+	_if geom_field.mapped?
+	_then
+		fds << geom_field.mapped_geometry_fields.elements
+	_else
+		fds << {geom_field}
+	_endif
+	_local done << set.new_with(sw_col.descriptor)
+	_local cols << rope.new()
+	_for fd _over fds.fast_elements()
+	_loop
+		_if _not fd.has_topology? _then _continue _endif 
+		_local gs << ds.geometry_on_manifold(fd.manifold_code)
+		_for i_fd _over gs.fast_elements()
+		_loop
+			_local dd << i_fd.owner
+			_local col << dd.dataset.collections[dd.name]
+			_if done.includes?(col).not
+			_then 
+				cols.add(col)
+				done.add(col)
+			_endif 
+		_endloop
+	_endloop 
+	_return cols
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.geom_field_items
+	_return _self.geom_field_items_for(.record_holder.collection) 
+_endmethod
+
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.geom_field_items_for(col)
+	_local sw_col << col.expose()
+	_local fds << rope.new()
+	_for i_fd  _over sw_col.descriptor.geometry_fields()
+	_loop
+		_if i_fd.name _is :meatball
+		_then
+			_continue
+		_endif
+		fds.add({ i_fd, i_fd.external_name }) 
+	_endloop
+	fds << fds.as_sorted_collection(_proc(a, b) 
+						_return a[2] _cf b[2]
+					_endproc) 
+	fds << rope.new_from(fds)
+	_return fds
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.collection_description
+	_if .record_holder.is_record_collection?
+	_then
+		_return .record_holder.collection.expose().external_name
+	_else
+		_return _self.message(:geometry_collection)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.manage_actions()
+	_local any? << .items[:list].items.empty?.not
+	_local sel? << .items[:list].selected_items.empty?.not
+	.items[:remove_predicate].enabled? << sel?
+	.items[:remove_all_predicates].enabled? << any?
+_endmethod
+$

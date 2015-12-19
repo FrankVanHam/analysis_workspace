@@ -69,7 +69,7 @@ _pragma(classify_level=basic, topic={analysis})
 _method trace_analysis_test_case.test_trace_from_supply_point_to_station_with_unsufficient_max_length()
 	_local (one_col, link_table) << _self.supply_point_basics()
 	_local stops << _unset 
-	_local trace_col << one_col.follow_trace(:location, link_table, stops, 1000)
+	_local trace_col << one_col.follow_trace(:location, link_table, stops, length_value(1000,:mm))
 	_self.assert_is(trace_col.size, 0, "There should be 0 substation link in the set because the max length is too little")
 _endmethod
 $
@@ -78,7 +78,7 @@ _pragma(classify_level=basic, topic={analysis})
 _method trace_analysis_test_case.test_trace_from_supply_point_to_station_with_sufficient_max_length()
 	_local (one_col, link_table) << _self.supply_point_basics()
 	_local stops << _unset 
-	_local trace_col << one_col.follow_trace(:location, link_table, stops, 100000)
+	_local trace_col << one_col.follow_trace(:location, link_table, stops, length_value(100000,:mm))
 	_self.assert_is(trace_col.size, 1, "There should be 1 substation link in the set because the max length is enough")
 _endmethod
 $

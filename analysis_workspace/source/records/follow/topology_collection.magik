@@ -150,7 +150,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method topology_collection.description(translator)
 	_local base_name   << translator.name_for_collection(_self.base_collection)
-	_local target_name << translator.name_for_collection(_self.target_collection)
+	_local target_name << _self.target_collection.external_name
 	_local geom_name << _self.base_collection.expose().field(.geom_name).external_name
 	
 	_return _self.message(:description, target_name, geom_name, base_name)

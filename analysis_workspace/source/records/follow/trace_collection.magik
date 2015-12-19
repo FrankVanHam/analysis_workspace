@@ -52,40 +52,52 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method trace_collection.editable?
-	_return _false # not yet.
+	_return _true
 _endmethod
 $
 
-#_pragma(classify_level=basic, topic={analysis})
-#_method trace_collection.activate_editor_in(dialog, holder)
-#	dialog.edit_follow_topology_dialog(holder,
-#					 _self.base_collection,
-#					 .geom_name, _self.target_collection)
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method trace_collection.update(geom_name, target_col)
-#	.target_ds_name << target_col.dataset.original_dataset_name
-#	.target_table_name << target_col.name
-#	.geom_name << geom_name
-#_endmethod
-#$
+_pragma(classify_level=basic, topic={analysis})
+_method trace_collection.activate_editor_in(dialog, holder)
+	dialog.edit_follow_trace_dialog(holder,
+					  _self.base_collection,
+					  .geom_name, .stop_predicates, .max_length,
+					  _self.target_collection)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_collection.update(geom_name, stop_predicates, max_length, target_col)
+	.target_ds_name << target_col.dataset.original_dataset_name
+	.target_table_name << target_col.name
+	.geom_name << geom_name
+	.stop_predicates << stop_predicates
+	.max_length << max_length
+_endmethod
+$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:geom_name, :stop_preds, :max_length})
-	values.add_all_last({.geom_name, .stop_predicates, .max_length})
+	values.add_all_last({.geom_name, _self.stop_predicates_eval_string, .max_length})
 	_return keys, values	
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_collection.init_from_serial(dsm, base_cols, target_ds_name, target_table_name, geom_name, stop_preds, max_length)
+_private _method trace_collection.stop_predicates_eval_string
+	_local s << internal_text_output_stream.new()
+	.stop_predicates.store_on(s)
+	_return s.string
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_collection.init_from_serial(dsm, base_cols, target_ds_name, target_table_name, geom_name, stop_preds_string, max_length)
     _super.init_from_serial(dsm, base_cols, target_ds_name, target_table_name)
     .geom_name       << geom_name
-    .stop_predicates << stop_preds
+    .stop_predicates << stop_preds_string.evaluate()
     .max_length      << max_length
     _return _self 
 _endmethod
@@ -159,7 +171,7 @@ _private _iter _method trace_collection.trace(geom)
 	_local nf << network_follower.new(50)
 	_for i_node _over geom.all_nodes()
 	_loop
-		nf.trace_out(i_node, :stop_predicates, .stop_predicates, :max_cost, .max_length)
+		nf.trace_out(i_node, :stop_predicates, .stop_predicates, :max_cost, _self.max_length_value)
 		_local travelled << nf.visited_rwos
 		_for i_rec _over travelled.fast_elements()
 		_loop
@@ -172,10 +184,24 @@ _private _iter _method trace_collection.trace(geom)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_collection.max_length_value
+	_if .max_length _isnt _unset
+	_then 
+		_local world << _self.world
+		_local length << .max_length.value_in(world.unit)
+		_return length
+	_else
+		_return _unset
+	_endif 
+_endmethod
+$
+
+
 _pragma(classify_level=basic, topic={analysis})
 _method trace_collection.description(translator)
 	_local base_name   << translator.name_for_collection(_self.base_collection)
-	_local target_name << translator.name_for_collection(_self.target_collection)
+	_local target_name << _self.target_collection.external_name
 	_local geom_name << _self.base_collection.expose().field(.geom_name).external_name
 	
 	_return _self.message(:description, target_name, geom_name, base_name)

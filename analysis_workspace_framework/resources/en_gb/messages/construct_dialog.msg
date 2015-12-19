@@ -37,6 +37,9 @@
 :follow_topology		Topology
 :follow_topology_tooltip	Create a new record collection that is topological connected to the selected record collection
 
+:follow_trace			Trace
+:follow_trace_tooltip		Create a new record collection that is the result of a trace-out of selected record collection
+
 :follow_join			Join
 :follow_join_tooltip		Create a new record collection that is joined to the the selected record collection
 

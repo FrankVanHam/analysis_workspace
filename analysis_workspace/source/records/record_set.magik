@@ -137,6 +137,13 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method record_set.world
+	_return .base_set.an_element().dataset.world
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
 _method record_set.includes?(rec)
 	_return .base_set.includes?(rec)
 _endmethod

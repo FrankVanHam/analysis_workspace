@@ -169,14 +169,19 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.ace_context
+	_return _self.databus_request_data(:ace_context)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
 _method framework_plugin.deactivated(p_framework)
 	## 
 	## 
 	
 _endmethod
 $
-
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method framework_plugin.map_trail
