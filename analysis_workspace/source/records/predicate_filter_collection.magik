@@ -82,8 +82,6 @@ _method predicate_filter_collection.update(pred)
 _endmethod
 $
 
-
-
 _pragma(classify_level=basic, topic={analysis})
 _method predicate_filter_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif

@@ -32,6 +32,7 @@ def_slotted_exemplar(:predicate_filter_dialog,
 		{:holder,              _unset},
 		{:items,               _unset},
 		{:predicate_component, _unset},
+		{:predicate,           _unset},
 		{:record_holder,       _unset}
 	},
 	:model)
@@ -40,11 +41,11 @@ $
 message_handler.new(:predicate_filter_dialog).add_uses(:model, :gen_graphics)
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_dialog.set_holder(holder, record_holder, dsm)
+_method predicate_filter_dialog.set_holder(holder, record_holder, dsm, predicate)
 	.holder << holder
 	.record_holder << record_holder
+	.predicate << predicate
 _endmethod
 $
 
@@ -96,9 +97,34 @@ _private _method predicate_filter_dialog.build_predicate_selection(container)
 	_local ace << .parent_model.ace
 	.predicate_component << query_predicate_component.new( :query, _self, :ace, ace)
 	.predicate_component.build_gui(rc)
-	.predicate_component.set_collection(.record_holder.collection.expose())
+	
+	_local col << .record_holder.collection.expose()
+	_local names << _self.physical_fields(col, ace)
+	.predicate_component.set_collection(col,
+					    :field_names,
+					    names)
+	.predicate_component.set_predicate(.predicate)
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method predicate_filter_dialog.physical_fields(col, ace)
+	_local all_names << ace.table_visible_field_names_with_defaults(
+				    col.dataset.dataset_name,
+				    col.name,
+				    :browser )
+	_local names << rope.new()
+	_for i_name _over all_names.fast_elements()
+	_loop
+		_if _not col.field(i_name).is_geometry?
+		_then
+			names.add(i_name)
+		_endif
+	_endloop
+	_return names
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_dialog.build_buttons(container)
