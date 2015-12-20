@@ -1,0 +1,189 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:trace_stop_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog to create stop predicates for a trace,
+##
+def_slotted_exemplar(:trace_stop_dialog,
+	{
+		{:items,                _unset},
+		{:ace,                  _unset},
+		{:possible_collections, _unset},
+		{:current_collection,   _unset},
+		{:predicate_component,  _unset},
+		{:predicate,            _unset}
+	},
+	:model)
+$
+
+message_handler.new(:trace_stop_dialog).add_uses(:model, :gen_graphics)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_stop_dialog.new(possible_collections, pred, ace)
+	_return _clone.init(possible_collections, pred, ace)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.init(possible_collections, pred, ace)
+	.possible_collections << possible_collections
+	.current_collection << .possible_collections[1]
+	.predicate << pred
+	_if .predicate _isnt _unset _andif .possible_collections.size > 1
+	_then
+		condition.raise(:error,:string, "Weird combo!")
+	_endif 
+	.ace << ace
+	_return _super.init()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_stop_dialog.activate_in(container)
+	container.top_frame.modality << :primary_modal
+#	container.top_frame.resizable? << _false
+	
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {0,0,100})
+	_self.build_top_label(rc)
+	_self.build_source_selection(rc)
+	_self.build_predicate_selection(rc)
+	panel_separator.new(rc, :col_alignment, :fill)
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.build_top_label(container)
+	text_window.new(container, 3, 50, _unset,
+			:horizontal_scrollbar?, _false,
+			:editable?, _false,
+			:contents, _self.message(:top_label),
+			:col_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.build_source_selection(container)
+	_local rc << rowcol.new(container, _unset, 4, _unset, :style, :nested, :col_alignment, :fill, :col_resize_values, {0,100})
+	label_item.new(rc, _self.message(:collections))
+	text_choice_item.new(rc, _unset, :items, _self.collection_items, :col_alignment, :fill,
+			     :model, _self,
+			     :change_selector, :|collection_changed()|,
+			     :balloon_help_text, _self.message(:possible_collections_balloon) )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.build_predicate_selection(container)
+#	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :col_alignment, :fill)
+	_local rc << panel.new(container, _unset)
+	rc.col_alignment << :fill
+	rc.row_alignment << :fill
+	.predicate_component << query_predicate_component.new( :query, _self, :ace, .ace)
+	.predicate_component.build_gui(rc)
+	
+	_local col << .current_collection
+	_local names << _self.physical_fields(col, .ace)
+	.predicate_component.set_collection(col,
+					    :field_names,
+					    names)
+	_if .predicate _isnt _unset
+	_then 
+		.predicate_component.set_predicate(.predicate)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_stop_dialog.collection_changed(col)
+	.current_collection << col
+	_local names << _self.physical_fields(col, .ace)
+	.predicate_component.set_collection(col,
+					    :field_names,
+					    names)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.physical_fields(col, ace)
+	_local all_names << ace.table_visible_field_names_with_defaults(
+				    col.dataset.dataset_name,
+				    col.name,
+				    :browser )
+	_local names << rope.new()
+	_for i_name _over all_names.fast_elements()
+	_loop
+		_if _not col.field(i_name).is_geometry?
+		_then
+			names.add(i_name)
+		_endif
+	_endloop
+	_return names
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.build_buttons(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_stop_dialog.ok()
+	_local pred << _self.construct_predicate()
+	.parent_model.update_predicate(pred, .current_collection)
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.construct_predicate()
+	_return .predicate_component.predicate()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_stop_dialog.cancel()
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.collection_items
+	_local items << rope.new()
+	_for i_col _over .possible_collections.fast_elements()
+	_loop
+		items.add({i_col, i_col.external_name.copy()})
+	_endloop
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc)
+	items << rope.new_from(items)
+	_return items
+_endmethod
+$

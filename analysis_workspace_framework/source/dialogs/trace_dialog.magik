@@ -23,8 +23,10 @@ $
 
 _pragma(classify_level=basic, topic={demo})
 ##
-## dialog to construct a topology collection to follow topology
-## of the source collection.
+## dialog to construct a trace collection to trace topology
+## of the source collection to find records of the target
+## collection. The user can apply a maximum distance and set
+## stop predicates.
 ##
 def_slotted_exemplar(:trace_dialog,
 	{
@@ -33,7 +35,8 @@ def_slotted_exemplar(:trace_dialog,
 		{:record_holder,     _unset},
 		{:geom_name,         _unset},
 		{:max_length,        _unset},
-		{:stop_queries,      _unset},
+		{:stop_predicates,   _unset},
+		{:selected_stop_collection, _unset},
 		{:target_collection, _unset}
 	}, :model )
 $
@@ -47,7 +50,7 @@ _method trace_dialog.set_holder(holder, record_holder, dsm, geom_name, stop_pred
 	.record_holder << record_holder
 	.geom_name     << geom_name
 	.max_length    << max_length
-	.stop_queries << rope.new() # dont know how to go from predicate to query_definition
+	.stop_predicates << stop_preds.default(property_list.new())
 	.target_collection << target_col
 _endmethod
 $
@@ -60,7 +63,7 @@ _method trace_dialog.activate_in(container)
 	_self.build_top_label(rc)
 	_self.build_trace_selection(rc)
 	_self.build_length_item(rc)
-	_self.build_stop_queries(rc)
+	_self.build_stop_predicates(rc)
 	panel_separator.new(rc, :col_alignment, :fill) 
 	_self.build_buttons(rc) 
 	_return rc
@@ -110,24 +113,47 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method trace_dialog.build_stop_queries(container)
+_private _method trace_dialog.build_stop_predicates(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
 				:row_alignment, :fill, :row_resize_values, {0,100},
 				:col_alignment, :fill, :col_resize_values, {0,100})
-	.items[:build_predicate] << button_item.new_safe(rc,_self.message(:build_predicate),
-						    _self,:|activate_predicate_builder()|,
-						    :min_width, 75)
-	.items[:list] << l << simple_list_item.new(rc,
-						   :model, :extended,
-						   :model, _self,
-						   :change_selector, :|predicate_selected()|,
-						   :row_alignment, :fill, :col_alignment, :fill)
-	_local br << rowcol.new(container, 1, _unset, _unset, :style, :button_box)
-#	.items[:edit_predicate] << button_item.new_safe(br, _self.message(:edit_predicate), _self, :|edit_predicate()|, :min_width, 75)
-	.items[:remove_predicate] << button_item.new_safe(br, _self.message(:remove_predicate), _self, :|remove_predicate()|, :min_width, 75)
-	.items[:remove_all_predicates] << button_item.new_safe(br, _self.message(:remove_predicates), _self, :|remove_all_predicates()|, :min_width, 75)
+
+	_local rrc << _self.new_toolbar(rc)
+	label_item.new(rrc, _self.message(:stop_predicates))
+	.items[:add_predicate] << image_button_item.new_safe(rrc,_self.add_image,
+							     _self,:|add_predicate()|,
+							     :balloon_help_id, :add_predicate_tt,
+							     :insensitive_image, _self.grey_add_image)
+	.items[:edit_predicate] << image_button_item.new_safe(rrc,_self.edit_image,
+							     _self,:|edit_predicate()|,
+							     :balloon_help_id, :edit_predicate_tt,
+							     :insensitive_image, _self.grey_edit_image)
+	.items[:remove_predicate] << image_button_item.new_safe(rrc,_self.remove_image,
+							     _self,:|remove_predicate()|,
+							     :balloon_help_id, :remove_predicate_tt,
+							     :insensitive_image, _self.grey_remove_image)
+	
+	.items[:list] << tree_item.new(rc,
+				       :mode, :one,
+				       :aspect, :stop_predicates_trees,
+				       :model, _self,
+				       :double_click_notifier, {:|perform_safely()|, :|edit_predicate()|},
+				       :select_notifier,       {:|perform_safely()|, :|predicate_selected()|},
+				       :row_alignment, :fill, :col_alignment, :fill)
 _endmethod
 $
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method trace_dialog.new_toolbar(container)
+	rc << toolbar.new(container, _false)
+	rc.col_spacing << 0
+	rc.row_spacing << 0
+	rc.outer_spacing << 2
+	_return rc
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.build_buttons(container) 
@@ -141,6 +167,7 @@ _method trace_dialog.on_activation()
 	_self.initialise_geometry_choice()
 	_self.initialise_target_choice()
 	_self.initialise_max_length()
+	_self.manage_actions()
 	_return _super(model).on_activation()
 _endmethod
 $
@@ -172,58 +199,90 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_dialog.activate_predicate_builder()
-	ed << rwan:trace_block_query_dialog.new_dialog(_self, .parent_model.owner, _true)
-	ed.add_dependent(_self)
+_method trace_dialog.add_predicate()
+	_local geom_field << .record_holder.collection.expose().field(.geom_name)
+	_local possible_collections << _self.collections_for_topology(geom_field)
+	_local ed << trace_stop_dialog.new_dialog(_self, possible_collections, _unset, .parent_model.ace)
 	ed.activate_relative_to(_self.message(:predicate_dialog_title), _self.top_frame)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.edit_predicate()
-	
+	_local pred << .stop_predicates[.selected_stop_collection]
+	_local possible_collections << {.selected_stop_collection}
+	_local ed << trace_stop_dialog.new_dialog(_self, possible_collections, pred, .parent_model.ace)
+	ed.activate_relative_to(_self.message(:predicate_dialog_title), _self.top_frame)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_dialog.stop_predicates_trees
+	_local list << rope.new()
+	_for i_col, i_pred _over .stop_predicates.fast_keys_and_elements()
+	_loop
+		list.add(_self.display_tree_for(i_pred, i_col))
+	_endloop
+	_return list
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_dialog.display_tree_for(pred, col)
+	#
+	_local t << display_tree.new(col)
+	_local image << col.record_exemplar.legend_info_for(property_list.new())
+	_if image _is _unset _orif image _is :use_default
+	_then
+		image << {:collection, :ui_resources}
+	_endif
+	_if pred _isnt _unset
+	_then 
+		style << {:image, image, col.external_name.copy(), _self.message(:where),
+			  :blue, pred.write_string}
+	_else
+		style << {:image, image, col.external_name.copy()}
+	_endif
+	t.styled_string << style
+	_return t 
 _endmethod
 $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_dialog.predicate_selected()
+_method trace_dialog.predicate_selected(tree_selection)
+	_local tree << tree_selection.an_element()
+	_if tree _isnt _unset
+	_then
+		col << tree.key
+	_else
+		col << _unset
+	_endif 
+	.selected_stop_collection << col
 	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_dialog.set_query(query_def)
-	.stop_queries.add(query_def)
+_method trace_dialog.update_predicate(pred, col)
+	.stop_predicates[col] << pred
 	_self.refresh_list()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.remove_predicate()
-	_local sel << .items[:list].selected_items.an_element()
-	.stop_queries.remove(sel)
+	.stop_predicates.remove_key(.selected_stop_collection)
 	_self.refresh_list()
 	_self.manage_actions()	
 _endmethod
 $
-
-_pragma(classify_level=restricted, topic={analysis})
-_method trace_dialog.remove_all_predicates()
-	.stop_queries.empty()
-	_self.refresh_list()
-	_self.manage_actions()	
-_endmethod
-$
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.refresh_list()
-	_local list << .stop_queries.map(_proc(x) >> {x.query_title, x} _endproc)
-	.items[:list].items << list
+	_self.changed(:stop_predicates_trees, :renew)
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.max_length_changed(value)
@@ -290,10 +349,10 @@ _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.ok()
 	_if .holder _is _unset
 	_then
-		_local col << .record_holder.collection.follow_trace(.geom_name, .target_collection, _self.trace_stop_queries, _self.max_length)
+		_local col << .record_holder.collection.follow_trace(.geom_name, .target_collection, _self.trace_stop_predicates, _self.max_length)
 		.parent_model.add_collection(col)
 	_else
-		.holder.collection.update(.geom_name, _self.trace_stop_queries, _self.max_length, .target_collection)
+		.holder.collection.update(.geom_name, _self.trace_stop_predicates, _self.max_length, .target_collection)
 		.parent_model.update_holder(.holder)
 	_endif 
 	_self.close() 
@@ -301,16 +360,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_dialog.trace_stop_queries
-	_local be << browser_engine.new(.record_holder.collection.expose().dataset)
-	_local ph << nf_predicate_handler.new(be)	
-	_local preds << hash_table.new()
-	_for i_query _over .stop_queries.fast_elements()
-	_loop
-		_local ps << ph.parse_to_predicates(i_query.query_text)
-		preds.add_all(ps)
-	_endloop 
-	_return preds
+_method trace_dialog.trace_stop_predicates
+	_return .stop_predicates
 _endmethod
 $
 
@@ -394,7 +445,6 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.geom_field_items
 	_return _self.geom_field_items_for(.record_holder.collection) 
 _endmethod
-
 $
 
 _pragma(classify_level=restricted, topic={analysis})
@@ -430,9 +480,47 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.manage_actions()
-	_local any? << .items[:list].items.empty?.not
-	_local sel? << .items[:list].selected_items.empty?.not
-	.items[:remove_predicate].enabled? << sel?
-	.items[:remove_all_predicates].enabled? << any?
+	_local topo? << . target_collection _isnt _unset 
+	_local any? << .stop_predicates.empty?.not 
+	_local sel? << .selected_stop_collection _isnt _unset
+	.items[:add_predicate].enabled? << topo?
+	.items[:edit_predicate].enabled? << topo? _and sel?
+	.items[:remove_predicate].enabled? << topo? _and sel?
+	.items[:ok].enabled? << topo?
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method trace_dialog.edit_image
+	_return smallworld_product.get_raster_image(:edit, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method trace_dialog.grey_edit_image
+	_return smallworld_product.get_raster_image(:edit_grey, :ui_resources)
+_endmethod
+$
+_pragma(classify_level=advanced, topic={analysis})
+_private _method trace_dialog.add_image
+	_return smallworld_product.get_raster_image(:add, _self.module_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method trace_dialog.grey_add_image
+	_return smallworld_product.get_raster_image(:add_grey, _self.module_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method trace_dialog.remove_image
+	_return smallworld_product.get_raster_image(:remove, _self.module_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method trace_dialog.grey_remove_image
+	_return smallworld_product.get_raster_image(:remove_grey, _self.module_name)
 _endmethod
 $

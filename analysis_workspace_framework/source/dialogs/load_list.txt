@@ -8,7 +8,7 @@ method_dialog
 root_dialog
 topology_dialog
 trace_dialog
-trace_block_query_dialog
+trace_stop_dialog
 
 spatial_dialog
 spatial_filter_dialog

@@ -44,9 +44,46 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_collection.init(dsm, base_col, geom_name, target_col, stop_preds, max_length)
 	.geom_name       << geom_name
-	.stop_predicates << stop_preds
+	.stop_predicates << _self.convert_stop_predicates(stop_preds)
 	.max_length      << max_length
 	_return _super.init(dsm, base_col, target_col)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_collection.convert_stop_predicates(stop_preds)
+	_if stop_preds _is _unset
+	_then
+		_return _unset
+	_else
+		_local preds << property_list.new()
+		_for i_col, i_pred _over stop_preds.fast_keys_and_elements()
+		_loop
+			preds[i_col.name] << i_pred
+		_endloop
+		_return preds
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_collection.edit_stop_predicates
+	_if .stop_predicates _is _unset
+	_then
+		_return _unset
+	_else
+		_local preds << property_list.new()
+		_local ds << gis_program_manager.databases[.target_ds_name]
+		_for i_name, i_pred _over .stop_predicates.fast_keys_and_elements()
+		_loop
+			_local col << ds.collections[i_name]
+			_if col _isnt _unset
+			_then 
+				preds[col] << i_pred
+			_endif
+		_endloop
+		_return preds 
+	_endif 
 _endmethod
 $
 
@@ -60,7 +97,7 @@ _pragma(classify_level=basic, topic={analysis})
 _method trace_collection.activate_editor_in(dialog, holder)
 	dialog.edit_follow_trace_dialog(holder,
 					  _self.base_collection,
-					  .geom_name, .stop_predicates, .max_length,
+					  .geom_name, _self.edit_stop_predicates, .max_length,
 					  _self.target_collection)
 _endmethod
 $
@@ -70,7 +107,7 @@ _method trace_collection.update(geom_name, stop_predicates, max_length, target_c
 	.target_ds_name << target_col.dataset.original_dataset_name
 	.target_table_name << target_col.name
 	.geom_name << geom_name
-	.stop_predicates << stop_predicates
+	.stop_predicates << _self.convert_stop_predicates(stop_predicates)
 	.max_length << max_length
 _endmethod
 $
@@ -91,7 +128,6 @@ _private _method trace_collection.stop_predicates_eval_string
 	_return s.string
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_collection.init_from_serial(dsm, base_cols, target_ds_name, target_table_name, geom_name, stop_preds_string, max_length)
@@ -167,11 +203,28 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_private _method trace_collection.trace_stop_predicates
+	_if .stop_predicates _is _unset
+	_then
+		_return _unset
+	_else
+		_local preds << property_list.new()
+		_for i_name, i_pred _over .stop_predicates.fast_keys_and_elements()
+		_loop
+			preds[i_name] << {i_pred}
+		_endloop 
+		_return preds
+	_endif 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
 _private _iter _method trace_collection.trace(geom)
 	_local nf << network_follower.new(50)
 	_for i_node _over geom.all_nodes()
 	_loop
-		nf.trace_out(i_node, :stop_predicates, .stop_predicates, :max_cost, _self.max_length_value)
+		nf.trace_out(i_node, :stop_predicates, _self.trace_stop_predicates, :max_cost, _self.max_length_value)
 		_local travelled << nf.visited_rwos
 		_for i_rec _over travelled.fast_elements()
 		_loop
