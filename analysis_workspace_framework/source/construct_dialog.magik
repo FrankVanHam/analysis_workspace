@@ -32,6 +32,13 @@ message_handler.new(:construct_dialog).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.owner
+	_return .owner	
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.activate_in(container)
 	.top_frame << container.top_frame
 	rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :resize?, _true)
@@ -541,6 +548,7 @@ _method construct_dialog.create_follow_topology_dialog()
 _endmethod
 $
 
+
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_topology_dialog(holder, base_col, geom_name, target_col)
 	_local base_holder << _self.current_workspace.holder_for(base_col)
@@ -557,6 +565,32 @@ _private _method construct_dialog.activate_follow_topology_editor(holder, base_h
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.create_follow_trace_dialog()
+	_local record_holder << _self.selected_top_holder
+	_if record_holder.is_record_collection?
+	_then
+		_self.activate_follow_trace_editor(_unset, record_holder)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit_follow_trace_dialog(holder, base_col, geom_name, stop_predicates, max_length, target_col)
+	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_self.activate_follow_trace_editor(holder, base_holder,
+					   geom_name, stop_predicates, max_length, target_col)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.activate_follow_trace_editor(holder, base_holder,
+								  _optional geom_name, stop_predicates, max_length, target_col)
+	dia << trace_dialog.new_dialog(_self)
+	dia.set_holder(holder, base_holder, _self.dataset_manager, geom_name, stop_predicates, max_length, target_col)
+	dia.activate()
+_endmethod
+$
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_root_dialog()
 	_local record_holder << _self.selected_top_holder
@@ -711,14 +745,14 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_predicate_filter_dialog(holder, base_col, predicate)
 	_local record_holder << _self.current_workspace.holder_for(base_col)
-	_self.do_create_predicate_filter_dialog(holder, record_holder)
+	_self.do_create_predicate_filter_dialog(holder, record_holder, predicate)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.do_create_predicate_filter_dialog(holder, record_holder)
+_private _method construct_dialog.do_create_predicate_filter_dialog(holder, record_holder, _optional predicate)
 	_local dia << predicate_filter_dialog.new_dialog(_self)
-	dia.set_holder(holder, record_holder, _self.dataset_manager)
+	dia.set_holder(holder, record_holder, _self.dataset_manager, predicate)
 	dia.activate()
 _endmethod
 $
@@ -866,6 +900,7 @@ _method construct_dialog.manage_actions()
 	.owner.action(:predicate_filter).enabled? << open? _andif (reccolnr=1)
 
 	.owner.action(:follow_topology).enabled? << open? _andif (reccolnr=1)
+	.owner.action(:follow_trace).enabled? << open? _andif (reccolnr=1)
 	.owner.action(:follow_join).enabled? << open?  _andif (reccolnr=1)
 	.owner.action(:follow_method).enabled? << open?  _andif (reccolnr=1)
 	.owner.action(:follow_root).enabled? << open?  _andif (reccolnr=1)

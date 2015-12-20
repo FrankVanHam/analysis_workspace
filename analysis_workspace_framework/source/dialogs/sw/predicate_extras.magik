@@ -1,0 +1,98 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package sw
+$
+
+
+_pragma(classify_level=restricted)
+_method predicate_wild.rwan_creation_method
+	## Return the method that was used to create me. The second
+	## argument is true if negative.
+	#
+	_return :|wild()|, .negated?
+_endmethod
+$
+
+
+_pragma(classify_level=restricted)
+_method predicate_leaf.rwan_creation_method
+	## Return the method that was used to create me. The second
+	## argument is true if negative.
+	#
+	_for i_key, i_proc _over _self.operator_procs.fast_keys_and_elements()
+	_loop
+		_if i_key[1].ascii_alphabetic?
+		_then
+			_if i_proc.name = .operator_proc.name
+			_then
+				_return i_key+:|()|, _false
+			_endif
+		_else
+			# ignore the :|=|, use the :|eq|
+		_endif
+	_endloop
+	_return _unset 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted)
+_method predicate_leaf.rwan_as_lineair_list()
+	## Return self a a list, just like in the query_predicate_component.
+	#
+	_return {_self}
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method predicate.rwan_as_lineair_list()
+	## Return self a a list, just like in the query_predicate_component.
+	#
+	_return {_self}
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method predicate_or.rwan_as_lineair_list()
+	## Return self a a list, just like in the query_predicate_component.
+	#
+	_local l << rope.new()
+	_local or? << _false 
+	_for i_sub_pred _over .sub_predicates.fast_elements()
+	_loop
+		_if (or? ^<<_true) _then l.add(:or) _endif
+		_local subl << i_sub_pred.rwan_as_lineair_list()
+		l.add_all_last(subl)
+	_endloop
+	_return l
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method predicate_and.rwan_as_lineair_list()
+	## Return self a a list, just like in the query_predicate_component.
+	#
+	_local l << rope.new()
+	_for i_sub_pred _over .sub_predicates.fast_elements()
+	_loop
+		_local subl << i_sub_pred.rwan_as_lineair_list()
+		l.add_all_last(subl)
+	_endloop
+	_return l
+_endmethod
+$

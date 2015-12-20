@@ -6,12 +6,14 @@ record_subtraction_dialog
 join_dialog
 method_dialog
 root_dialog
+topology_dialog
+trace_dialog
+trace_stop_dialog
 
 spatial_dialog
 spatial_filter_dialog
 distance_filter_dialog
 spatial_subtraction_dialog
-topology_dialog
 
 base_materialize_dialog
 record_materialize_dialog

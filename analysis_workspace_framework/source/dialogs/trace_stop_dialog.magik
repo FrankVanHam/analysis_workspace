@@ -18,46 +18,57 @@
 _package rwan
 $
 
-#remex(:predicate_filter_dialog)
+#remex(:trace_stop_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 ##
-## Dislog to create filtered collection on a predicate of a
-## base collection. Lets the user construct a predicate using a
-## query_predicate_component.
+## Dialog to create stop predicates for a trace,
 ##
-def_slotted_exemplar(:predicate_filter_dialog,
+def_slotted_exemplar(:trace_stop_dialog,
 	{
-		{:holder,              _unset},
-		{:items,               _unset},
-		{:predicate_component, _unset},
-		{:predicate,           _unset},
-		{:record_holder,       _unset}
+		{:items,                _unset},
+		{:ace,                  _unset},
+		{:possible_collections, _unset},
+		{:current_collection,   _unset},
+		{:predicate_component,  _unset},
+		{:predicate,            _unset}
 	},
 	:model)
 $
 
-message_handler.new(:predicate_filter_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:trace_stop_dialog).add_uses(:model, :gen_graphics)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_dialog.set_holder(holder, record_holder, dsm, predicate)
-	.holder << holder
-	.record_holder << record_holder
-	.predicate << predicate
+_method trace_stop_dialog.new(possible_collections, pred, ace)
+	_return _clone.init(possible_collections, pred, ace)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_dialog.activate_in(container)
+_private _method trace_stop_dialog.init(possible_collections, pred, ace)
+	.possible_collections << possible_collections
+	.current_collection << .possible_collections[1]
+	.predicate << pred
+	_if .predicate _isnt _unset _andif .possible_collections.size > 1
+	_then
+		condition.raise(:error,:string, "Weird combo!")
+	_endif 
+	.ace << ace
+	_return _super.init()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method trace_stop_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
 #	container.top_frame.resizable? << _false
 	
 	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {0,0,100})
 	_self.build_top_label(rc)
-	_self.build_source_label(rc)
+	_self.build_source_selection(rc)
 	_self.build_predicate_selection(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
 	_self.build_buttons(rc)
@@ -66,7 +77,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.build_top_label(container)
+_private _method trace_stop_dialog.build_top_label(container)
 	text_window.new(container, 3, 50, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
@@ -76,39 +87,49 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.build_source_label(container)
-	_local rc << rowcol.new(container, _unset, 4, _unset, :style, :nested, :col_alignment, :fill)
-	label_item.new(rc, _self.message(:source_collection))
-	label_item.new(rc, .record_holder.name)
-	label_item.new(rc, _self.message(:indexes))
-	text_choice_item.new(rc, _unset, :items, _self.index_items, :col_alignment, :fill,
-			    :balloon_help_text, _self.message(:indexes_balloon) )
+_private _method trace_stop_dialog.build_source_selection(container)
+	_local rc << rowcol.new(container, _unset, 4, _unset, :style, :nested, :col_alignment, :fill, :col_resize_values, {0,100})
+	label_item.new(rc, _self.message(:collections))
+	text_choice_item.new(rc, _unset, :items, _self.collection_items, :col_alignment, :fill,
+			     :model, _self,
+			     :change_selector, :|collection_changed()|,
+			     :balloon_help_text, _self.message(:possible_collections_balloon) )
 _endmethod
 $
 
-
-
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.build_predicate_selection(container)
+_private _method trace_stop_dialog.build_predicate_selection(container)
 #	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :col_alignment, :fill)
 	_local rc << panel.new(container, _unset)
 	rc.col_alignment << :fill
 	rc.row_alignment << :fill
-	_local ace << .parent_model.ace
-	.predicate_component << query_predicate_component.new( :query, _self, :ace, ace)
+	.predicate_component << query_predicate_component.new( :query, _self, :ace, .ace)
 	.predicate_component.build_gui(rc)
 	
-	_local col << .record_holder.collection.expose()
-	_local names << _self.physical_fields(col, ace)
+	_local col << .current_collection
+	_local names << _self.physical_fields(col, .ace)
 	.predicate_component.set_collection(col,
 					    :field_names,
 					    names)
-	.predicate_component.set_predicate(.predicate)
+	_if .predicate _isnt _unset
+	_then 
+		.predicate_component.set_predicate(.predicate)
+	_endif 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.physical_fields(col, ace)
+_method trace_stop_dialog.collection_changed(col)
+	.current_collection << col
+	_local names << _self.physical_fields(col, .ace)
+	.predicate_component.set_collection(col,
+					    :field_names,
+					    names)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method trace_stop_dialog.physical_fields(col, ace)
 	_local all_names << ace.table_visible_field_names_with_defaults(
 				    col.dataset.dataset_name,
 				    col.name,
@@ -127,7 +148,7 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.build_buttons(container)
+_private _method trace_stop_dialog.build_buttons(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
 	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
 	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
@@ -135,61 +156,34 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_dialog.ok()
+_method trace_stop_dialog.ok()
 	_local pred << _self.construct_predicate()
-	_if .holder _is _unset
-	_then 
-		_local new_col << .record_holder.collection.filter_by_predicate(pred)
-		.parent_model.add_collection(new_col)
-	_else
-		.holder.collection.update(pred)
-		.parent_model.update_holder(.holder)
-	_endif 
+	.parent_model.update_predicate(pred, .current_collection)
 	_self.close()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.construct_predicate()
-	_local pred << .predicate_component.predicate()
-	_if pred _is _unset
-	_then
-		_self.user_error(:please_supply_a_predicate)
-	_endif
-	_return pred
+_private _method trace_stop_dialog.construct_predicate()
+	_return .predicate_component.predicate()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_dialog.cancel()
+_method trace_stop_dialog.cancel()
 	_self.close()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.index_items
+_private _method trace_stop_dialog.collection_items
 	_local items << rope.new()
-	_local sw_col << .record_holder.collection.expose()
-	_local indexes << sw_col.all_index_names
-	_for i_vec _over indexes.fast_elements()
+	_for i_col _over .possible_collections.fast_elements()
 	_loop
-		_if i_vec.size = 1 _andif i_vec[1] _is :rwo_id _then _continue _endif 
-		_local str << internal_text_output_stream.new()
-		_local comma? << _false 
-		_for i_field_name _over i_vec.fast_elements()
-		_loop
-			_if (comma?^<<_true)
-			_then
-				str.write( ", ")
-			_endif
-			str.write(sw_col.field(i_field_name).external_name)
-		_endloop
-		items.add(str.string)
+		items.add({i_col, i_col.external_name.copy()})
 	_endloop
-	_if items.empty?
-	_then
-		items.add(_self.message(:no_indexes))
-	_endif 
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc)
+	items << rope.new_from(items)
 	_return items
 _endmethod
 $
