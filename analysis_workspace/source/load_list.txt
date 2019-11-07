@@ -1,4 +1,5 @@
 declare_package
+globals
 base_collection
 analysis_dataset_manager
 materialization_setting
