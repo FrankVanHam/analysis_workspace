@@ -171,7 +171,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.convert_to_geometry(_optional geom_name)
+_method base_record_collection.convert_to_geometry(_optional geom_name, bounds)
 	#show(_self, col, "Unoptimized convert_to_geometry")
 	_local gs << geometry_set.new()
 	_for i_rec _over _self.fast_elements()
@@ -179,14 +179,12 @@ _method base_record_collection.convert_to_geometry(_optional geom_name)
 		_if geom_name _isnt _unset
 		_then 
 			_local geom << i_rec.geometry(geom_name)
-			_if geom _isnt _unset 
-			_then
-				_if bounds _is _unset _orif
-				    bounds.interacts_with?(geom)
+			_if geom _isnt _unset _andif
+			    (bounds _is _unset _orif
+			     bounds.interacts_with?(geom))
 				_then 
 					gs.add(geom)
 				_endif 
-			_endif
 		_else
 			_for i_geom _over i_rec.all_geometry(_false)
 			_loop
