@@ -33,7 +33,8 @@ def_slotted_exemplar(:large_record_register,
 		{:max_in_memory, _unset},
 		{:scrapbook_bag, _unset},
 		{:set,           _unset}
-	})
+	}, {},
+	{_class |com.gesmallworld.magik.language.MagikFinalisable|})
 $
 
 _pragma(classify_level=basic, topic={analysis})
