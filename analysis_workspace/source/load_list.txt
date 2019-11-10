@@ -1,10 +1,10 @@
 declare_package
 globals
 base_collection
-analysis_dataset_manager
-materialization_setting
 materialized_collection_creator
 view_creator
+analysis_dataset_manager
+materialization_setting
 large_record_register
 
 records/

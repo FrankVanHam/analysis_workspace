@@ -1,5 +1,5 @@
-grouping_engine
-grouping_calc
 grouping_calc_element
+grouping_calc
+grouping_engine
 grouping_element
 grouping_reporter
