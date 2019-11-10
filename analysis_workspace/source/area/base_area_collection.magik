@@ -90,36 +90,36 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.buffer(geom_name, distance, _optional corner_style, end_style)
-	_return buffer_collection.new(.dsm, _self, geom_name, distance, corner_style, end_style)
+	_return sw:get_global_value(@rwan:buffer_collection).new(.dsm, _self, geom_name, distance, corner_style, end_style)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.spatial_operation(other, mthd)
-	_return area_binary_op_collection.new(.dsm, _self, other, mthd)
+	_return sw:get_global_value(@rwan:area_binary_op_collection).new(.dsm, _self, other, mthd)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.xor(other)
-	_return area_binary_op_collection.new(.dsm, _self, other, :xor)
+	_return sw:get_global_value(@rwan:area_binary_op_collection).new(.dsm, _self, other, :xor)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.union(other)
-	_return area_binary_op_collection.new(.dsm, _self, other, :union)
+	_return sw:get_global_value(@rwan:area_binary_op_collection).new(.dsm, _self, other, :union)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.subtraction(other)
-	_return area_binary_op_collection.new(.dsm, _self, other, :subtraction)
+	_return sw:get_global_value(@rwan:area_binary_op_collection).new(.dsm, _self, other, :subtraction)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.intersection(other)
-	_return area_binary_op_collection.new(.dsm, _self, other, :intersection)
+	_return sw:get_global_value(@rwan:area_binary_op_collection).new(.dsm, _self, other, :intersection)
 _endmethod
 $

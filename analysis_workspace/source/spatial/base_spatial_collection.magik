@@ -74,31 +74,31 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.spatial_operation(other, mthd)
-	_return spatial_binary_op_collection.new(.dsm, _self, other, mthd)
+	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, mthd)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.xor(other)
-	_return spatial_binary_op_collection.new(.dsm, _self, other, :xor)
+	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :xor)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.union(other)
-	_return spatial_binary_op_collection.new(.dsm, _self, other, :union)
+	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :union)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.subtraction(other)
-	_return spatial_binary_op_collection.new(.dsm, _self, other, :difference)
+	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :difference)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.intersection(other)
-	_return spatial_binary_op_collection.new(.dsm, _self, other, :intersection)
+	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :intersection)
 _endmethod
 $
 
