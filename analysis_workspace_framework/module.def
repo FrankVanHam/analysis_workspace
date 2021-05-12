@@ -3,6 +3,8 @@ description
 	Analysis Workspace GUI
 end
 requires
+	data_representation
+	style_config
 	analysis_workspace
 end
 

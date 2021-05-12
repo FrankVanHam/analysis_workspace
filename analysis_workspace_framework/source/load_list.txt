@@ -3,16 +3,19 @@ framework_plugin
 base_plugin
 base_model
 
+background_runner
+
+report_grouping_and_calculation_dialog
 runner_dialog
 runner_plugin
-report_grouping_and_calculation_dialog
 
+tree_builder
 tree_dialog
 tree_plugin
 workspace_plugin
 workspace_dialog
-tree_builder
-background_runner
+
+dialogs/
 
 construct_plugin
 construct_dialog
@@ -20,5 +23,3 @@ dataset_plugin
 dataset_dialog
 highlight_dialog
 highlight_plugin
-
-dialogs/

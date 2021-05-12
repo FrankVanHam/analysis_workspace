@@ -145,7 +145,7 @@ $
 _pragma(classify_level=basic, topic={analysis, collections})
 _method spatial_filter_collection.convert_to_geometry()
 	_local geom << _self.need_geometry(.arg)
-	_return _self.base_collection.convert_to_geometry_filtered_by_geometry(.geom_name, .selector, geom, bounds)
+	_return _self.base_collection.convert_to_geometry_filtered_by_geometry(.geom_name, .selector, geom)
 _endmethod
 $
 

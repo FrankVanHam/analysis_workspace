@@ -58,11 +58,11 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method object_control_dialog.build_list(container)
-	.items[:rwo_list] << rwo_hierarchy_component.new( :rwo_list, _self,
+	.items[:rwo_list] << sw:rwo_hierarchy_component.new( :rwo_list, _self,
 							  :ace_control, .parent_model.ace_control,
 							  :display_geometry?, _false,
 							  :mode, :many)
-	.items[:rwo_list].add_event_handler( :double_click, _self, :|double_clicked()| )
+	.items[:rwo_list].add_event_handler(:double_click, _self, :|double_clicked()|)
 	.items[:rwo_list].build_gui(container)
 	_self.filter_ds()
 _endmethod

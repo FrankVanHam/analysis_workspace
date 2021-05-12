@@ -3,6 +3,7 @@ description
 	Unit tests for the Analysis Workspace core
 end
 requires
+	cam_db_data_model
 	simple_munit_gui
 end
 tests_modules

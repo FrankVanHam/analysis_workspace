@@ -43,7 +43,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.buffer(geom_name, distance, _optional corner_style, end_style)
-	_return buffer_collection.new(.dsm, _self, geom_name, distance, corner_style, end_style)
+	_return sw:get_global_value(@rwan:buffer_collection).new(.dsm, _self, geom_name, distance, corner_style, end_style)
 _endmethod
 $
 
@@ -51,9 +51,9 @@ _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.distance_collection(geom_name, distance, arg, inverse?)
 	_if arg.convert_to_geometry_is_fast?
 	_then
-		_return distance_area_filter_collection.new(.dsm, _self, geom_name, distance, arg, inverse?)
+		_return sw:get_global_value(@rwan:distance_area_filter_collection).new(.dsm, _self, geom_name, distance, arg, inverse?)
 	_else 
-		_return distance_filter_collection.new(.dsm, _self, geom_name, distance, arg, inverse?)
+		_return sw:get_global_value(@rwan:distance_filter_collection).new(.dsm, _self, geom_name, distance, arg, inverse?)
 	_endif 
 _endmethod
 $
@@ -61,73 +61,73 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.spatial_collection(geom_name)
 	## Return a lazy evaluated spatial collection.
-	_return spatial_collection.new(.dsm, _self, geom_name)
+	_return sw:get_global_value(@rwan:spatial_collection).new(.dsm, _self, geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_join(join_name)
-	_return join_collection.new(.dsm, _self, join_name)
+	_return sw:get_global_value(@rwan:join_collection).new(.dsm, _self, join_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_method(target_table, method_name, args)
-	_return method_collection.new(.dsm, _self, target_table, method_name, args)
+	_return sw:get_global_value(@rwan:method_collection).new(.dsm, _self, target_table, method_name, args)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.union(other)
-	_return union_collection.new(.dsm, _self,other)
+	_return sw:get_global_value(@rwan:union_collection).new(.dsm, _self,other)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.xor(other)
-	_return xor_collection.new(.dsm, _self,other)
+	_return sw:get_global_value(@rwan:xor_collection).new(.dsm, _self,other)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.root(table)
-	_return root_collection.new(.dsm, _self,table)
+	_return sw:get_global_value(@rwan:root_collection).new(.dsm, _self,table)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.intersection(other)
-	_return intersection_collection.new(.dsm, _self,other)
+	_return sw:get_global_value(@rwan:intersection_collection).new(.dsm, _self,other)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.subtraction(other)
-	_return subtraction_collection.new(.dsm, _self,other)
+	_return sw:get_global_value(@rwan:subtraction_collection).new(.dsm, _self,other)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_geometry(geom_name, selector, arg)
-	_return spatial_filter_collection.new(.dsm, _self, geom_name, selector, arg)
+	_return sw:get_global_value(@rwan:spatial_filter_collection).new(.dsm, _self, geom_name, selector, arg)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_topology(geom_name, target_col)
-	_return topology_collection.new(.dsm, _self, geom_name, target_col)
+	_return sw:get_global_value(@rwan:topology_collection).new(.dsm, _self, geom_name, target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_trace(geom_name, target_col, stop_predicates, max_length)
-	_return trace_collection.new(.dsm, _self, geom_name, target_col, stop_predicates, max_length)
+	_return sw:get_global_value(@rwan:trace_collection).new(.dsm, _self, geom_name, target_col, stop_predicates, max_length)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_predicate(pred)
-	_return predicate_filter_collection.new(.dsm, _self, pred)
+	_return sw:get_global_value(@rwan:predicate_filter_collection).new(.dsm, _self, pred)
 _endmethod
 $
 
@@ -171,7 +171,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.convert_to_geometry(_optional geom_name)
+_method base_record_collection.convert_to_geometry(_optional geom_name, bounds)
 	#show(_self, col, "Unoptimized convert_to_geometry")
 	_local gs << geometry_set.new()
 	_for i_rec _over _self.fast_elements()
@@ -179,14 +179,12 @@ _method base_record_collection.convert_to_geometry(_optional geom_name)
 		_if geom_name _isnt _unset
 		_then 
 			_local geom << i_rec.geometry(geom_name)
-			_if geom _isnt _unset 
-			_then
-				_if bounds _is _unset _orif
-				    bounds.interacts_with?(geom)
+			_if geom _isnt _unset _andif
+			    (bounds _is _unset _orif
+			     bounds.interacts_with?(geom))
 				_then 
 					gs.add(geom)
 				_endif 
-			_endif
 		_else
 			_for i_geom _over i_rec.all_geometry(_false)
 			_loop
@@ -240,7 +238,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.predicate_filtered_read_stream(pred)
 	#show(_self, "Unoptimized predicate_filtered_read_stream")
-	_return predicate_filter_read_stream.new(_self.read_stream(), pred)
+	_return sw:get_global_value(@rwan:predicate_filter_read_stream).new(_self.read_stream(), pred)
 _endmethod
 $
 
