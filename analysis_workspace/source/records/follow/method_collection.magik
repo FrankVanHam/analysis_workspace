@@ -98,10 +98,24 @@ _pragma(classify_level=restricted, topic={analysis})
 _method method_collection.equals_in_details?(base_cols, target_ds_name, target_table_name, methd, args)
 	_return _super.equals_in_details?(base_cols, target_ds_name, target_table_name) _andif 
 		.methd = methd _andif
-		.args = args
+		_self.equal_args?(args)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_private _method method_collection.equal_args?(args)
+	## 
+	_if .args.size <> args.size _then _return _false _endif
+	_for i_index, i_value _over .args.fast_keys_and_elements()
+	_loop
+		_if args[i_index].equals?(i_value).not
+		_then
+			_return _false
+		_endif
+	_endloop
+	_return _true 
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis, collections})
 _iter _method method_collection.fast_elements()

@@ -198,6 +198,9 @@ _method dataset_test_case.basic_storage_test(col)
 	_local holders_back << ws_back.holders
 	_self.assert_is(1, holders_back.size, "One stored and one retrieved")
 	_local col_back << holders_back.an_element().collection
+
+	_global x
+	x << {col, col_back}
 	
 	_self.assert_true(col_back.is_class_of?(col), "Classes should match")
 	_self.assert_true(col.equals?(col_back), "what goes in, should come out")
