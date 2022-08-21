@@ -124,8 +124,66 @@ _method highlight_plugin.map_damage_notify(graphics_context, map_view)
 	## Callback method from P_MAP_VIEW to allow us to render onto
 	## it. Only render on the main map.
 	_if map_view.map_manager.current_map_view _is map_view
-	_then 
-		_self.dialog.map_damage_notify(graphics_context, map_view)
+	_then
+		_for i_col, i_style _over _self.highlight_collections()
+		_loop
+			_local hset << _self.highlight_set(i_col, i_style, map_view.current_view_bounds)
+			map_view.draw_geometry_on(graphics_context, hset, _unset ,
+						  _unset, _true )
+		_endloop
 	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_plugin.highlight_set(col, given_fill, window_bounds)
+	_dynamic !rwan_limit_bounds! << window_bounds
+	_local gs << col.convert_to_geometry()
+
+	_if _not gs.is_collection?
+	_then
+		gs << geometry_set.new_with(gs)
+	_endif
+	#show(gs, col, gs.size)
+	_local clr << given_fill.colour
+
+	_local thick << line_style.new_with_properties(
+				:width, 3,
+				:foreground_colour, clr)
+	_local fill << fill_style.new_with_properties( :foreground_colour, clr,
+						       :wash_percent, 50 )
+
+	_local sts << transient_style_system.new(clr)
+
+	sts.deferred? << col.origin_is_sw_collection?
+
+	_local pstyle << composite_point_style.new(
+				 {pseudo_chain.new(
+					  circle.new(coordinate.new(0,0),5))},
+				 {thick})
+
+	sts.set_default_style(:simple_point,
+			      pstyle)
+	sts.set_default_style(:point,
+			      pstyle)
+#	sts.set_default_style(:text,
+#			      thick)
+	sts.set_default_style(:area,
+			      fill)
+	sts.set_default_style(:chain,
+			      thick)
+
+	_local comp << composite_geometry_set.new({gs})
+	comp.style_system << sts
+	_return comp, clr
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method highlight_plugin.terminate()
+	##
+	_local mm << _self.map_manager
+	mm.remove_post_renderer(_self)
+	_super.terminate()
 _endmethod
 $
