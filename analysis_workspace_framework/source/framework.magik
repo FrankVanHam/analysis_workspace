@@ -80,7 +80,7 @@ _method framework.set_title(_optional dirty?)
 		_endif 
 	_else
 		title << _self.message( :title_for_empty_dialog)
-	_endif 
+	_endif
 	_self.title << title
 _endmethod
 $
@@ -119,9 +119,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method framework.on_deactivation()
-	#.framework.deactivated(_self)
-	_return _super.on_deactivation()
+_method framework.pre_activation()
+	_self.set_title()
+	_return _super.pre_activation()
 _endmethod
 $
 

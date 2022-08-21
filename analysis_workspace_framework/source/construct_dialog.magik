@@ -37,15 +37,6 @@ _method construct_dialog.owner
 _endmethod
 $
 
-
-_pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.activate_in(container)
-	.top_frame << container.top_frame
-	rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :resize?, _true)
-	_return _unset
-_endmethod
-$
-
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.run_in_background(meth, descr)
 	.owner.run_in_background(_self, meth, {}, descr)
@@ -83,12 +74,9 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _private _method construct_dialog.new_holder(col)
 	_local clr << colour.called(:red)
-	_local fstyle << fill_style.new_with_properties(:foreground_colour,
-							clr)
-	_return collection_holder.new(col,
-				      _self.name_for_collection(col),
-				      clr,
-				      fstyle)
+	>>  collection_holder.new(col,
+				  _self.name_for_collection(col),
+				  clr)
 _endmethod
 $
 

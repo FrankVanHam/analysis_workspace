@@ -30,15 +30,6 @@ def_slotted_exemplar(:highlight_dialog,
 	}, :base_model)
 $
 
-
-_pragma(classify_level=advanced, topic={analysis})
-_method highlight_dialog.activate_in(container)
-	.top_frame << container.top_frame
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested)
-_endmethod
-$
-
-
 _pragma(classify_level=advanced, topic={analysis})
 _method highlight_dialog.set_highlight_colour()
 	_local colour_editor << sw:colour_palette_editor.new(_self, :|set_colour()|,
@@ -50,13 +41,7 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method highlight_dialog.set_colour(action, clr)
 	_local holder << _self.selected_holder
-	_if clr _isnt _unset
-	_then
-		fill << fill_style.new_with_properties(:foreground_colour,clr)
-	_else
-		fill << _unset
-	_endif
-	holder[:fill_style] << fill
+	holder[:colour] << clr
 	_self.current_workspace.set_dirty()
 	.owner.publish_workspace_holder()
 _endmethod

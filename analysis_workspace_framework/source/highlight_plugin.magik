@@ -35,7 +35,7 @@ _pragma(classify_level=basic, topic={demo})
 ##
 ## defines the z-order of rendering of this plugin.
 highlight_plugin.def_property( :highlight_priority,
-	:type, :integer, :default_value, 50,
+	:type, :integer, :default_value, -40,
 	:description, "Z priority of highlight rendering" )
 $
 
@@ -112,8 +112,8 @@ _iter _method highlight_plugin.highlight_collections()
 		_if i_holder.highlight?
 		_then
 			_local col << i_holder.collection
-			_local fill << i_holder.fill_style
-			_loopbody(col, fill)
+			_local colour << i_holder.colour
+			_loopbody(col, colour)
 		_endif
 	_endloop
 _endmethod
@@ -125,9 +125,9 @@ _method highlight_plugin.map_damage_notify(graphics_context, map_view)
 	## it. Only render on the main map.
 	_if map_view.map_manager.current_map_view _is map_view
 	_then
-		_for i_col, i_style _over _self.highlight_collections()
+		_for i_col, i_colour _over _self.highlight_collections()
 		_loop
-			_local hset << _self.highlight_set(i_col, i_style, map_view.current_view_bounds)
+			_local hset << _self.highlight_set(i_col, i_colour, map_view.current_view_bounds)
 			map_view.draw_geometry_on(graphics_context, hset, _unset ,
 						  _unset, _true )
 		_endloop
@@ -136,7 +136,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method highlight_plugin.highlight_set(col, given_fill, window_bounds)
+_private _method highlight_plugin.highlight_set(col, given_colour, window_bounds)
 	_dynamic !rwan_limit_bounds! << window_bounds
 	_local gs << col.convert_to_geometry()
 
@@ -145,7 +145,7 @@ _private _method highlight_plugin.highlight_set(col, given_fill, window_bounds)
 		gs << geometry_set.new_with(gs)
 	_endif
 	#show(gs, col, gs.size)
-	_local clr << given_fill.colour
+	_local clr << given_colour
 
 	_local thick << line_style.new_with_properties(
 				:width, 3,

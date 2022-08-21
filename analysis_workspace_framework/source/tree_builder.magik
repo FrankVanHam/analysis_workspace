@@ -176,7 +176,8 @@ _method tree_builder.custom_draw_highlight_colour(p_canvas, p_x, p_y,
 					   p_text_style, p_cust_drw_rndr, p_display_tree)
 	# if the fill_style property is not set, use the colour property
 	# to generate one
-	l_fill_style << p_display_tree.value(:fill_style)
+	l_fill_style << fill_style.new_with_properties(:foreground_colour,
+							p_display_tree.value(:colour))
 	_if l_fill_style _isnt _unset
 	_then 
 		# retrieve outline from .data slot

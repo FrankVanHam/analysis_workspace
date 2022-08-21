@@ -48,6 +48,17 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method base_model.assign_top_frame(a_frame)
+	##
+	_if .top_frame _is _unset
+	_then
+		.top_frame << a_frame
+	_endif 
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
 _method base_model.open?
 	_return .owner.open?
 _endmethod

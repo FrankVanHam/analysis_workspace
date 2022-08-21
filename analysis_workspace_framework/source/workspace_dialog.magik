@@ -38,12 +38,15 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method workspace_dialog.activate_in(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :left_spacing, 7, :resize?, _true )
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill,
+				:col_resize_values, {100, 0})
 	.items[:workspace_choice] << text_choice_item.new(rc, _self.message(:workspace),
 							  :model, _self,
 							  :items, {},
-							  :change_selector, :|workspace_chosen()|)
-	tb << _self.new_toolbar(rc)
+							  :change_selector, :|workspace_chosen()|,
+							  :col_alignment, :fill)
+	_local tb << _self.new_toolbar(rc)
 	.items[:edit_workspace] << image_button_item.new_safe(tb, _self.edit_image, _self, :|edit_workspace()|,
 							     :insensitive_image, _self.grey_edit_image)
 	.items[:add_workspace] << image_button_item.new_safe(tb, _self.add_image, _self, :|add_workspace()|,
@@ -52,6 +55,7 @@ _method workspace_dialog.activate_in(container)
 							       :insensitive_image, _self.grey_remove_image)
 
 	.top_frame << container.top_frame
+	>> rc
 _endmethod
 $
 

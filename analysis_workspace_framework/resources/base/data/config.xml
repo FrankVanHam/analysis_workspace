@@ -8,7 +8,7 @@
       <property name="runner_plugin_name" value="runner"/>
     </plugin>
     <plugin name="highlight" class_name="rwan:highlight_plugin">
-      <property name="highlight_priority" value="50"/>
+      <property name="highlight_priority" value="-40"/>
     </plugin>
     <plugin name="workspace" class_name="rwan:workspace_plugin"/>
     <plugin name="tree" class_name="rwan:tree_plugin"/>

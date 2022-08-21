@@ -33,13 +33,6 @@ message_handler.new(:dataset_dialog).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.activate_in(container)
-	.top_frame << container.top_frame
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
 _method dataset_dialog.manage_actions()
 	_local open? << _self.open?
 	.owner.action(:new_file).enabled? << _true  
@@ -67,6 +60,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method dataset_dialog.save_as()
 	_local dia << file_dialog.new(_self, :|save_ds_as()|, _unset,
 				      :operation, :save,
+				      :title, _self.message(:save_as_file_title),
 				      :do_creation_check?, _true,
 				      :do_overwrite_check?, _true,
 				      :filter, {"Analytic file (*.ds)", "*.ds"})
@@ -217,6 +211,7 @@ _method dataset_dialog.open()
  	_self.save_or_cancel_if_updated()
 	_local dia << file_dialog.new(_self, :|open_ds()|, _unset,
 				      :operation, :open,
+				      :title, _self.message(:open_file_title),
 				      :do_existence_check?, _true,
 				      :filter, {"Analytic file (*.ds)", "*.ds"})
 	dia.activate()

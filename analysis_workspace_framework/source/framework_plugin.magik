@@ -127,30 +127,30 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method framework_plugin.add_to_application(dsm)
 	
-	## In the cst 4.3 there is no nice way to get a transaction
-	## group. Those methods are added in later TSB, so for now we sys!slot.
-	_local groups << _self.application.database.sys!slot(:transaction_groups)
-	_if groups[dsm.name] _is _unset
-	_then
-		_local soc << spatial_object_controller.new(dsm.name)
-		soc.add_dataset_manager(dsm)
-		_self.application.database.add_transaction_group(soc)
-		_self.re_evaluate_map_worlds()
-	_endif
+#	## In the cst 4.3 there is no nice way to get a transaction
+#	## group. Those methods are added in later TSB, so for now we sys!slot.
+#	_local groups << _self.application.database.sys!slot(:transaction_groups)
+#	_if groups[dsm.name] _is _unset
+#	_then
+#		_local soc << spatial_object_controller.new(dsm.name)
+#		soc.add_dataset_manager(dsm)
+#		_self.application.database.add_transaction_group(soc)
+#		_self.re_evaluate_map_worlds()
+#	_endif
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method framework_plugin.remove_from_application(dsm)
-	## In the cst 4.3 there is no nice way to get a transaction
-	## group. Those methods are added in later TSB, so for now we sys!slot.
-	_local groups << _self.application.database.sys!slot(:transaction_groups)
-	_local trg << groups[dsm.name]
-	_if trg _isnt _unset
-	_then
-		_self.application.database.remove_transaction_group(trg)
-		_self.re_evaluate_map_worlds()
-	_endif
+#	## In the cst 4.3 there is no nice way to get a transaction
+#	## group. Those methods are added in later TSB, so for now we sys!slot.
+#	_local groups << _self.application.database.sys!slot(:transaction_groups)
+#	_local trg << groups[dsm.name]
+#	_if trg _isnt _unset
+#	_then
+#		_self.application.database.remove_transaction_group(trg)
+#		_self.re_evaluate_map_worlds()
+#	_endif
 _endmethod
 $
 

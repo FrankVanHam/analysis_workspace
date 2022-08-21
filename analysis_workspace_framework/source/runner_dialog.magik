@@ -39,23 +39,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.activate_in(container)
 	.top_frame << container.top_frame
 	
-	_local rc << rowcol.new(container,  1, _unset, _unset,
-				:left_spacing, 7, 
-				:resize?, _true )
-	tb << _self.new_toolbar(rc)
-	.owner.action(:explorer).place_control_on(tb, :dialog)
-	separator_item.new(rc)
-	tb << _self.new_toolbar(rc)
-	.owner.action(:goto).place_control_on(tb, :dialog)
-	.owner.action(:goto_one).place_control_on(tb, :dialog)
-	.owner.action(:refresh_map).place_control_on(tb, :dialog)
-	separator_item.new(rc)
-	tb << _self.new_toolbar(rc)
-	.owner.action(:excel).place_control_on(tb, :dialog)
-	.owner.action(:access).place_control_on(tb, :dialog)
-	.owner.action(:calc).place_control_on(tb, :dialog)
-	separator_item.new(rc)
-	
+	_local rc << rowcol.new(container,  1, _unset, _unset)
 	.items[:busy_with] << label_item.new(rc, _unset ,
 					     :max_width, 100,
 					     :min_width, 100)
