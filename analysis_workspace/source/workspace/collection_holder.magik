@@ -63,6 +63,12 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.colour
+	_return .colour
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.name << name
 	_return .name << name
 _endmethod

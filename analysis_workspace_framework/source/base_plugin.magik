@@ -170,7 +170,6 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.post_activation()
 	## It is guaranteed that all GUI components will be realised.
-	show(:assign, _self.framework, _self.framework.top_frame)
 	_self.dialog.assign_top_frame(_self.framework.top_frame)
 	_self.manage_actions()
 _endmethod
