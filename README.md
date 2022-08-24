@@ -1,7 +1,7 @@
 # rw_analysis_workspace
-Realworld Analysis Workspace
+Analysis Workspace
 
-This product provides a GUI to use the abilities of the core Smallworld analysis software. This product is suited for Smallworld CST 4.3 (no TSBs).
+This product provides a GUI to use the abilities of the core Smallworld analysis software. This product is suited for Smallworld CST 5.3.
 
 This project is not intended to compete with other software, although there likely will be many overlaps.
 
