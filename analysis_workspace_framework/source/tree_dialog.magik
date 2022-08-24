@@ -122,13 +122,13 @@ _method tree_dialog.delete()
 	_then
 		_return
 	_endif
-	_local workspace << _self.current_workspace
+	_local workspace << _self.workspace
 	_for i_holder _over to_del.fast_elements()
 	_loop
 		i_holder.discard()
 		workspace.remove_holder(i_holder)
 	_endloop
-	.owner.publish_workspace_holder()
+	.owner.publish_workspace()
 _endmethod
 $
 
@@ -171,12 +171,12 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_dialog.holder_for(col)
-	_return _self.current_workspace.holder_for(col)
+	_return _self.workspace.holder_for(col)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_dialog.note_workspace_holder_change(renew?)
+_method tree_dialog.note_workspace_change(renew?)
 	_if renew?
 	_then
 		.tree_item.renew()

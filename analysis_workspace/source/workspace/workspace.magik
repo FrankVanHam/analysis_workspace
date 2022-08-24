@@ -30,8 +30,8 @@ _pragma(classify_level=restricted, topic={roos,analysis})
 def_slotted_exemplar(:workspace,
 	{
 		{:dirty?, _unset, :readable},
-		{:name, _unset, :readable},
 		{:holders, _unset, :readable},
+		{:dsm, _unset, :readable},
 		{:create_date, _unset},
 		{:create_user, _unset}
 	})
@@ -44,15 +44,14 @@ workspace.define_shared_constant(:serial_structure, :slotted, :public)
 $
 
 _pragma(classify_level=restricted, topic={roos,analysis})
-_method workspace.new(name)
-	_return _clone.init(name)
+_method workspace.new()
+	_return _clone.init()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={roos,analysis})
-_private _method workspace.init(name)
+_private _method workspace.init()
 	.dirty? << _false 
-	.name << name.as_symbol()
 	.holders << rope.new()
 	.create_date << date_time_now()
 	_try 
@@ -64,19 +63,11 @@ _private _method workspace.init(name)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={roos,analysis})
-_method workspace.name << new_name
-	## 
-	## 
-	.name << new_name
-_endmethod
-$
-
 
 _pragma(classify_level=basic, topic={demo})
 _method workspace.serial_slots()
-    _local keys   << rope.new_with(:name, :holders, :create_date, :create_user)
-    _local values << rope.new_with(.name, .holders, .create_date, .create_user)
+    _local keys   << rope.new_with(:holders, :create_date, :create_user)
+    _local values << rope.new_with(.holders, .create_date, .create_user)
     _return keys, values
 _endmethod
 $
@@ -89,10 +80,9 @@ $
 
 
 _pragma(classify_level=basic, topic={demo})
-_private _method workspace.init_from_serial(name, holders,
-						     create_date, create_user)
+_private _method workspace.init_from_serial(holders,
+					    create_date, create_user)
 	.dirty? << _false
-	.name << name
 	.holders << holders
 	.create_date << create_date
 	.create_user << create_user
@@ -186,7 +176,6 @@ $
 _pragma(classify_level=basic, topic={demo})
 _method workspace.top_holders
 	_return .holders
-#	_return _self.top_holders(.holders)
 _endmethod
 $
 
@@ -225,5 +214,24 @@ $
 _pragma(classify_level=basic, topic={demo})
 _method workspace.set_clean()
 	.dirty? << _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.empty?
+	_return .holders.empty?
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace.set_dataset_manager(dsm)
+	.dsm << dsm
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.save()
+	.dsm.store(_self)
+	_self.set_clean()	
 _endmethod
 $

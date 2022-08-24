@@ -69,6 +69,8 @@
     <action name="file.save"/>
     <action name="file.save_as"/>
     <action name="file.open"/>
+    <section/>
+    <action name="file.close"/>
   </toolbar>
   <toolbar name="add">
     <action name="construct.add_collections"/>
@@ -119,11 +121,9 @@
   </toolbar>
   <toolbar name="runner">
     <action name="runner.refresh_map"/>
-    <section/>
     <action name="runner.explorer"/>
     <action name="runner.goto"/>
     <action name="runner.goto_one"/>
-    <section/>
     <action name="runner.excel"/>
     <action name="runner.access"/>
     <action name="runner.calc"/>   
@@ -144,7 +144,6 @@
   
   <work_area>
     <paned_window side_by_side="no" dynamic="no">
-      <plugin plugin_name="workspace"/>
       <plugin plugin_name="tree" stretch="1"/>
       <plugin plugin_name="runner"/>
     </paned_window>

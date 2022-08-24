@@ -62,24 +62,19 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method highlight_plugin.note_workspace_holder_change(workspace_holder)
-	_local renew? << .workspace_holder _isnt workspace_holder
-	_if renew?
+_private _method highlight_plugin.note_workspace_change(workspace)
+	_if workspace.empty?.not _andif _not .highlighting?
 	_then
-		_if workspace_holder.empty?
-		_then
-			# the new workspace is empty, so stop highlighting
-			_self.stop_highlighting()
-			.highlighting? << _false
-		_elif _not .highlighting?
-		_then
-			# the new isnt empty, but the previous was. So start highlighting
-			
-			_self.start_highlighting()
-			.highlighting? << _true
-		_endif
+		# the new isnt empty, but the previous was. So start highlighting
+		_self.start_highlighting()
+		.highlighting? << _true
+	_elif workspace.empty? _andif .highlighting?
+	_then 
+		# the new workspace is empty, so stop highlighting
+		_self.stop_highlighting()
+		.highlighting? << _false		
 	_endif
-	_return _super.note_workspace_holder_change(workspace_holder)
+	_return _super.note_workspace_change(workspace)
 _endmethod
 $
 

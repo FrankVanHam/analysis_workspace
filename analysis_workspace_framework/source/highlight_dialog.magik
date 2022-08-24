@@ -42,8 +42,8 @@ _pragma(classify_level=advanced, topic={analysis})
 _method highlight_dialog.set_colour(action, clr)
 	_local holder << _self.selected_holder
 	holder[:colour] << clr
-	_self.current_workspace.set_dirty()
-	.owner.publish_workspace_holder()
+	_self.workspace.set_dirty()
+	.owner.publish_workspace()
 _endmethod
 $
 

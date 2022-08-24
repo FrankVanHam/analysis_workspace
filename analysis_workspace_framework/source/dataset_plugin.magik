@@ -56,7 +56,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_plugin.remove_from_application()
-	_return _self.app_plugin.remove_from_application(.workspace_holder.dsm)
+	_return _self.app_plugin.remove_from_application(.workspace.dsm)
 _endmethod
 $
 

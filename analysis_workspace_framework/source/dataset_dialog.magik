@@ -52,7 +52,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.save_ds_file()
-	.owner.workspace_holder.save()
+	.owner.workspace.save()
 _endmethod
 $
 
@@ -98,9 +98,9 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.save_or_cancel_if_updated()
-	_if .owner.workspace_holder _is _unset _then _return _endif
+	_if .owner.workspace _is _unset _then _return _endif
 	
-	_if .owner.workspace_holder.dirty?
+	_if .owner.workspace.dirty?
 	_then
 		_local what << _self.show_query( {
 							 _self.message(:save),
@@ -136,9 +136,9 @@ _method dataset_dialog.open_default_ds()
 		_if system.file_exists?(path)
 		_then 
 			_local dsm << rwan:analysis_dataset_manager.open(_self.dsm_name, path)
-			workspace_holder << dsm.retrieve()
-			.owner.publish_workspace_holder(workspace_holder)
-			.owner.add_to_application(workspace_holder.dsm)
+			workspace << dsm.retrieve()
+			.owner.publish_workspace(workspace)
+			.owner.add_to_application(workspace.dsm)
 		_endif 
 	_endif 
 _endmethod
@@ -200,8 +200,8 @@ _private _method dataset_dialog.close_ds_file()
 	_then 
 		.owner.remove_from_application()
 		_self.dsm.discard()
-		workspace_holder << rwan:workspace_holder.new_empty()
-		.owner.publish_workspace_holder(workspace_holder)
+		workspace << rwan:workspace.new()
+		.owner.publish_workspace(workspace)
 	_endif 
 _endmethod
 $
@@ -235,9 +235,9 @@ _method dataset_dialog.open_ds_file(path, _optional first_time?)
 	_then
 		.owner.adjust_dsm_for_application(dsm)
 	_endif 
-	workspace_holder << dsm.retrieve()
-	.owner.publish_workspace_holder(workspace_holder)
-	.owner.add_to_application(workspace_holder.dsm)
+	workspace << dsm.retrieve()
+	.owner.publish_workspace(workspace)
+	.owner.add_to_application(workspace.dsm)
 	
 	.owner.ace.set_default("rwan:path", path, _true, _true)
 _endmethod
@@ -245,13 +245,13 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.workspace_changed()
-	.owner.publish_workspace_holder()
+	.owner.publish_workspace()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.dsm
-	_local holder << .owner.workspace_holder
+	_local holder << .owner.workspace
 	_if holder _isnt _unset
 	_then 
 		_return holder.dsm

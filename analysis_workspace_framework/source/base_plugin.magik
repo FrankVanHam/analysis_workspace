@@ -25,8 +25,8 @@ _pragma(classify_level=advanced, topic={analysis})
 ## Base plugin for all plugins in the analysis workspace frameworkd.
 def_slotted_exemplar(:base_plugin,
 	{
-		{:workspace_holder, _unset},
-		{:selection,        _unset}
+		{:workspace, _unset},
+		{:selection, _unset}
 	}, :plugin)
 $
 
@@ -35,13 +35,13 @@ $
 
 _pragma(classify_level=restricted)
 base_plugin.define_shared_constant( :databus_consumer_data_types,
-	{ :workspace_holder, :selection },
+	{ :workspace, :selection },
 	:public )
 $
 
 _pragma(classify_level=restricted)
 base_plugin.define_shared_constant( :databus_producer_data_types,
-	{ :workspace_holder, :selection },
+	{ :workspace, :selection },
 	:public )
 $
 
@@ -80,19 +80,8 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method base_plugin.workspace_holder
-	_return .workspace_holder
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method base_plugin.current_workspace
-	_if .workspace_holder _isnt _unset
-	_then 
-		_return .workspace_holder.current_workspace
-	_else
-		_return _unset
-	_endif 
+_method base_plugin.workspace
+	_return .workspace 
 _endmethod
 $
 
@@ -104,7 +93,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.selected_top_holders
-	_local cur << _self.current_workspace
+	_local cur << _self.workspace
 	_if cur _isnt _unset
 	_then 
 		_return cur.top_holders(.selection)
@@ -116,7 +105,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.all_holders
-	_local cur << _self.current_workspace
+	_local cur << _self.workspace
 	_if cur _isnt _unset
 	_then 
 		_return cur.all_holders
@@ -128,7 +117,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.top_holders
-	_local cur << _self.current_workspace
+	_local cur << _self.workspace
 	_if cur _isnt _unset
 	_then 
 		_return cur.top_holders
@@ -152,12 +141,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.open?
-	_if .workspace_holder _is _unset
-	_then
-		_return _false
-	_else 
-		_return _not .workspace_holder.empty?
-	_endif 
+	>> .workspace _isnt _unset
 _endmethod
 $
 
@@ -176,8 +160,8 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method base_plugin.publish_workspace_holder(_optional holder)
-	_self.databus_make_data_available(:workspace_holder, holder.default(.workspace_holder))
+_method base_plugin.publish_workspace(_optional holder)
+	_self.databus_make_data_available(:workspace, holder.default(.workspace))
 _endmethod
 $
 
@@ -204,9 +188,9 @@ _method base_plugin.sw_databus_data_available(data_type_name, data, sender)
 	_if data_type_name _is :selection
 	_then
 		_self.note_selection_change(data)
-	_elif data_type_name _is :workspace_holder
+	_elif data_type_name _is :workspace
 	_then
-		_self.note_workspace_holder_change(data)
+		_self.note_workspace_change(data)
 	_endif
 _endmethod
 $
@@ -219,14 +203,14 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method base_plugin.note_workspace_holder_change(workspace_holder)
-	_local renew? << .workspace_holder _isnt workspace_holder
-	.workspace_holder << workspace_holder
+_private _method base_plugin.note_workspace_change(workspace)
+	_local renew? << .workspace _isnt workspace
+	.workspace << workspace
 
 	_local dialog << _self.dialog
 	_if dialog _isnt _unset
 	_then 
-		dialog.note_workspace_holder_change(renew?)
+		dialog.note_workspace_change(renew?)
 	_endif 
 _endmethod
 $

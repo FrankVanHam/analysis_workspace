@@ -12,8 +12,6 @@ runner_plugin
 tree_builder
 tree_dialog
 tree_plugin
-workspace_plugin
-workspace_dialog
 
 dialogs/
 

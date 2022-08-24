@@ -189,9 +189,9 @@ _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.basic_storage_test(col)
 	## 
 	##
-	_local ws << workspace_holder.new()
+	_local ws << workspace.new()
 	_local holder << collection_holder.new(col, :name, _unset, _unset)
-	ws.current_workspace.add_holder(holder)
+	ws.workspace.add_holder(holder)
 	
 	.ds.store(ws)
 	_local ws_back << .ds.retrieve()

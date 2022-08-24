@@ -10,7 +10,6 @@
     <plugin name="highlight" class_name="rwan:highlight_plugin">
       <property name="highlight_priority" value="-40"/>
     </plugin>
-    <plugin name="workspace" class_name="rwan:workspace_plugin"/>
     <plugin name="tree" class_name="rwan:tree_plugin"/>
     <plugin name="runner" class_name="rwan:runner_plugin"/>
     <plugin name="explorer" class_name="explorer_plugin">
