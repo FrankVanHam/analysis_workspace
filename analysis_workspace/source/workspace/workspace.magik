@@ -110,7 +110,13 @@ $
 
 _pragma(classify_level=basic, topic={demo})
 _method workspace.add_holder(holder)
-	.holders.add_last(holder)
+	_self.add_holders({holder}) 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method workspace.add_holders(holders)
+	.holders.add_all_last(holders)
 	.dirty? << _true 
 _endmethod
 $

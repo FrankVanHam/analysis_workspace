@@ -59,23 +59,40 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.add_collections(collections)
-	_local workspace << _self.workspace
-	_local last_holder
+	_local holders << rope.new_for(collections.size)
 	_for i_col _over collections.fast_elements()
 	_loop
-		last_holder << _self.new_holder(i_col)
-		workspace.add_holder(last_holder)
+		holders.add(_self.new_holder(i_col))
 	_endloop
-	.owner.publish_workspace()
-	.owner.publish_selection({last_holder})
+	_self.add_holders(holders)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.new_holder(col)
+_private _method construct_dialog.add_holder(holder)
+	_self.add_holders({holder})
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.add_holders(holders)
+	_local workspace << _self.workspace
+	workspace.add_holders(holders)
+	.owner.publish_workspace()
+	.owner.publish_selection({holders.last})
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.new_holder(col, _optional a_msg)
 	_local clr << colour.called(:red)
+	_local msg << _if a_msg _isnt _unset
+		      _then >> a_msg
+		      _else >> _self.name_for_collection(col)
+		      _endif 
 	>>  collection_holder.new(col,
-				  _self.name_for_collection(col),
+				  msg,
 				  clr)
 _endmethod
 $
@@ -192,10 +209,12 @@ _method construct_dialog.add_trail()
 	_if pseudo.geom_category _is :area
 	_then
 		col << rwan:area_collection.new(dsm, pseudo)
+		msg << _self.message(:closed_trail_col_name)
 	_else
 		col  << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
+		msg << _self.message(:trail_col_name)
 	_endif
-	_self.add_collection(col, _unset)
+	_self.add_holder(_self.new_holder(col, msg))
 _endmethod
 $
 
