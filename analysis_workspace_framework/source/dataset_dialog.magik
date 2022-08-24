@@ -84,14 +84,9 @@ _method dataset_dialog.save_ds_file_as(target_path)
 		system.unlink(target_path, _true)
 	_endif 
 	_local source_path << _self.dsm.dataset_path
-	_local (source_file,source_dir)  << system.pathname_components(source_path)
-	_local (target_file, target_dir) << system.pathname_components(target_path)
 	
 	_self.close_ds_file()
-	ds_environment.copy_datastore_file(source_dir, source_file, target_dir,
-					   :target_file, target_file,
-					   :source_concurrency_mode, :single_user,
-					   :concurrency_mode, :single_user)
+	system.file_copy(source_path, target_path)
 	_return _self.open_ds(target_path)
 _endmethod
 $
@@ -173,13 +168,8 @@ _method dataset_dialog.new_ds_file(target_path)
 		system.unlink(target_path, _true)
 	_endif 
 	_local source_path << smallworld_product.get_resource_file("analysis.ds","data",rwan:analysis_dataset_manager.module_name)
-	_local (source_file,source_dir)  << system.pathname_components(source_path)
-	_local (target_file, target_dir) << system.pathname_components(target_path)
 	_self.close_ds_file()
-	ds_environment.copy_datastore_file(source_dir, source_file, target_dir,
-					   :target_file, target_file,
-					   :source_concurrency_mode, :single_user,
-					   :concurrency_mode, :single_user)
+	system.file_copy(source_path, target_path)
 	_return _self.open_ds_file(target_path, _true)
 _endmethod
 $

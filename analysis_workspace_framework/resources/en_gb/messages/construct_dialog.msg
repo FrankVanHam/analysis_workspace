@@ -5,10 +5,10 @@
 :move_down			Down
 
 :add_collections		Collections
-:add_collections_tooltip	Open a dialog the pick collections to add to the workspace
+:add_collections_tooltip	Open a dialog to pick collections to add to the workspace
 
 :add_trail			Trail
-:add_trail_tooltip		Add the trail as a collection to the workspace
+:add_trail_tooltip		Add the trail to the workspace
 
 :add_geom_selection		selected Map Geometry
 :add_geom_selection_tooltip	Add the selection in the main map to the workspace
