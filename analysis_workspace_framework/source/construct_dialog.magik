@@ -37,15 +37,6 @@ _method construct_dialog.owner
 _endmethod
 $
 
-
-_pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.activate_in(container)
-	.top_frame << container.top_frame
-	rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :resize?, _true)
-	_return _unset
-_endmethod
-$
-
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.run_in_background(meth, descr)
 	.owner.run_in_background(_self, meth, {}, descr)
@@ -61,21 +52,21 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.update_holder(holder)
 	holder.name << _self.name_for_collection(holder.collection)
-	_self.current_workspace.set_dirty()
-	.owner.publish_workspace_holder()
+	_self.workspace.set_dirty()
+	.owner.publish_workspace()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.add_collections(collections)
-	_local workspace << _self.current_workspace
+	_local workspace << _self.workspace
 	_local last_holder
 	_for i_col _over collections.fast_elements()
 	_loop
 		last_holder << _self.new_holder(i_col)
 		workspace.add_holder(last_holder)
 	_endloop
-	.owner.publish_workspace_holder()
+	.owner.publish_workspace()
 	.owner.publish_selection({last_holder})
 _endmethod
 $
@@ -83,18 +74,15 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _private _method construct_dialog.new_holder(col)
 	_local clr << colour.called(:red)
-	_local fstyle << fill_style.new_with_properties(:foreground_colour,
-							clr)
-	_return collection_holder.new(col,
-				      _self.name_for_collection(col),
-				      clr,
-				      fstyle)
+	>>  collection_holder.new(col,
+				  _self.name_for_collection(col),
+				  clr)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.name_for_collection(col)
-	_return col.description(_self.current_workspace)
+	_return col.description(_self.workspace)
 _endmethod
 $
 
@@ -117,13 +105,13 @@ _method construct_dialog.delete()
 	_then
 		_return
 	_endif
-	_local workspace << _self.current_workspace
+	_local workspace << _self.workspace
 	_for i_holder _over to_del.fast_elements()
 	_loop
 		i_holder.discard()
 		workspace.remove_holder(i_holder)
 	_endloop
-	.owner.publish_workspace_holder()
+	.owner.publish_workspace()
 _endmethod
 $
 
@@ -131,7 +119,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.add_collections_from_dialog()
 	_local dia << object_control_dialog.new_dialog(_self)
 	dia.set_dataset(.owner.dataset, _self.dataset_manager)
-	dia.activate()
+	dia.activate_relative_to(_unset, .top_frame, 50, 50 )
 _endmethod
 $
 
@@ -145,19 +133,19 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.move_up()
-	_local workspace << _self.current_workspace
+	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
 	_loop
 		workspace.move_up(i_holder)
 	_endloop
-	.owner.publish_workspace_holder()
+	.owner.publish_workspace()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.can_move_up?
-	_local workspace << _self.current_workspace
+	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
 	_loop
@@ -172,19 +160,19 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.move_down()
-	_local workspace << _self.current_workspace
+	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
 	_loop
 		workspace.move_down(i_holder)
 	_endloop
-	.owner.publish_workspace_holder()
+	.owner.publish_workspace()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.can_move_down?
-	_local workspace << _self.current_workspace
+	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
 	_loop
@@ -551,7 +539,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_topology_dialog(holder, base_col, geom_name, target_col)
-	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_local base_holder << _self.workspace.holder_for(base_col)
 	_self.activate_follow_topology_editor(holder, base_holder, geom_name, target_col)
 _endmethod
 $
@@ -577,7 +565,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_trace_dialog(holder, base_col, geom_name, stop_predicates, max_length, target_col)
-	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_local base_holder << _self.workspace.holder_for(base_col)
 	_self.activate_follow_trace_editor(holder, base_holder,
 					   geom_name, stop_predicates, max_length, target_col)
 _endmethod
@@ -603,7 +591,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_root_dialog(holder, base_col, target_col)
-	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_local base_holder << _self.workspace.holder_for(base_col)
 	_self.activate_follow_root_dialog(holder, base_holder, target_col)
 _endmethod
 $
@@ -629,7 +617,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_join_dialog(holder, base_col, join_field_name)
-	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_local base_holder << _self.workspace.holder_for(base_col)
 	_self.activate_follow_join_dialog(holder, base_holder, join_field_name)
 _endmethod
 $
@@ -657,7 +645,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_method_dialog(holder,
 						   base_col, methd, args)
 	
-	_local base_holder << _self.current_workspace.holder_for(base_col)
+	_local base_holder << _self.workspace.holder_for(base_col)
 	_self.do_activate_follow_method_dialog(holder, base_holder, methd, args)
 _endmethod
 $
@@ -685,8 +673,8 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_spatial_filter_dialog(holder, base_col, arg,
 						    geom_name, selector)
-	_local base_holder << _self.current_workspace.holder_for(base_col)
-	_local arg_holder  << _self.current_workspace.holder_for(arg)
+	_local base_holder << _self.workspace.holder_for(base_col)
+	_local arg_holder  << _self.workspace.holder_for(arg)
 	_self.do_activate_spatial_filter_dialog(holder, base_holder, arg_holder, geom_name, selector)
 _endmethod
 $
@@ -716,8 +704,8 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_distance_filter_dialog(holder,
 						    base_col, arg,
 						    geom_name, distance, inverse?)
-	_local record_holder << _self.current_workspace.holder_for(base_col)
-	_local arg_holder    << _self.current_workspace.holder_for(arg)
+	_local record_holder << _self.workspace.holder_for(base_col)
+	_local arg_holder    << _self.workspace.holder_for(arg)
 	_self.do_create_distance_filter_dialog(holder, record_holder, arg_holder,
 					       geom_name, distance, inverse?)
 _endmethod
@@ -744,7 +732,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_predicate_filter_dialog(holder, base_col, predicate)
-	_local record_holder << _self.current_workspace.holder_for(base_col)
+	_local record_holder << _self.workspace.holder_for(base_col)
 	_self.do_create_predicate_filter_dialog(holder, record_holder, predicate)
 _endmethod
 $
@@ -870,7 +858,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.note_workspace_holder_change(renew?)
+_method construct_dialog.note_workspace_change(renew?)
 	_self.manage_actions()
 _endmethod
 $

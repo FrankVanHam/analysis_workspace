@@ -35,7 +35,7 @@ _pragma(classify_level=basic, topic={demo})
 ##
 ## defines the z-order of rendering of this plugin.
 highlight_plugin.def_property( :highlight_priority,
-	:type, :integer, :default_value, 50,
+	:type, :integer, :default_value, -40,
 	:description, "Z priority of highlight rendering" )
 $
 
@@ -62,24 +62,19 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method highlight_plugin.note_workspace_holder_change(workspace_holder)
-	_local renew? << .workspace_holder _isnt workspace_holder
-	_if renew?
+_private _method highlight_plugin.note_workspace_change(workspace)
+	_if workspace.empty?.not _andif _not .highlighting?
 	_then
-		_if workspace_holder.empty?
-		_then
-			# the new workspace is empty, so stop highlighting
-			_self.stop_highlighting()
-			.highlighting? << _false
-		_elif _not .highlighting?
-		_then
-			# the new isnt empty, but the previous was. So start highlighting
-			
-			_self.start_highlighting()
-			.highlighting? << _true
-		_endif
+		# the new isnt empty, but the previous was. So start highlighting
+		_self.start_highlighting()
+		.highlighting? << _true
+	_elif workspace.empty? _andif .highlighting?
+	_then 
+		# the new workspace is empty, so stop highlighting
+		_self.stop_highlighting()
+		.highlighting? << _false		
 	_endif
-	_return _super.note_workspace_holder_change(workspace_holder)
+	_return _super.note_workspace_change(workspace)
 _endmethod
 $
 
@@ -112,8 +107,8 @@ _iter _method highlight_plugin.highlight_collections()
 		_if i_holder.highlight?
 		_then
 			_local col << i_holder.collection
-			_local fill << i_holder.fill_style
-			_loopbody(col, fill)
+			_local colour << i_holder.colour
+			_loopbody(col, colour)
 		_endif
 	_endloop
 _endmethod
@@ -124,8 +119,66 @@ _method highlight_plugin.map_damage_notify(graphics_context, map_view)
 	## Callback method from P_MAP_VIEW to allow us to render onto
 	## it. Only render on the main map.
 	_if map_view.map_manager.current_map_view _is map_view
-	_then 
-		_self.dialog.map_damage_notify(graphics_context, map_view)
+	_then
+		_for i_col, i_colour _over _self.highlight_collections()
+		_loop
+			_local hset << _self.highlight_set(i_col, i_colour, map_view.current_view_bounds)
+			map_view.draw_geometry_on(graphics_context, hset, _unset ,
+						  _unset, _true )
+		_endloop
 	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_plugin.highlight_set(col, given_colour, window_bounds)
+	_dynamic !rwan_limit_bounds! << window_bounds
+	_local gs << col.convert_to_geometry()
+
+	_if _not gs.is_collection?
+	_then
+		gs << geometry_set.new_with(gs)
+	_endif
+	#show(gs, col, gs.size)
+	_local clr << given_colour
+
+	_local thick << line_style.new_with_properties(
+				:width, 3,
+				:foreground_colour, clr)
+	_local fill << fill_style.new_with_properties( :foreground_colour, clr,
+						       :wash_percent, 50 )
+
+	_local sts << transient_style_system.new(clr)
+
+	sts.deferred? << col.origin_is_sw_collection?
+
+	_local pstyle << composite_point_style.new(
+				 {pseudo_chain.new(
+					  circle.new(coordinate.new(0,0),5))},
+				 {thick})
+
+	sts.set_default_style(:simple_point,
+			      pstyle)
+	sts.set_default_style(:point,
+			      pstyle)
+#	sts.set_default_style(:text,
+#			      thick)
+	sts.set_default_style(:area,
+			      fill)
+	sts.set_default_style(:chain,
+			      thick)
+
+	_local comp << composite_geometry_set.new({gs})
+	comp.style_system << sts
+	_return comp, clr
+_endmethod
+$
+
+_pragma(classify_level=restricted)
+_method highlight_plugin.terminate()
+	##
+	_local mm << _self.map_manager
+	mm.remove_post_renderer(_self)
+	_super.terminate()
 _endmethod
 $

@@ -1,3 +1,8 @@
+!current_dsview! << ds << gis_program_manager.databases[:gis]
+$
+ds.switch(:write)
+$
+
 sectors << sector_rope.new()
 $
 _block@recreate_sector_rope
@@ -181,4 +186,6 @@ $
 fd << !current_dsview!.collections[:drafting_lines].field(:line_1)
 last_rec <<  simple_chain.new_with_sectors(fd,sectors)
 last_rec.new_dataless_rwo()
+$
+ds.commit()
 $

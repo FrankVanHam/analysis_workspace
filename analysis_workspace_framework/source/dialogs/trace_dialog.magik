@@ -80,6 +80,7 @@ _private _method trace_dialog.build_top_label(container)
 			:row_alignment, :fill )
 _endmethod
 $
+
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.build_trace_selection(container) 
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
@@ -87,13 +88,13 @@ _private _method trace_dialog.build_trace_selection(container)
 	.items[:col] << label_item.new(rc, _self.collection_description, :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:geometry)) 
-	.items[:geometry_choice] << text_choice_item.new(rc, _unset, :items, {},
+	.items[:geometry_choice] << text_choice_item.new(rc, _unset,
 							 :model, _self,
 							 :change_selector, :|geometry_changed()|,
 							 :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:topology) ) 
-	.items[:topology_choice] << text_choice_item.new(rc, _unset, :items, {},
+	.items[:topology_choice] << text_choice_item.new(rc, _unset,
 							 :model, _self,
 							 :change_selector, :|target_changed()|,
 							 :col_alignment, :fill)  
@@ -163,7 +164,7 @@ _private _method trace_dialog.build_buttons(container)
 _endmethod
 $
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_dialog.on_activation() 
+_method trace_dialog.on_activation()
 	_self.initialise_geometry_choice()
 	_self.initialise_target_choice()
 	_self.initialise_max_length()
@@ -175,7 +176,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.initialise_geometry_choice()
 	_local items << _self.geom_field_items
-	.items[:geometry_choice].items << items
+	.items[:geometry_choice].text_items << items
 	_self.set_current_geom_field(items)
 _endmethod
 $
@@ -186,7 +187,7 @@ _private _method trace_dialog.initialise_target_choice()
 	_then 
 		_local geom_field << .record_holder.collection.expose().field(.geom_name)
 		_local items << _self.topology_items(geom_field)
-		.items[:topology_choice].items << items
+		.items[:topology_choice].text_items << items
 		_self.set_current_target_collection(items)
 	_endif 
 _endmethod
@@ -307,7 +308,8 @@ _private _method trace_dialog.set_current_target_collection(items)
 			_endif
 		_endloop
 	_endif
-	.items[:topology_choice].value_with_notify << value
+	.items[:topology_choice].value << value
+	_self.target_changed(value)
 _endmethod
 $
 
@@ -339,8 +341,9 @@ _private _method trace_dialog.set_current_geom_field(items)
 		_endloop
 	_endif
 	_if value _isnt _unset
-	_then 
-		.items[:geometry_choice].value_with_notify << value
+	_then
+		.items[:geometry_choice].value << value
+		_self.geometry_changed(value)
 	_endif
 _endmethod
 $
@@ -380,13 +383,17 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.geometry_changed(geom_field)
 	.geom_name << geom_field.name
-	.items[:topology_choice].items << _self.topology_items(geom_field)
+	.items[:topology_choice].text_items << _self.topology_items(geom_field)
+	
+	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.target_changed(value)
 	.target_collection << value
+	
+	_self.manage_actions()
 _endmethod
 $
 
@@ -480,7 +487,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.manage_actions()
-	_local topo? << . target_collection _isnt _unset 
+	_local topo? << .target_collection _isnt _unset 
 	_local any? << .stop_predicates.empty?.not 
 	_local sel? << .selected_stop_collection _isnt _unset
 	.items[:add_predicate].enabled? << topo?

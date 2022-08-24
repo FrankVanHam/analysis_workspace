@@ -41,13 +41,8 @@ _method dataset_test_case.set_up()
 	_local source_path << smallworld_product.get_resource_file("analysis.ds",
 								  "data",
 								  rwan:analysis_dataset_manager.module_name)
-	_local (source_file,source_dir)  << system.pathname_components(source_path)
 	_local target_path << system.temp_file_name("munit_analysis.ds")
-	_local (target_file, target_dir) << system.pathname_components(target_path)
-	ds_environment.copy_datastore_file(source_dir, source_file, target_dir,
-					   :target_file, target_file,
-					   :source_concurrency_mode, :single_user,
-					   :concurrency_mode, :single_user)
+	system.file_copy(source_path, target_path)
 	.file_name << target_path
 	.ds << rwan:analysis_dataset_manager.open(:test, .file_name)
 _endmethod
@@ -189,9 +184,9 @@ _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.basic_storage_test(col)
 	## 
 	##
-	_local ws << workspace_holder.new()
+	_local ws << workspace.new()
 	_local holder << collection_holder.new(col, :name, _unset, _unset)
-	ws.current_workspace.add_holder(holder)
+	ws.add_holder(holder)
 	
 	.ds.store(ws)
 	_local ws_back << .ds.retrieve()

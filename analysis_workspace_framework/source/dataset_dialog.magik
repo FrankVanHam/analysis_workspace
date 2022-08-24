@@ -33,13 +33,6 @@ message_handler.new(:dataset_dialog).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.activate_in(container)
-	.top_frame << container.top_frame
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
 _method dataset_dialog.manage_actions()
 	_local open? << _self.open?
 	.owner.action(:new_file).enabled? << _true  
@@ -59,7 +52,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.save_ds_file()
-	.owner.workspace_holder.save()
+	.owner.workspace.save()
 _endmethod
 $
 
@@ -67,6 +60,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method dataset_dialog.save_as()
 	_local dia << file_dialog.new(_self, :|save_ds_as()|, _unset,
 				      :operation, :save,
+				      :title, _self.message(:save_as_file_title),
 				      :do_creation_check?, _true,
 				      :do_overwrite_check?, _true,
 				      :filter, {"Analytic file (*.ds)", "*.ds"})
@@ -90,23 +84,18 @@ _method dataset_dialog.save_ds_file_as(target_path)
 		system.unlink(target_path, _true)
 	_endif 
 	_local source_path << _self.dsm.dataset_path
-	_local (source_file,source_dir)  << system.pathname_components(source_path)
-	_local (target_file, target_dir) << system.pathname_components(target_path)
 	
 	_self.close_ds_file()
-	ds_environment.copy_datastore_file(source_dir, source_file, target_dir,
-					   :target_file, target_file,
-					   :source_concurrency_mode, :single_user,
-					   :concurrency_mode, :single_user)
+	system.file_copy(source_path, target_path)
 	_return _self.open_ds(target_path)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.save_or_cancel_if_updated()
-	_if .owner.workspace_holder _is _unset _then _return _endif
+	_if .owner.workspace _is _unset _then _return _endif
 	
-	_if .owner.workspace_holder.dirty?
+	_if .owner.workspace.dirty?
 	_then
 		_local what << _self.show_query( {
 							 _self.message(:save),
@@ -142,9 +131,9 @@ _method dataset_dialog.open_default_ds()
 		_if system.file_exists?(path)
 		_then 
 			_local dsm << rwan:analysis_dataset_manager.open(_self.dsm_name, path)
-			workspace_holder << dsm.retrieve()
-			.owner.publish_workspace_holder(workspace_holder)
-			.owner.add_to_application(workspace_holder.dsm)
+			workspace << dsm.retrieve()
+			.owner.publish_workspace(workspace)
+			.owner.add_to_application(workspace.dsm)
 		_endif 
 	_endif 
 _endmethod
@@ -179,13 +168,8 @@ _method dataset_dialog.new_ds_file(target_path)
 		system.unlink(target_path, _true)
 	_endif 
 	_local source_path << smallworld_product.get_resource_file("analysis.ds","data",rwan:analysis_dataset_manager.module_name)
-	_local (source_file,source_dir)  << system.pathname_components(source_path)
-	_local (target_file, target_dir) << system.pathname_components(target_path)
 	_self.close_ds_file()
-	ds_environment.copy_datastore_file(source_dir, source_file, target_dir,
-					   :target_file, target_file,
-					   :source_concurrency_mode, :single_user,
-					   :concurrency_mode, :single_user)
+	system.file_copy(source_path, target_path)
 	_return _self.open_ds_file(target_path, _true)
 _endmethod
 $
@@ -206,8 +190,8 @@ _private _method dataset_dialog.close_ds_file()
 	_then 
 		.owner.remove_from_application()
 		_self.dsm.discard()
-		workspace_holder << rwan:workspace_holder.new_empty()
-		.owner.publish_workspace_holder(workspace_holder)
+		workspace << rwan:workspace.new()
+		.owner.publish_workspace(workspace)
 	_endif 
 _endmethod
 $
@@ -217,6 +201,7 @@ _method dataset_dialog.open()
  	_self.save_or_cancel_if_updated()
 	_local dia << file_dialog.new(_self, :|open_ds()|, _unset,
 				      :operation, :open,
+				      :title, _self.message(:open_file_title),
 				      :do_existence_check?, _true,
 				      :filter, {"Analytic file (*.ds)", "*.ds"})
 	dia.activate()
@@ -240,9 +225,9 @@ _method dataset_dialog.open_ds_file(path, _optional first_time?)
 	_then
 		.owner.adjust_dsm_for_application(dsm)
 	_endif 
-	workspace_holder << dsm.retrieve()
-	.owner.publish_workspace_holder(workspace_holder)
-	.owner.add_to_application(workspace_holder.dsm)
+	workspace << dsm.retrieve()
+	.owner.publish_workspace(workspace)
+	.owner.add_to_application(workspace.dsm)
 	
 	.owner.ace.set_default("rwan:path", path, _true, _true)
 _endmethod
@@ -250,13 +235,13 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.workspace_changed()
-	.owner.publish_workspace_holder()
+	.owner.publish_workspace()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.dsm
-	_local holder << .owner.workspace_holder
+	_local holder << .owner.workspace
 	_if holder _isnt _unset
 	_then 
 		_return holder.dsm

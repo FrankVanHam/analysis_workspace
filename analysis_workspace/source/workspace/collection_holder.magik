@@ -22,7 +22,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 ##
-## Holder for one analysis collection. Holds the colletion,
+## Holder for one analysis collection. Holds the collection,
 ## name, colour, etc.
 ##
 def_slotted_exemplar(:collection_holder,
@@ -30,8 +30,7 @@ def_slotted_exemplar(:collection_holder,
 		{:collection,_unset},
 		{:highlight?, _unset, :readable},
 		{:name, _unset},
-		{:colour, _unset},
-		{:fill_style, _unset, :readable}
+		{:colour, _unset}
 	} )
 $
 
@@ -42,18 +41,17 @@ collection_holder.define_shared_constant(:serial_structure, :slotted, :public)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method collection_holder.new(col, name, colour, fill_style)
-	_return _clone.init(col, name, colour, fill_style)
+_method collection_holder.new(col, name, colour)
+	_return _clone.init(col, name, colour)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method collection_holder.init(col, name, colour, fill_style)
+_private _method collection_holder.init(col, name, colour)
 	.collection << col
 	.highlight? << _false 
 	.name << name
 	.colour << colour
-	.fill_style << fill_style
 	_return _self 
 _endmethod
 $
@@ -61,6 +59,12 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.name
 	_return .name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.colour
+	_return .colour
 _endmethod
 $
 
@@ -78,8 +82,8 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method collection_holder.serial_slots()
-    _local keys   << rope.new_with(:collection, :name, :colour, :fill_style)
-    _local values << rope.new_with(.collection, .name, .colour, .fill_style)
+    _local keys   << rope.new_with(:collection, :name, :colour)
+    _local values << rope.new_with(.collection, .name, .colour)
     _return keys, values
 _endmethod
 $
@@ -92,12 +96,11 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method collection_holder.init_from_serial(collection, name, colour, fill_style)
+_private _method collection_holder.init_from_serial(collection, name, colour)
 	.highlight? << _false 
 	.collection << collection
 	.name << name
 	.colour << colour
-	.fill_style << fill_style
 	_return _self 
 _endmethod
 $
@@ -154,8 +157,6 @@ _method collection_holder[key]
 	   _then >> .name
 	   _elif key _is :colour
 	   _then >> .colour
-	   _elif key _is :fill_style
-	   _then >> .fill_style
 	   _endif 
 _endmethod
 $
@@ -168,8 +169,6 @@ _method collection_holder[key] << value
 	_then .name << value
 	_elif key _is :colour
 	_then .colour << value
-	_elif key _is :fill_style
-	_then .fill_style << value
 	_endif 
 _endmethod
 $

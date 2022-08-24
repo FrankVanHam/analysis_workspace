@@ -167,7 +167,7 @@ _method analysis_dataset_manager.retrieve()
 	_then 
 		r << serial_xml_thing.xml_string_as_thing(s)
 	_else
-		r << sw:get_global_value(@rwan:workspace_holder).new()
+		r << sw:get_global_value(@rwan:workspace).new()
 	_endif
 	r.set_dataset_manager(_self)
 	_return r

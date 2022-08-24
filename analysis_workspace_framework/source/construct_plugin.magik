@@ -209,7 +209,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_plugin.dataset_manager
-	_return .workspace_holder.dsm
+	_return .workspace.dsm
 _endmethod
 $
 

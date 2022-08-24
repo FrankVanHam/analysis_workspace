@@ -35,7 +35,7 @@ $
 
 _pragma(classify_level=restricted)
 framework.define_shared_constant( :databus_consumer_data_types,
-	{ :workspace_holder },
+	{ :workspace },
 	:public )
 $
 
@@ -80,7 +80,7 @@ _method framework.set_title(_optional dirty?)
 		_endif 
 	_else
 		title << _self.message( :title_for_empty_dialog)
-	_endif 
+	_endif
 	_self.title << title
 _endmethod
 $
@@ -95,9 +95,9 @@ _pragma(classify_level=basic, topic={analysis})
 _private _method framework.set_holder()
 	_if .dsm _isnt _unset
 	_then 
-		_self.workspace_holder_plugin.set_holder_from_dsm(.dsm)
+		_self.workspace_plugin.set_holder_from_dsm(.dsm)
 	_else
-		_self.workspace_holder_plugin.create_new_holder()
+		_self.workspace_plugin.create_new_holder()
 	_endif
 _endmethod
 $
@@ -119,9 +119,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method framework.on_deactivation()
-	#.framework.deactivated(_self)
-	_return _super.on_deactivation()
+_method framework.pre_activation()
+	_self.set_title()
+	_return _super.pre_activation()
 _endmethod
 $
 
@@ -140,7 +140,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method framework.sw_databus_data_available(data_type_name, data)
-	_if data_type_name _is :workspace_holder
+	_if data_type_name _is :workspace
 	_then
 		_self.set_title_for(data)
 	_endif 
@@ -161,12 +161,12 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method framework.set_title_for(workspace_holder)
+_private _method framework.set_title_for(workspace)
 	## todo dont set the title is the dirty flag is included allready.
-	_if workspace_holder _isnt _unset
+	_if workspace _isnt _unset
 	_then 
-		.dsm << workspace_holder.dsm
-		_self.set_title(workspace_holder.dirty?)
+		.dsm << workspace.dsm
+		_self.set_title(workspace.dirty?)
 	_else
 		.dsm << _unset
 		_self.set_title(_false)
