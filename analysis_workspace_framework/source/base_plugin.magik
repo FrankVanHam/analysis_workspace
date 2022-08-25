@@ -184,7 +184,6 @@ _method base_plugin.sw_databus_data_available(data_type_name, data, sender)
 #	_then
 #		_return
 #	_endif
-
 	_if data_type_name _is :selection
 	_then
 		_self.note_selection_change(data)

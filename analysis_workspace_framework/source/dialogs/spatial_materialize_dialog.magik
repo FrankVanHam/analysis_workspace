@@ -37,9 +37,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_materialize_dialog.activate_in(container)
-	container.modality << :primary_modal
+	container.top_frame.modality << :primary_modal
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100, 0})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:row_alignment, :fill,
+				:col_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_tree(rc)
 	_self.build_progress(rc)

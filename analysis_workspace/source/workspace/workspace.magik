@@ -187,6 +187,7 @@ $
 
 _pragma(classify_level=basic, topic={demo})
 _method workspace.top_holders(holders)
+	_return holders
 	_local uses << set.new()
 	_for i_holder _over .holders.fast_elements()
 	_loop

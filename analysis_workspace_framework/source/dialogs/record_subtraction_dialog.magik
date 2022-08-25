@@ -47,9 +47,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method record_subtraction_dialog.activate_in(container)
-	container.modality << :primary_modal
+	container.top_frame.modality << :primary_modal
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:col_alignment, :fill,
+				:row_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_collection_selection(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
@@ -61,12 +63,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method record_subtraction_dialog.build_top_label(container)
-	text_window.new(container, 4, 50, _unset,
+	text_window.new(container, 4, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
-			:col_alignment, :fill,
-			:row_alignment, :fill )
+			:col_alignment, :fill)
 _endmethod
 $
 
@@ -74,7 +75,9 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method record_subtraction_dialog.build_collection_selection(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :col_alignment, :fill)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill,
+				:col_resize_values, {50,0,50,0})
 	.items[:col1] << label_item.new(rc, _unset, :col_alignment, :fill)
 	image_item.new(rc, smallworld_product.get_raster_image(:remove, _self.module_name))
 	.items[:col2] << label_item.new(rc, _unset, :col_alignment, :fill)
@@ -100,9 +103,15 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method record_subtraction_dialog.build_buttons(container)
 	## 
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
+				:row_alignment, :fill,
+				:col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
+						:row_alignment, :bottom,
+						:min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
+						:row_alignment, :bottom,
+						:min_width, 75)
 _endmethod
 $
 

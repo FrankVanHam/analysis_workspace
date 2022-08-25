@@ -54,9 +54,12 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method report_grouping_and_calculation_dialog.activate_in(container)
-	container.modality << :primary_modal
+	container.top_frame.modality << :primary_modal
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {0,100})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:col_alignment, :fill,
+				:row_alignment, :fill,
+				:row_resize_values, {0,100,0,0,0})
 	_self.build_top_label(rc)
 	_self.build_trees(rc)
 	_self.build_add_remove_buttons(rc)
@@ -68,12 +71,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method report_grouping_and_calculation_dialog.build_top_label(container)
-	text_window.new(container, 4, 100, _unset,
+	text_window.new(container, 4, 200, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
-			:col_alignment, :fill,
-			:row_alignment, :fill )
+			:col_alignment, :fill )
 _endmethod
 $
 

@@ -46,9 +46,12 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method object_control_dialog.activate_in(frame)
-	frame.modality << :primary_modal
-	_local rc << rowcol.new(frame, _unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100,0}, :min_width, 300)
+_method object_control_dialog.activate_in(container)
+	contaimer.top_frame.modality << :primary_modal
+	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :top_level,
+				:row_alignment, :fill,
+				:col_alignment, :fill,
+				:row_resize_values, {100,0}, :min_width, 300)
 	.items << property_list.new()
 	_self.build_list(rc)
 	_self.build_buttons(rc)

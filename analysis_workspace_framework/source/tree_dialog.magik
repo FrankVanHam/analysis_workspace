@@ -43,11 +43,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_dialog.activate_in(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset,
-				:style, :nested,
-				:left_spacing, 7,
-				:resize?, _true  )
-	.tree_item << tree_item.new(rc,
+	.tree_item << tree_item.new(container,
 			      :model, _self,
 			      :distribute_spare_width, :always,
 			      :data_selector, :|get_tree()|,
