@@ -47,7 +47,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method object_control_dialog.activate_in(container)
-	contaimer.top_frame.modality << :primary_modal
+	container.top_frame.modality << :primary_modal
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :top_level,
 				:row_alignment, :fill,
 				:col_alignment, :fill,

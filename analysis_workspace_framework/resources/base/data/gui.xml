@@ -69,7 +69,6 @@
     <action name="file.save"/>
     <action name="file.save_as"/>
     <action name="file.open"/>
-    <section/>
     <action name="file.close"/>
   </toolbar>
   <toolbar name="add">

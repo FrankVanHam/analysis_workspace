@@ -98,3 +98,4 @@
 :sorry_no_explorer		       Sorry, but we could not find the explorer in the application.
 :closed_trail_col_name		       Closed Trail
 :trail_col_name			       Trail Geometry
+:copy_holder			       Copy of #1

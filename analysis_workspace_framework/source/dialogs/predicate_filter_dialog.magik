@@ -52,10 +52,12 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method predicate_filter_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
-#	container.top_frame.resizable? << _false
 	
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {0,0,100})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:col_alignment, :fill,
+				:row_alignment, :fill,
+				:row_resize_values, {0,0,100,0,0})
 	_self.build_top_label(rc)
 	_self.build_source_label(rc)
 	_self.build_predicate_selection(rc)
@@ -81,7 +83,7 @@ _private _method predicate_filter_dialog.build_source_label(container)
 	label_item.new(rc, _self.message(:source_collection))
 	label_item.new(rc, .record_holder.name)
 	label_item.new(rc, _self.message(:indexes))
-	text_choice_item.new(rc, _unset, :items, _self.index_items, :col_alignment, :fill,
+	text_choice_item.new(rc, _unset, :text_items, _self.index_items, :col_alignment, :fill,
 			    :balloon_help_text, _self.message(:indexes_balloon) )
 _endmethod
 $
@@ -90,10 +92,9 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_dialog.build_predicate_selection(container)
-#	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested, :col_alignment, :fill)
-	_local rc << panel.new(container, _unset)
-	rc.col_alignment << :fill
-	rc.row_alignment << :fill
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill,
+				:row_alignment, :fill)
 	_local ace << .parent_model.ace
 	.predicate_component << query_predicate_component.new( :query, _self, :ace, ace)
 	.predicate_component.build_gui(rc)
@@ -103,7 +104,10 @@ _private _method predicate_filter_dialog.build_predicate_selection(container)
 	.predicate_component.set_collection(col,
 					    :field_names,
 					    names)
-	.predicate_component.set_predicate(.predicate)
+	_if .predicate _isnt _unset
+	_then 
+		.predicate_component.set_predicate(.predicate)
+	_endif 
 _endmethod
 $
 

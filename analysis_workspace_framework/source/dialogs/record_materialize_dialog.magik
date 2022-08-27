@@ -36,11 +36,15 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method record_materialize_dialog.activate_in(container)
-	container.modality << :primary_modal
+	container.top_frame.modality << :primary_modal
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {0,100})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:row_alignment, :fill,
+				:col_alignment, :fill,
+				:row_resize_values, {0,100,0,0,0,0})
 	_self.build_top_label(rc)
 	_self.build_tree(rc)
+	_self.build_new_table_name(rc)
 	_self.build_progress(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
 	_self.build_buttons(rc)
@@ -66,6 +70,11 @@ _private _method record_materialize_dialog.build_tree(container)
 				       #:edit_on_click?, _false,
 				       :col_alignment, :fill,
 				       :row_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method record_materialize_dialog.build_new_table_name(container)
 	.items[:name] << text_item.new(container, _self.message(:new_table_name),
 				       :value, _self.collection_name,
 				       :max_length, 32,
@@ -209,7 +218,7 @@ _private _method record_materialize_dialog.join_aspect_editor(a_tree, row_index,
 	_endloop
 	_if _not items.empty?
 	_then 
-		an_editor << in_place_choice_editor.new( an_agent, :items, items)
+		an_editor << in_place_choice_editor.new( an_agent, :text_items, items)
 	_else
 		an_editor << _unset
 	_endif 

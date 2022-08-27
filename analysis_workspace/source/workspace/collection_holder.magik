@@ -57,6 +57,13 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.copy()
+	>> _self.exemplar.new(.collection.copy(), .name.copy(), .colour.copy())
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.name
 	_return .name
 _endmethod

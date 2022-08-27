@@ -35,6 +35,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.new(dsm, base_col, geom_name, selector, arg)
+	_if geom_name _is _unset _then condition.raise(:error) _endif 
 	_return _clone.init(dsm, base_col, geom_name, selector, arg)
 _endmethod
 $

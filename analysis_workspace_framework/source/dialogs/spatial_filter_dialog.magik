@@ -58,9 +58,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.activate_in(container)
-	container.modality << :primary_modal
+	container.top_frame.modality << :primary_modal
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:row_alignment, :fill,
+				:col_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_operation_selection(rc)
 	_self.build_explanatory_image(rc)
@@ -72,32 +74,32 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.build_top_label(container)
-	text_window.new(container, 5, 50, _unset,
+	text_window.new(container, 5, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
-			:col_alignment, :fill,
-			:row_alignment, :fill )
+			:col_alignment, :fill)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.build_operation_selection(container)
-	## 
+	##
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
 	label_item.new(rc, _self.message(:source_holder))
 	label_item.new(rc, .record_holder.name, :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:geometry))
 	.items[:source_geometry_choice] << text_choice_item.new(rc, _unset,
-								:items, {},
+								:text_items, {},
 								:model, _self,
 								:change_selector, :|geometry_changed()|,
+								:value_selector, :|geometry_changed()|,
 								:col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:operation))
 	.items[:operation_choice] << text_choice_item.new(rc, _unset,
-							  :items, {},
+							  :text_items, {},
 							  :model, _self,
 							  :change_selector, :|operation_changed()|,
 							  :col_alignment, :fill)
@@ -116,9 +118,15 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.build_buttons(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
+				:row_alignment, :fill,
+				:col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
+						:row_alignment, :bottom,
+						:min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
+						:row_alignment, :bottom,
+						:min_width, 75)
 _endmethod
 $
 
@@ -132,14 +140,14 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.initialise_selector_choice()
 	 _local choice << .items[:operation_choice]
-	 choice.items << items << _self.operation_items
+	 choice.text_items << items << _self.operation_items
 	 _local op << _if .selector _is _unset
 		      _then
 			      >> items[1][1]
 		      _else
 			      >> .selector
 		      _endif
-	 choice.value_with_notify << op
+	 choice.rwan_value_with_notify << op
 _endmethod
 $
 
@@ -147,14 +155,14 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.initialise_geometry_choice()
 	_local choice << .items[:source_geometry_choice]
-	choice.items << items << _self.geom_field_items
+	choice.text_items << items << _self.geom_field_items
 	_local fd << _if .geom_name _is _unset
 		     _then
 			     >>  _self.most_likely_geom_field(items)
 		     _else
 			     >> .record_holder.collection.expose().field(.geom_name)
 		     _endif
-	choice.value_with_notify << fd
+	choice.rwan_value_with_notify << fd
 _endmethod
 $
 

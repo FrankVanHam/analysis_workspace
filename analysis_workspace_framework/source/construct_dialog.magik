@@ -44,12 +44,6 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_collection(collection)
-	_self.add_collections({collection})
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.update_holder(holder)
 	holder.name << _self.name_for_collection(holder.collection)
 	_self.workspace.set_dirty()
@@ -58,22 +52,10 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_collections(collections)
-	_local holders << rope.new_for(collections.size)
-	_for i_col _over collections.fast_elements()
-	_loop
-		holders.add(_self.new_holder(i_col))
-	_endloop
-	_self.add_holders(holders)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
 _private _method construct_dialog.add_holder(holder)
 	_self.add_holders({holder})
 _endmethod
 $
-
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method construct_dialog.add_holders(holders)
@@ -142,9 +124,9 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.copy()
-	_local col << _self.selected_holder.collection
-	_local cp << col.copy()
-	_self.add_collection(cp)
+	_local cp << _self.selected_holder.copy()
+	cp.name << _self.message(:copy_holder, _unset, cp.name)
+	_self.add_holder(cp)
 _endmethod
 $
 
@@ -226,6 +208,7 @@ _method construct_dialog.add_geom_selection()
 	_loop
 		sel_by_type.at_or_new_if_absent(i_geom.geom_category, rope).add(i_geom)
 	_endloop
+	_local holders << rope.new()
 	_local dsm << _self.dataset_manager
 	_for gcat, set _over sel_by_type.fast_keys_and_elements()
 	_loop
@@ -237,8 +220,9 @@ _method construct_dialog.add_geom_selection()
 			gs << geometry_set.new_from(set)
 			col  << rwan:geometry_collection.new(dsm, gs)
 		_endif
-		_self.add_collection(col, _unset)
+		holders.add(_self.new_holder(col))
 	_endloop
+	_self.add_holders(holders)
 _endmethod
 $
 
@@ -296,11 +280,13 @@ _method construct_dialog.do_add_collection_selection()
 		_if rwo _is _unset _then _continue _endif
 		cols.add(rwo.source_collection)
 	_endloop
+	_local holders << rope.new()
 	_for i_col _over cols.fast_elements()
 	_loop
 		_local col << rwan:sw_collection.new(dsm, i_col)
-		_self.add_collection(col, _unset)
+		holders.add(_self.new_holder(col))
 	_endloop
+	_self.add_holders(holders)
 _endmethod
 $
 
@@ -322,6 +308,7 @@ _method construct_dialog.do_add_explorer_content()
 		_self.user_error(:sorry_no_explorer)
 	_endif
 	_local (plug, sel) << (_scatter data)
+	_local holders << rope.new()
 	_for i_elem _over  sel.explorer_elements()
 	_loop
 		_for i_set _over i_elem.rwo_sets()
@@ -332,9 +319,10 @@ _method construct_dialog.do_add_explorer_content()
 			_else
 				col << rwan:record_set.new(dsm, i_set)
 			_endif
-			_self.add_collection(col, _unset)
+			holders.add(_self.new_holder(col))
 		_endloop 
 	_endloop
+	_self.add_holders(holders)
 _endmethod
 $
 
@@ -347,14 +335,16 @@ _method construct_dialog.add_explorer_selection()
 		_self.user_error(:sorry_no_explorer)
 	_endif
 	_local (plug, sel) << (_scatter data)
+	_local holders << rope.new()
 	_if sel.is_records?
 	_then
 		set << rwo_set.new_from_iter(sel, :|records()|)
 		col << rwan:record_set.new(dsm, set)
-		_self.add_collection(col, _unset)
+		holders.add(_self.new_holder(col))
 	_else
 		_self.user_error(:please_select_records_in_explorer)
 	_endif
+	_self.add_holders(holders)
 _endmethod
 $
 
@@ -375,6 +365,8 @@ _method construct_dialog.do_add_scrapbook()
 	_local dsm << _self.dataset_manager
 	_local sel << .owner.scrapbook_results
 	_local sel_by_table_name << hash_table.new()
+
+	_local holders << rope.new()
 	_for i_rec_set _over sel.fast_elements()
 	_loop
 		_for i_rec _over i_rec_set.fast_elements()
@@ -386,9 +378,10 @@ _method construct_dialog.do_add_scrapbook()
 		_for set _over sel_by_table_name.fast_elements()
 		_loop
 			_local col << rwan:record_set.new(dsm, set)
-			_self.add_collection(col, _unset)
+			holders.add(_self.new_holder(col))
 		_endloop
 	_endloop
+	_self.add_holders(holders)
 _endmethod
 $
 
@@ -415,7 +408,7 @@ _method construct_dialog.create_intersection()
 	_local holder1 << holders[1]
 	_local holder2 << holders[2]
 	_local new_col << holder1.collection.intersection(holder2.collection)
-	_self.add_collection(new_col)
+	_self.add_holder(_self.new_holder(new_col))
 _endmethod
 $
 
@@ -426,7 +419,7 @@ _method construct_dialog.create_union()
 	_local holder2 << holders[2]
 	_self.ensure_set_operation_makes_sense(holder1, holder2)
 	_local new_col << holder1.collection.union(holder2.collection)
-	_self.add_collection(new_col)
+	_self.add_holder(_self.new_holder(new_col))
 _endmethod
 $
 
@@ -437,7 +430,7 @@ _method construct_dialog.create_xor()
 	_local holder2 << holders[2]
 	_self.ensure_set_operation_makes_sense(holder1, holder2)
 	_local new_col << holder1.collection.xor(holder2.collection)
-	_self.add_collection(new_col)
+	_self.add_holder(_self.new_holder(new_col))
 _endmethod
 $
 

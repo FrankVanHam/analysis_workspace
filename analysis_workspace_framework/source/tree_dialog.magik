@@ -60,8 +60,6 @@ _method tree_dialog.activate_in(container)
 			      :edit_on_click?, _false,
 			      :col_alignment, :fill,
 			      :row_alignment, :fill)
-
-	.top_frame << container.top_frame
 _endmethod
 $
 

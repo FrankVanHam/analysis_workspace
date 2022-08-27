@@ -55,9 +55,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method method_dialog.activate_in(container)
-	container.modality << :primary_modal
+	container.top_frame.modality << :primary_modal
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:row_alignment, :fill,
+				:col_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_method_selection(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
@@ -69,12 +71,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method method_dialog.build_top_label(container)
-	text_window.new(container, 7, 50, _unset,
+	text_window.new(container, 7, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
-			:col_alignment, :fill,
-			:row_alignment, :fill )
+			:col_alignment, :fill)
 _endmethod
 $
 
@@ -85,7 +86,7 @@ _private _method method_dialog.build_method_selection(container)
 	label_item.new(rc, .record_holder.name, :col_alignment, :fill)
 	
 	label_item.new(rc, _self.message(:method))
-	.items[:method_choice] << text_choice_item.new(rc, _unset, :items, {},
+	.items[:method_choice] << text_choice_item.new(rc, _unset, :text_items, {},
 						       :model, _self,
 						       :change_selector, :|method_changed()|,
 						       :col_alignment, :fill)
@@ -95,16 +96,22 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method method_dialog.build_buttons(container)
 	## 
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
+				:row_alignment, :fill,
+				:col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
+						:row_alignment, :bottom,
+						:min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
+						:row_alignment, :bottom,
+						:min_width, 75)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method method_dialog.on_activation()
 	_local items << _self.method_items
-	.items[:method_choice].items << items
+	.items[:method_choice].text_items << items
 	_self.set_current_method(items)
 _endmethod
 $
@@ -134,7 +141,7 @@ _private _method method_dialog.set_current_method(items)
 	_endif 
 	_if value _isnt _unset
 	_then
-		.items[:method_choice].value_with_notify << value
+		.items[:method_choice].rwan_value_with_notify << value
 	_endif 
 _endmethod
 $

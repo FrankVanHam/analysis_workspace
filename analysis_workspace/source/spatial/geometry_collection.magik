@@ -140,7 +140,7 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method geometry_collection.description
+_method geometry_collection.description(translator)
 	_if .geometry.is_collection?
 	_then
 		size << .geometry.size
