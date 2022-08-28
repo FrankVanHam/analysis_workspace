@@ -90,14 +90,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method runner_plugin.explore(set)
-	_self.databus_make_data_available( :rwo_set,
-					   { _self,
-					     set,
-					     :ace_name,    _self.application.ace_name,
-					     :group_name,  _self.message(:browse_collection),
-					     :group_image, { :list, :ui_resources },
-					     :set_current?, _true } )
-#	_self.app_plugin.explore(set)
+	_self.app_plugin.explore(set)
 _endmethod
 $
 

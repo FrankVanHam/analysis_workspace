@@ -20,8 +20,6 @@
       <separator/>
       <action name="construct.move_up"/>
       <action name="construct.move_down"/>
-      <separator/>
-      <action name="explorer.start_explorer"/>
     </submenu>
     <submenu name="workarea" mnemonic_id="workarea_m">
       <submenu name="add_spatial" mnemonic_id="add_spatial_m">

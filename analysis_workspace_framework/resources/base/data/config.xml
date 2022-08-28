@@ -12,16 +12,5 @@
     </plugin>
     <plugin name="tree" class_name="rwan:tree_plugin"/>
     <plugin name="runner" class_name="rwan:runner_plugin"/>
-    <plugin name="explorer" class_name="explorer_plugin">
-      <properties>
-        <property name="expose_embedded_selection" value="true"/>
-        <property name="expose_floating_selection" value="true"/>
-        <property name="model_config_definition_module_name" value="analysis_workspace_framework"/>
-	<property name="floating_gui_definition_module_name" value="analysis_workspace_framework"/>
-	<property name="floating_config_definition_module_name" value="analysis_workspace_framework"/>
-	<property name="embedded_gui_definition_module_name" value="analysis_workspace_framework"/>
-	<property name="embedded_config_definition_module_name" value="analysis_workspace_framework"/>
-      </properties>
-    </plugin>
   </plugins>
 </config>
