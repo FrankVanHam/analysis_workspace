@@ -33,11 +33,20 @@ message_handler.new(:dataset_dialog).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method dataset_dialog.note_workspace_change(renew?)
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
 _method dataset_dialog.manage_actions()
 	_local open? << _self.open?
+	_local dirty? << _self.workspace.dirty?
+	
 	.owner.action(:new_file).enabled? << _true  
-	.owner.action(:save).enabled? << open? 
-	.owner.action(:save_as).enabled? << open? 
+	.owner.action(:save).enabled? << open? _andif dirty?
+	.owner.action(:save_as).enabled? << open?
+	.owner.action(:open).enabled? << open? 
 	.owner.action(:close).enabled? << open? 
 _endmethod
 $
@@ -52,7 +61,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.save_ds_file()
-	.owner.workspace.save()
+	_self.workspace.save()
 _endmethod
 $
 
@@ -93,9 +102,9 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.save_or_cancel_if_updated()
-	_if .owner.workspace _is _unset _then _return _endif
+	_if _self.workspace _is _unset _then _return _endif
 	
-	_if .owner.workspace.dirty?
+	_if _self.workspace.dirty?
 	_then
 		_local what << _self.show_query( {
 							 _self.message(:save),
@@ -241,7 +250,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.dsm
-	_local holder << .owner.workspace
+	_local holder << _self.workspace
 	_if holder _isnt _unset
 	_then 
 		_return holder.dsm

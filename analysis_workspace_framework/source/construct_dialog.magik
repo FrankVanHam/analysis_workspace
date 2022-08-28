@@ -882,6 +882,53 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.note_map_selection_change(data)
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.note_map_record_selection_change(data)
+	_local (pl, rset) << (_scatter data)
+	
+	_if pl.is_kind_of?(explorer_plugin)
+	_then
+		_self.manage_actions()
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.note_map_trail_change(data)
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.has_trail?
+	>> _self.owner.map_trail.empty?.not
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.has_map_selection?
+	>> _self.owner.map_selection.empty?.not 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.has_explorer_selection?
+	_local data << .owner.explorer_selection
+	
+	_if data _is _unset _then _return _false _endif
+	
+	_local (plug, sel) << (_scatter data)
+	
+	>> sel.is_records?
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.manage_actions()
 	_local (colnr, swcolnr, reccolnr, spatialnr, areanr) << _self.selection_info()
 		
@@ -889,11 +936,11 @@ _method construct_dialog.manage_actions()
 	_local any_sel? << _self.any_selection?
 	_local open? << _self.open?
 	.owner.action(:add_collections).enabled? << open?
-	.owner.action(:add_trail).enabled? << open?
-	.owner.action(:add_geom_selection).enabled? << open?
-	.owner.action(:add_collection_selection).enabled? << open?
+	.owner.action(:add_trail).enabled? << open? _andif _self.has_trail?
+	.owner.action(:add_geom_selection).enabled? << open? _andif _self.has_map_selection?
+	.owner.action(:add_collection_selection).enabled? << open? _andif _self.has_map_selection?
 	.owner.action(:add_explorer_content).enabled? << open?
-	.owner.action(:add_explorer_selection).enabled? << open?
+	.owner.action(:add_explorer_selection).enabled? << open? _andif _self.has_explorer_selection?
 	.owner.action(:add_scrapbook).enabled? << open?
 	.owner.action(:spatial_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)
 	.owner.action(:distance_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)

@@ -34,6 +34,12 @@ def_slotted_exemplar(:framework_plugin,
 	{:plugin})
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+framework_plugin.define_shared_constant(
+	:databus_consumer_data_types,
+	{:map_selection, :record_selection, :map_trail},
+	:public)
+$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method framework_plugin.init_actions()
@@ -169,13 +175,6 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method framework_plugin.ace_context
-	_return _self.databus_request_data(:ace_context)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
 _method framework_plugin.deactivated(p_framework)
 	## 
 	## 
@@ -285,5 +284,19 @@ _method framework_plugin.explore(set)
 					     :group_name,  _self.message(:browse_collection),
 					     :group_image, { :list, :ui_resources },
 					     :set_current?, _true } )
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.sw_databus_data_available(data_type_name, data)
+	## 
+	## :map_selection, :record_selection, :map_trail
+	_local f << _self.get_dialog(:frame)
+	_if (f _isnt _unset) _andif
+	    {:map_selection, :record_selection, :map_trail}.includes?(data_type_name)
+	_then
+		f.application_changed(data_type_name, data)
+	_endif 
 _endmethod
 $

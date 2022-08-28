@@ -102,7 +102,6 @@ _method analysis_dataset_manager.assign_coordinate_system(cs)
 	_endtry 
 	
 	.ds_view.world.coordinate_system << cs
-	show(.ds_view.world.coordinate_system, cs)
 	.ds_view.commit()
 _endmethod
 $

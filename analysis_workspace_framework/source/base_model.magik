@@ -135,10 +135,32 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_model.note_workspace_change()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.note_map_selection_change(data)
 	
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.note_map_record_selection_change(data)
+	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method base_model.note_map_trail_change(data)
+	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_model.manage_actions()
+_endmethod
+$
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method base_model.new_toolbar(container)

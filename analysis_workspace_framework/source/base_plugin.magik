@@ -35,7 +35,7 @@ $
 
 _pragma(classify_level=restricted)
 base_plugin.define_shared_constant( :databus_consumer_data_types,
-	{ :workspace, :selection },
+	{ :workspace, :selection, :map_selection, :record_selection, :map_trail},
 	:public )
 $
 
@@ -174,22 +174,27 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.manage_actions()
-	_self.dialog.manage_actions()
+	
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.sw_databus_data_available(data_type_name, data, sender)
-#	_if _self _is sender
-#	_then
-#		_return
-#	_endif
 	_if data_type_name _is :selection
 	_then
 		_self.note_selection_change(data)
 	_elif data_type_name _is :workspace
 	_then
 		_self.note_workspace_change(data)
+	_elif data_type_name _is :map_selection
+	_then
+		_self.note_map_selection_change(data)
+	_elif data_type_name _is :record_selection
+	_then
+		_self.note_map_record_selection_change(data)
+	_elif data_type_name _is :map_trail
+	_then
+		_self.note_map_trail_change(data)
 	_endif
 _endmethod
 $
@@ -198,6 +203,24 @@ _pragma(classify_level=advanced, topic={analysis})
 _private _method base_plugin.note_selection_change(selection)
 	.selection << selection
 	_self.dialog.note_selection_change()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_plugin.note_map_selection_change(data)
+	_self.dialog.note_map_selection_change(data)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_plugin.note_map_record_selection_change(data)
+	_self.dialog.note_map_record_selection_change(data)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_plugin.note_map_trail_change(data)
+	_self.dialog.note_map_trail_change(data)
 _endmethod
 $
 

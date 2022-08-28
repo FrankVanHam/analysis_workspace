@@ -139,7 +139,6 @@ _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds
 	_then
 		gs << geometry_set.new_with(gs)
 	_endif
-	#show(gs, col, gs.size)
 	_local clr << given_colour
 
 	_local thick << line_style.new_with_properties(
