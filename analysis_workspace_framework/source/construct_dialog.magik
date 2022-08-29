@@ -964,7 +964,7 @@ _method construct_dialog.manage_actions()
 	.owner.action(:view_by_eq).enabled? << open? _andif (swcolnr=2)
 	.owner.action(:materialize).enabled? << open? _andif (reccolnr=1)
 	.owner.action(:materialize_spatial).enabled? << open? _andif ((spatialnr=1) _orif (areanr=1))
-	
+
 	.owner.action(:edit).enabled? << open? _andif any_sel? _andif _self.selected_holder.editable?
 	.owner.action(:delete).enabled? << open? _andif any_top_sel?
 	.owner.action(:move_up).enabled? << open?  _andif any_top_sel?   _andif _self.can_move_up?

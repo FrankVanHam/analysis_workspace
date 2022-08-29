@@ -32,18 +32,39 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method highlight_dialog.set_highlight_colour()
-	_local colour_editor << sw:colour_palette_editor.new(_self, :|set_colour()|,
-							     _self.message(:pick_highlight_colour))
-	colour_editor.activate()
+	_if .items[:editor] _is _unset
+	_then
+		.items[:editor] << _self.activate_colour_editor()
+	_else
+		.items[:editor].reactivate()
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_dialog.activate_colour_editor()
+	_local colour_editor << sw:colour_palette_editor.new_dialog(
+					   _self,
+					   _self, :|set_colour()|,
+					   _self.message(:pick_highlight_colour),
+					   :draw_style, :buttons,
+					   :disable_items, {:no_colour, :update})
+	colour_editor.activate_relative_to(_unset, .top_frame, 50, 50)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method highlight_dialog.set_colour(action, clr)
-	_local holder << _self.selected_holder
-	holder[:colour] << clr
-	_self.workspace.set_dirty()
-	.owner.publish_workspace()
+	_local holders << _self.selected_holders
+	_if holders.empty?.not
+	_then
+		_for i_holder _over holders.fast_elements()
+		_loop 
+			i_holder[:colour] << clr
+		_endloop 
+		_self.workspace.set_dirty()
+		.owner.publish_workspace()
+	_endif 
 _endmethod
 $
 
