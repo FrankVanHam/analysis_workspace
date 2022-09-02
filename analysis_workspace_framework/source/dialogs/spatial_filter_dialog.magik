@@ -30,42 +30,47 @@ _pragma(classify_level=restricted, topic={analysis})
 ##
 def_slotted_exemplar(:spatial_filter_dialog,
 	{
-		{:items,          _unset},
-		{:holder,         _unset},
-		{:record_holder,  _unset},
-		{:spatial_holder, _unset},
-		{:geom_name,      _unset},
-		{:selector,       _unset}
+		{:operator, _unset}
 	},
-	:model)
+	:base_dialog)
 $
 
-message_handler.new(:spatial_filter_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:spatial_filter_dialog).add_uses(:model, :base_dialog)
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_dialog.set_holder(holder,
-					 record_holder, spatial_holder, dsm,
-					 geom_name, selector )
-	.holder << holder
-	.record_holder << record_holder
-	.spatial_holder << spatial_holder
-	.geom_name << geom_name
-	.selector << selector
+_method spatial_filter_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_dialog.set_holder(workspace,
+					 holder, source_holder, source_geom_name,
+					 operator, filter_holder, filter_geom_name)
+	.workspace << workspace
+	.holder << holder
+	.source_holder << source_holder
+	.source_geom_name << source_geom_name
+	.operator << operator
+	.filter_holder << filter_holder
+	.filter_geom_name << filter_geom_name
+	.name << holder.name
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
-	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:row_alignment, :fill,
 				:col_alignment, :fill)
 	_self.build_top_label(rc)
-	_self.build_operation_selection(rc)
+	_self.build_source_filter_and_operation_selection(rc)
 	_self.build_explanatory_image(rc)
+	_self.build_name(rc)
 	panel_separator.new(rc, :col_alignment, :fill) 
 	_self.build_buttons(rc)
 	_return rc
@@ -73,128 +78,56 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.build_top_label(container)
-	text_window.new(container, 5, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.build_operation_selection(container)
+_private _method spatial_filter_dialog.build_source_filter_and_operation_selection(container)
 	##
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	label_item.new(rc, _self.message(:source_holder))
-	label_item.new(rc, .record_holder.name, :col_alignment, :fill)
+	_self.build_source_selection_rc(rc)
+	_self.build_filter_selection_rc(rc)
 	
-	label_item.new(rc, _self.message(:geometry))
-	.items[:source_geometry_choice] << text_choice_item.new(rc, _unset,
-								:text_items, {},
-								:model, _self,
-								:change_selector, :|geometry_changed()|,
-								:value_selector, :|geometry_changed()|,
-								:col_alignment, :fill)
-	
-	label_item.new(rc, _self.message(:operation))
-	.items[:operation_choice] << text_choice_item.new(rc, _unset,
-							  :text_items, {},
-							  :model, _self,
-							  :change_selector, :|operation_changed()|,
-							  :col_alignment, :fill)
-	
-	label_item.new(rc, _self.message(:target))
-	label_item.new(rc, .spatial_holder.name, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:operation))
+	.items[:operation_choice] << sw_text_item.new(rc,
+						      :text_items, {},
+						      :editable?, _false,
+						      :model, _self,
+						      :change_selector, :|operation_changed()|,
+						      :col_alignment, :fill)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.build_explanatory_image(container)
-	.items[:explain] << image_item.new(container, _self.default_image, :col_alignment, :centre)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.build_buttons(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
-				:row_alignment, :fill,
-				:col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
+	.items[:explain] << sw_image_item.new(container, _self.default_image, :col_alignment, :centre)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.on_activation()
-	_self.initialise_geometry_choice()
-	_self.initialise_selector_choice()
+	_self.initialise_source_geometry_choice()
+	_self.initialise_filter_holder_choice()
+	_self.initialise_operator_choice()
+	_self.initialise_name()
+	_super.on_activation()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.initialise_selector_choice()
+_private _method spatial_filter_dialog.initialise_operator_choice()
 	 _local choice << .items[:operation_choice]
 	 choice.text_items << items << _self.operation_items
-	 _local op << _if .selector _is _unset
+	 _local op << _if .operator _is _unset
 		      _then
 			      >> items[1][1]
 		      _else
-			      >> .selector
+			      >> .operator
 		      _endif
 	 choice.rwan_value_with_notify << op
 _endmethod
 $
 
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.initialise_geometry_choice()
-	_local choice << .items[:source_geometry_choice]
-	choice.text_items << items << _self.geom_field_items
-	_local fd << _if .geom_name _is _unset
-		     _then
-			     >>  _self.most_likely_geom_field(items)
-		     _else
-			     >> .record_holder.collection.expose().field(.geom_name)
-		     _endif
-	choice.rwan_value_with_notify << fd
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.most_likely_geom_field(items)
-	_if items.size = 1
-	_then
-		_return items[1][1]
-	_endif 
-	_local _constant topo_cats << {:chain, :point, :area}
-	_for i_vec _over items.fast_elements()
-	_loop
-		_local geom_cat << i_vec[1].geom_category
-		_if topo_cats.includes?(geom_cat)
-		_then
-			_return i_vec[1]
-		_endif
-	_endloop
-	_return items[1][1]	 
-_endmethod
-$
-
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.operation_changed(value)
-	.selector << value
+	.operator << value
 	_self.update_image()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_dialog.geometry_changed(value)
-	.geom_name << value.name
 _endmethod
 $
 
@@ -206,15 +139,16 @@ _private _method spatial_filter_dialog.update_image()
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.ok()
 	_if .holder _is _unset
 	_then 
 		_local new_col << _self.construct_spatial_predicate()
-		.parent_model.add_collection(new_col)
+		.parent_model.add_holder(.parent_model.new_holder(new_col,
+								  .name))
 	_else
-		.holder.collection.update(.geom_name, .selector)
+		.holder.name << .name
+		.holder.collection.update(.source_geom_name, .operator, .filter_holder.collection, .filter_geom_name)
 		.parent_model.update_holder(.holder)
 	_endif 
 	_self.close()
@@ -223,9 +157,8 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.construct_spatial_predicate()
-	_local new_col << .record_holder.collection.filter_by_geometry(.geom_name, .selector,
-								       .spatial_holder.collection)
-	_return new_col
+	_return .source_holder.collection.filter_by_geometry(.source_geom_name, .operator,
+							     .filter_holder.collection, .filter_geom_name)
 _endmethod
 $
 
@@ -249,36 +182,19 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.source_geometry_items(col)
-	 _return _self.geom_field_items_for(col)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.geom_field_items
-	_return _self.geom_field_items_for(.record_holder.collection)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.geom_field_items_for(col)
-	_local sw_col << col.expose()
-	_local items << rope.new()
-	_for i_fd _over sw_col.descriptor.geometry_fields()
-	_loop
-		_if i_fd.name _is :meatball _then _continue _endif 
-		items.add( {i_fd, i_fd.external_name} )
-	_endloop
-	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
-	items << rope.new_from(items)
-	_return items
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.default_image
 	_return smallworld_product.get_raster_image( :explain_interacting_with, _self.module_name )
+_endmethod
+$
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif .source_geom_name _isnt _unset _andif .filter_geom_name _isnt _unset
+
+	.items[:source_geometry_choice] .enabled? << .readonly?.not
+	.items[:filter_holder_choice].enabled? << .readonly?.not
+	.items[:filter_geometry_choice].enabled? << .readonly?.not
+	.items[:name].enabled? << .readonly?.not
+	.items[:operation_choice].enabled? << .readonly?.not
 _endmethod
 $

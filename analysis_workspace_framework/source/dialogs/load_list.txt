@@ -1,3 +1,4 @@
+base_dialog
 buffer_dialog
 object_control_dialog
 predicate_filter_dialog

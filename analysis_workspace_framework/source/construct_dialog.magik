@@ -45,20 +45,19 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.update_holder(holder)
-	holder.name << _self.name_for_collection(holder.collection)
 	_self.workspace.set_dirty()
 	.owner.publish_workspace()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.add_holder(holder)
+_method construct_dialog.add_holder(holder)
 	_self.add_holders({holder})
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.add_holders(holders)
+_method construct_dialog.add_holders(holders)
 	_local workspace << _self.workspace
 	workspace.add_holders(holders)
 	.owner.publish_workspace()
@@ -67,7 +66,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.new_holder(col, _optional a_msg)
+_method construct_dialog.new_holder(col, _optional a_msg)
 	_local clr << colour.called(:red)
 	_local msg << _if a_msg _isnt _unset
 		      _then >> a_msg
@@ -87,8 +86,14 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit()
-	_local holder << _self.selected_holder
-	holder.activate_editor_in(_self)
+	_return _self.selected_holder.activate_editor_in(_self)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.view()
+	_local editor << _self.edit()
+	editor.set_readonly()
 _endmethod
 $
 
@@ -96,15 +101,13 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.delete()
 	## delete the collections, but only the top level collections
 	## to avoid creating inconsistencies.
-	_local to_del << _self.selected_top_holders.copy()
+	_local workspace << _self.workspace
+	_local to_del << _self.selected_top_holders.copy()	
 	_if to_del.empty? _then _return _endif
 
-	_if _not _self.question_alert( :yes, :no,
-				       :sure_to_delete, to_del.size)
-	_then
-		_return
-	_endif
-	_local workspace << _self.workspace
+	_local ok? << _self.can_delete?(to_del)
+	_if _not ok? _then _return _endif 
+	
 	_for i_holder _over to_del.fast_elements()
 	_loop
 		i_holder.discard()
@@ -115,10 +118,31 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.can_delete?(to_del)
+	 _local workspace << _self.workspace
+	 _for i_holder _over to_del.fast_elements()
+	_loop 
+		_local usage_count << i_holder.nrefs
+		_if usage_count > 1
+		_then
+			_self.show_alert(_self.message(:cannot_delete, _unset,
+						       i_holder.name,
+						       usage_count-1))
+			_return _false 
+		_endif
+	_endloop
+	_return _self.question_alert( :yes, :no,
+				      :sure_to_delete, to_del.size)
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.add_collections_from_dialog()
 	_local dia << object_control_dialog.new_dialog(_self)
 	dia.set_dataset(.owner.dataset, _self.dataset_manager)
 	dia.activate_relative_to(_unset, .top_frame, 50, 50 )
+	_return dia
 _endmethod
 $
 
@@ -190,7 +214,8 @@ _method construct_dialog.add_trail()
 	_local pseudo << _self.trail
 	_if pseudo.geom_category _is :area
 	_then
-		col << rwan:area_collection.new(dsm, pseudo)
+		#col << rwan:area_collection.new(dsm, pseudo)
+		col  << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
 		msg << _self.message(:closed_trail_col_name)
 	_else
 		col  << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
@@ -392,11 +417,6 @@ _method construct_dialog.trail
 	_then
 		_self.user_error(:provide_trail)
 	_endif
-#	_local w << geom.world
-#	_if w _isnt _unset
-#	_then
-#		geom.world << w.dataset_worlds.an_element()
-#	_endif
 	geom.style_info << _unset
 	_return geom
 _endmethod
@@ -476,6 +496,7 @@ _method construct_dialog.materialize_spatial()
 	_local dia << spatial_materialize_dialog.new_dialog(_self)
 	dia.set_holder(holder, _self.dataset_manager)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -485,6 +506,7 @@ _method construct_dialog.materialize()
 	_local dia << record_materialize_dialog.new_dialog(_self)
 	dia.set_holder(holder, _self.dataset_manager)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -506,6 +528,7 @@ _method construct_dialog.create_eq_view()
 	_local dia << sw_view_eq_dialog.new_dialog(_self)
 	dia.set_holder(holders[1], holders[2], _self.dataset_manager)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -526,6 +549,7 @@ _method construct_dialog.create_spatial_collection()
 	_local dia << spatial_dialog.new_dialog(_self)
 	dia.set_holder(holder, _self.dataset_manager)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -535,16 +559,13 @@ _method construct_dialog.create_buffer()
 	_local dia << buffer_dialog.new_dialog(_self)
 	dia.set_holder(holder, _self.dataset_manager)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_topology_dialog()
-	_local record_holder << _self.selected_top_holder
-	_if record_holder.is_record_collection?
-	_then
-		_self.activate_follow_topology_editor(_unset, record_holder)
-	_endif
+	_return _self.activate_follow_topology_editor(_unset, _self.selected_top_holder)
 _endmethod
 $
 
@@ -552,7 +573,7 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_topology_dialog(holder, base_col, geom_name, target_col)
 	_local base_holder << _self.workspace.holder_for(base_col)
-	_self.activate_follow_topology_editor(holder, base_holder, geom_name, target_col)
+	_return _self.activate_follow_topology_editor(holder, base_holder, geom_name, target_col)
 _endmethod
 $
 
@@ -562,24 +583,21 @@ _private _method construct_dialog.activate_follow_topology_editor(holder, base_h
 	dia << topology_dialog.new_dialog(_self)
 	dia.set_holder(holder, base_holder, _self.dataset_manager, geom_name, target_col)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_trace_dialog()
-	_local record_holder << _self.selected_top_holder
-	_if record_holder.is_record_collection?
-	_then
-		_self.activate_follow_trace_editor(_unset, record_holder)
-	_endif
+	_return _self.activate_follow_trace_editor(_unset, _self.selected_top_holder)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_trace_dialog(holder, base_col, geom_name, stop_predicates, max_length, target_col)
 	_local base_holder << _self.workspace.holder_for(base_col)
-	_self.activate_follow_trace_editor(holder, base_holder,
-					   geom_name, stop_predicates, max_length, target_col)
+	_return _self.activate_follow_trace_editor(holder, base_holder,
+						   geom_name, stop_predicates, max_length, target_col)
 _endmethod
 $
 
@@ -589,22 +607,19 @@ _private _method construct_dialog.activate_follow_trace_editor(holder, base_hold
 	dia << trace_dialog.new_dialog(_self)
 	dia.set_holder(holder, base_holder, _self.dataset_manager, geom_name, stop_predicates, max_length, target_col)
 	dia.activate()
+	_return dia
 _endmethod
 $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_root_dialog()
-	_local record_holder << _self.selected_top_holder
-	_if record_holder.is_record_collection?
-	_then
-		_self.activate_follow_root_dialog(_unset, record_holder)
-	_endif
+	_return _self.activate_follow_root_dialog(_unset, _self.selected_top_holder)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_root_dialog(holder, base_col, target_col)
 	_local base_holder << _self.workspace.holder_for(base_col)
-	_self.activate_follow_root_dialog(holder, base_holder, target_col)
+	_return _self.activate_follow_root_dialog(holder, base_holder, target_col)
 _endmethod
 $
 
@@ -614,23 +629,20 @@ _private _method construct_dialog.activate_follow_root_dialog(holder, record_hol
 	dia << root_dialog.new_dialog(_self)
 	dia.set_holder(holder, record_holder, _self.dataset_manager, target_col)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_join_dialog()
-	_local record_holder << _self.selected_top_holder
-	_if record_holder.is_record_collection?
-	_then
-		_self.activate_follow_join_dialog(_unset, record_holder)
-	_endif
+	_return _self.activate_follow_join_dialog(_unset, _self.selected_top_holder)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_join_dialog(holder, base_col, join_field_name)
 	_local base_holder << _self.workspace.holder_for(base_col)
-	_self.activate_follow_join_dialog(holder, base_holder, join_field_name)
+	_return _self.activate_follow_join_dialog(holder, base_holder, join_field_name)
 _endmethod
 $
 
@@ -640,16 +652,13 @@ _private _method construct_dialog.activate_follow_join_dialog(holder, record_hol
 	dia << join_dialog.new_dialog(_self)
 	dia.set_holder(holder, record_holder, _self.dataset_manager, join_field_name)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_method_dialog()
-	_local record_holder << _self.selected_top_holder
-	_if record_holder.is_record_collection?
-	_then
-		_self.do_activate_follow_method_dialog(_unset, record_holder)
-	_endif
+	_return _self.do_activate_follow_method_dialog(_unset, _self.selected_top_holder)
 _endmethod
 $
 
@@ -658,7 +667,7 @@ _method construct_dialog.edit_follow_method_dialog(holder,
 						   base_col, methd, args)
 	
 	_local base_holder << _self.workspace.holder_for(base_col)
-	_self.do_activate_follow_method_dialog(holder, base_holder, methd, args)
+	_return _self.do_activate_follow_method_dialog(holder, base_holder, methd, args)
 _endmethod
 $
 
@@ -668,35 +677,39 @@ _method construct_dialog.do_activate_follow_method_dialog(holder, record_holder,
 	dia.set_holder(holder, record_holder, _self.dataset_manager,
 		       methd, args)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_spatial_filter_dialog()
-	_local (record_holder, arg_holder) << _self.selected_col_and_spatial()
-	_if (record_holder _is _unset) _orif (arg_holder _is _unset)
-	_then
-		_self.user_error(:please_select_a_collection_and_geometry)
-	_endif
-	_self.do_activate_spatial_filter_dialog(_unset, record_holder, arg_holder)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_spatial_filter_dialog(holder, base_col, arg,
-						    geom_name, selector)
-	_local base_holder << _self.workspace.holder_for(base_col)
-	_local arg_holder  << _self.workspace.holder_for(arg)
-	_self.do_activate_spatial_filter_dialog(holder, base_holder, arg_holder, geom_name, selector)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.do_activate_spatial_filter_dialog(holder, base_holder, arg_holder, _optional geom_name, selector)
 	_local dia << spatial_filter_dialog.new_dialog(_self)
-	dia.set_holder(holder, base_holder, arg_holder, _self.dataset_manager,
-		       geom_name, selector)
+	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
+	_return dia
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.edit_spatial_filter_dialog(holder, source_col, source_geom_name,
+						    operator,
+						    filter_col, filter_geom_name)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	_local filter_holder << _self.workspace.holder_for(filter_col)
+	_return _self.do_activate_spatial_filter_dialog(holder, source_holder, source_geom_name,
+							operator, filter_holder, filter_geom_name)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.do_activate_spatial_filter_dialog(holder, source_holder, source_geom_name,
+								    operator, filter_holder, filter_geom_name)
+	_local dia << spatial_filter_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, source_geom_name,
+		       operator, filter_holder, filter_geom_name)
+	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -708,7 +721,7 @@ _method construct_dialog.create_distance_filter_dialog()
 	_then
 		_self.user_error(:please_select_a_collection_and_geometry)
 	_endif
-	_self.do_create_distance_filter_dialog(_unset, record_holder, arg_holder)
+	_return _self.do_create_distance_filter_dialog(_unset, record_holder, arg_holder)
 _endmethod
 $
 
@@ -718,8 +731,8 @@ _method construct_dialog.edit_distance_filter_dialog(holder,
 						    geom_name, distance, inverse?)
 	_local record_holder << _self.workspace.holder_for(base_col)
 	_local arg_holder    << _self.workspace.holder_for(arg)
-	_self.do_create_distance_filter_dialog(holder, record_holder, arg_holder,
-					       geom_name, distance, inverse?)
+	_return _self.do_create_distance_filter_dialog(holder, record_holder, arg_holder,
+						       geom_name, distance, inverse?)
 _endmethod
 $
 
@@ -731,6 +744,7 @@ _private _method construct_dialog.do_create_distance_filter_dialog(holder, recor
 		       _self.dataset_manager,
 		       geom_name, distance, inverse?)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -738,14 +752,14 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_predicate_filter_dialog()
 	_local record_holder << _self.selected_top_holder
 	_local dia << predicate_filter_dialog.new_dialog(_self)
-	_self.do_create_predicate_filter_dialog(_unset, record_holder)
+	_return _self.do_create_predicate_filter_dialog(_unset, record_holder)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_predicate_filter_dialog(holder, base_col, predicate)
 	_local record_holder << _self.workspace.holder_for(base_col)
-	_self.do_create_predicate_filter_dialog(holder, record_holder, predicate)
+	_return _self.do_create_predicate_filter_dialog(holder, record_holder, predicate)
 _endmethod
 $
 
@@ -754,6 +768,7 @@ _private _method construct_dialog.do_create_predicate_filter_dialog(holder, reco
 	_local dia << predicate_filter_dialog.new_dialog(_self)
 	dia.set_holder(holder, record_holder, _self.dataset_manager, predicate)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -930,9 +945,8 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.manage_actions()
-	_local (colnr, swcolnr, reccolnr, spatialnr, areanr) << _self.selection_info()
-		
-	_local any_top_sel? << (colnr >= 1)
+	_local holder << _self.selected_top_holder
+	_local any_top_sel? << holder _isnt _unset _andif holder.nrefs=0
 	_local any_sel? << _self.any_selection?
 	_local open? << _self.open?
 	.owner.action(:add_collections).enabled? << open?
@@ -942,30 +956,31 @@ _method construct_dialog.manage_actions()
 	.owner.action(:add_explorer_content).enabled? << open?
 	.owner.action(:add_explorer_selection).enabled? << open? _andif _self.has_explorer_selection?
 	.owner.action(:add_scrapbook).enabled? << open?
-	.owner.action(:spatial_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)
-	.owner.action(:distance_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)
-	.owner.action(:predicate_filter).enabled? << open? _andif (reccolnr=1)
+	.owner.action(:spatial_filter).enabled? << open? _andif any_top_sel?
+	.owner.action(:distance_filter).enabled? << open?
+	.owner.action(:predicate_filter).enabled? << open?
 
-	.owner.action(:follow_topology).enabled? << open? _andif (reccolnr=1)
-	.owner.action(:follow_trace).enabled? << open? _andif (reccolnr=1)
-	.owner.action(:follow_join).enabled? << open?  _andif (reccolnr=1)
-	.owner.action(:follow_method).enabled? << open?  _andif (reccolnr=1)
-	.owner.action(:follow_root).enabled? << open?  _andif (reccolnr=1)
+	.owner.action(:follow_topology).enabled? << open?
+	.owner.action(:follow_trace).enabled? << open?
+	.owner.action(:follow_join).enabled? << open?
+	.owner.action(:follow_method).enabled? << open?
+	.owner.action(:follow_root).enabled? << open?
 
-	.owner.action(:create_spatial).enabled? << open? _andif (swcolnr=1) _and (colnr=1)
-	.owner.action(:create_buffer).enabled? << open?  _andif (colnr=1) _andif ((reccolnr=1) _orif (spatialnr=1) _orif (areanr=1))
+	.owner.action(:create_spatial).enabled? << open?
+	.owner.action(:create_buffer).enabled? << open?
 
-	.owner.action(:intersection).enabled? << open? _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
-	.owner.action(:subtraction).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
-	.owner.action(:union).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
-	.owner.action(:xor).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
+	.owner.action(:intersection).enabled? << open?
+	.owner.action(:subtraction).enabled? << open?
+	.owner.action(:union).enabled? << open?
+	.owner.action(:xor).enabled? << open?
 
-	.owner.action(:view_by_join).enabled? << open? _andif (swcolnr=1)
-	.owner.action(:view_by_eq).enabled? << open? _andif (swcolnr=2)
-	.owner.action(:materialize).enabled? << open? _andif (reccolnr=1)
-	.owner.action(:materialize_spatial).enabled? << open? _andif ((spatialnr=1) _orif (areanr=1))
+	.owner.action(:view_by_join).enabled? << open?
+	.owner.action(:view_by_eq).enabled? << open?
+	.owner.action(:materialize).enabled? << open?
+	.owner.action(:materialize_spatial).enabled? << open?
 
-	.owner.action(:edit).enabled? << open? _andif any_sel? _andif _self.selected_holder.editable?
+	.owner.action(:edit).enabled? << open? _andif any_sel? _andif holder.editable?
+	.owner.action(:view).enabled? << open? _andif any_sel? _andif holder.editable?
 	.owner.action(:delete).enabled? << open? _andif any_top_sel?
 	.owner.action(:move_up).enabled? << open?  _andif any_top_sel?   _andif _self.can_move_up?
 	.owner.action(:move_down).enabled? << open?  _andif any_top_sel? _andif _self.can_move_down?

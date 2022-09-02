@@ -49,7 +49,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_join_dialog.build_link_button(container)
-	.items[:link] << button_item.new_safe(container, _self.message(:link),
+	.items[:link] << sw_button_item.new_safe(container, _self.message(:link),
 					      _self, :|link()|,
 					      :row_alignment, :centre)
 _endmethod
@@ -60,7 +60,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_join_dialog.build_result_collection(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
 				:row_alignment, :fill)	
-	.items[:result_table] << text_item.new(rc, _self.message(:table_name))
+	.items[:result_table] << sw_text_item.new(rc, _self.message(:table_name))
 _endmethod
 $
 

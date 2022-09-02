@@ -55,8 +55,8 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_materialize_dialog.build_tree(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	label_item.new(rc, _self.message(:source_collection))
-	label_item.new(rc, .holder.name)
+	sw_label_item.new(rc, _self.message(:source_collection))
+	sw_label_item.new(rc, .holder.name)
 _endmethod
 $
 

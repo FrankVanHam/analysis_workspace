@@ -1,0 +1,322 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:base_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog that constructs a spatial filter collection that does
+## a spatial interaction with another collection. use this to
+## find elements of collection A with a spatial relation to
+## elements of collection B.
+##
+def_slotted_exemplar(:base_dialog,
+	{
+		{:items,             _unset},
+		{:workspace,         _unset},
+		{:holder,            _unset},
+		{:source_holder,     _unset},
+		{:source_geom_name,  _unset},
+		{:filter_holder,     _unset},
+		{:filter_geom_name,  _unset},
+		{:name,              _unset},
+		{:readonly?,         _unset}
+	},
+	:model)
+$
+
+message_handler.new(:base_dialog).add_uses(:model, :gen_graphics)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.init(_gather p_args)
+	.items << property_list.new()
+	.readonly? << _false
+	>> _super.init(_scatter p_args)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.set_readonly()
+	.readonly? << _true
+	_self.manage_actions()
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.build_top_label(container)
+	sw_text_window.new(container,
+			   :text, _self.message(:top_label),
+			   :min_height, 100,
+			   :col_alignment, :fill,
+			   :enable_horizontal_scrollbar?, _false,
+			   :editable?, _false)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.build_name(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset,
+				:style, :nested,
+				:col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:set_name))
+	.items[:name] << sw_text_item.new(rc, 
+				       :model, _self, 
+				       :incremental_change_selector, :|name_changed()|,
+				       :col_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.build_source_selection_rc(rc)
+	##
+	sw_label_item.new(rc, _self.message(:source_holder))
+	sw_text_item.new(rc,
+			 :value, .source_holder.name,
+			 :enabled?, _false,
+			 :col_alignment, :fill)
+	
+	sw_label_item.new(rc, _self.message(:source_geometry))
+	.items[:source_geometry_choice] << sw_text_item.new(rc,
+							    :text_items, {},
+							    :editable?, _false,
+							    :model, _self,
+							    :change_selector, :|source_geometry_changed()|,
+							    :col_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.build_filter_selection_rc(rc)
+	sw_label_item.new(rc, _self.message(:filter_holder))
+	.items[:filter_holder_choice] << sw_text_item.new(rc,
+							  :text_items, {},
+							  :editable?, _false,
+							  :model, _self,
+							  :change_selector, :|filter_holder_changed()|,
+							  :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:filter_geometry))
+	.items[:filter_geometry_choice] << sw_text_item.new(rc,
+							    :text_items, {},
+							    :editable?, _false,
+							    :model, _self,
+							    :change_selector, :|filter_geometry_changed()|,
+							    :col_alignment, :fill)
+_endmethod
+$
+
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.build_buttons(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
+				:row_alignment, :fill,
+				:col_alignment, :right)
+	.items[:ok]     << sw_button_item.new(rc,
+					      :label, _self.message(:ok),
+					      :model, _self,
+					      :selector, {:|perform_safely()|, :|ok()|},
+					      :row_alignment, :bottom,
+					      :min_width, 75)
+	.items[:cancel] << sw_button_item.new(rc, :label, _self.message(:cancel),
+					      :model, _self,
+					      :selector, {:|perform_safely()|, :|cancel()|},
+					      :row_alignment, :bottom,
+					      :min_width, 75)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.on_activation()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.initialise_filter_holder_choice()
+	_local choice << .items[:filter_holder_choice]
+	 choice.text_items << items << _self.filter_holder_items()
+	 _if items.empty?.not
+	 _then 
+		 choice.rwan_value_with_notify << items[1][1]
+	 _endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.initialise_source_geometry_choice()
+	_local choice << .items[:source_geometry_choice]
+	_local items << _self.geom_field_items()
+	_local fd << _self.geom_field_selection(items, .source_geom_name)
+	
+	choice.text_items << items
+	choice.rwan_value_with_notify << fd
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.initialise_filter_geometry_choice()
+	_local choice << .items[:filter_geometry_choice]
+	_local items << _self.filter_geom_field_items()
+	_local fd << _self.geom_field_selection(items, .filter_geom_name)
+	
+	choice.text_items << items
+	choice.rwan_value_with_notify << fd
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.geom_field_selection(items, name)
+	_for i_vec _over items.fast_elements()
+	_loop
+		_if i_vec[2] = name _then _return i_vec[1] _endif
+	_endloop
+	>> _self.most_likely_geom_field(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.most_likely_geom_field(items)
+	_if items.size = 1
+	_then
+		_return items[1][1]
+	_endif 
+	_local _constant topo_cats << {:chain, :point, :area}
+	_for i_vec _over items.fast_elements()
+	_loop
+		_local geom_cat << i_vec[1].geom_category
+		_if topo_cats.includes?(geom_cat)
+		_then
+			_return i_vec[1]
+		_endif
+	_endloop
+	_if items.empty?
+	_then
+		_return _unset
+	_else
+		_return items[1][1]
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.name_changed(name)
+	.name << name
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.initialise_name()
+	_if .name _isnt _unset
+	_then
+		.items[:name].value << .name
+	_endif 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.source_geometry_changed(value)
+	_if value _isnt _unset
+	_then 
+		.source_geom_name << value.name
+	_else
+		.source_geom_name << _unset
+	_endif 
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.filter_holder_changed(value)
+	.filter_holder << value
+	.filter_geom_name << _unset
+	_self.initialise_filter_geometry_choice()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.filter_geometry_changed(value)
+	_if value _isnt _unset
+	_then 
+		.filter_geom_name << value.name
+	_else
+		.filter_geom_name << _unset
+	_endif 
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.cancel()
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.source_geometry_items(col)
+	 _return _self.geom_field_items_for(col)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.geom_field_items()
+	_return _self.geom_field_items_for(.source_holder.collection)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.filter_geom_field_items()
+	_return _self.geom_field_items_for(.filter_holder.collection)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.geom_field_items_for(col)
+	_local items << rope.new()
+	_for i_ref _over col.geometry_refs.fast_elements()
+	_loop
+		items.add({i_ref, i_ref.external_name})
+	_endloop
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
+	items << rope.new_from(items)
+	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.filter_holder_items()
+	_local items << rope.new()
+	_for i_holder _over .workspace.top_holders.fast_elements()
+	_loop
+		_if i_holder _is .holder _then _continue _endif
+		_if i_holder _is .source_holder _then _continue _endif
+		_if i_holder.has_geometry?.not  _then _continue _endif
+		items.add({i_holder, i_holder.name})
+	_endloop
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
+	items << rope.new_from(items)
+	_return items
+_endmethod
+$

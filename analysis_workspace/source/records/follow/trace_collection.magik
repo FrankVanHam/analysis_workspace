@@ -95,10 +95,10 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method trace_collection.activate_editor_in(dialog, holder)
-	dialog.edit_follow_trace_dialog(holder,
-					  _self.base_collection,
-					  .geom_name, _self.edit_stop_predicates, .max_length,
-					  _self.target_collection)
+	_return dialog.edit_follow_trace_dialog(holder,
+						_self.base_collection,
+						.geom_name, _self.edit_stop_predicates, .max_length,
+						_self.target_collection)
 _endmethod
 $
 

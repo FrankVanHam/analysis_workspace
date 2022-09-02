@@ -71,8 +71,8 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method predicate_filter_collection.activate_editor_in(dialog, holder)
-	dialog.edit_predicate_filter_dialog(holder,
-					  _self.base_collection, .pred)
+	_return dialog.edit_predicate_filter_dialog(holder,
+						    _self.base_collection, .pred)
 _endmethod
 $
 

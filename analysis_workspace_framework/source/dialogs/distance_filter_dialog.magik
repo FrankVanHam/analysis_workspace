@@ -70,7 +70,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.build_top_label(container)
-	text_window.new(container, 7, 100, _unset,
+	sw_text_window.new(container, 7, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
@@ -83,40 +83,40 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.build_distance_options(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	label_item.new(rc, _self.message(:source_collection))
-	.items[:col] << label_item.new(rc, .record_holder.name, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:source_collection))
+	.items[:col] << sw_label_item.new(rc, .record_holder.name, :col_alignment, :fill)
 	
-	label_item.new(rc, _self.message(:geometry))
-	.items[:geometry_choice] << text_choice_item.new(rc, _unset, :text_items, {},
+	sw_label_item.new(rc, _self.message(:geometry))
+	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {},
 							 :model, _self,
 							 :change_selector, :|geometry_changed()|,
 							 :col_alignment, :fill)
 	
-	label_item.new(rc, _self.message(:distance))
+	sw_label_item.new(rc, _self.message(:distance))
 	.items[:distance] << ti << managed_value_text_item.new(rc, _unset,
 							       :model, _self,
 							       :change_selector, :|distance_changed()|,
 							       :display_length, 10, :col_alignment, :fill)
 	ti.manager << unit_value_manager.new(unit_manager.unit(:m))
 	
-	label_item.new(rc, _self.message(:inverse?))
+	sw_label_item.new(rc, _self.message(:inverse?))
 	.items[:inverse?] << toggle_item.new(rc, _unset,
 					     :model, _self,
 					     :change_selector, :|inverse_changed()|,
 					     :col_alignment, :fill)
 	
-	label_item.new(rc, _self.message(:target))
-	label_item.new(rc, .spatial_holder.name, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:target))
+	sw_label_item.new(rc, .spatial_holder.name, :col_alignment, :fill)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.build_buttons(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
+	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
 						:row_alignment, :bottom,
 						:min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
+	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
 						:row_alignment, :bottom,
 						:min_width, 75)
 _endmethod

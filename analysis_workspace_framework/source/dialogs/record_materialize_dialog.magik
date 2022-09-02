@@ -75,7 +75,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method record_materialize_dialog.build_new_table_name(container)
-	.items[:name] << text_item.new(container, _self.message(:new_table_name),
+	.items[:name] << sw_text_item.new(container, _self.message(:new_table_name),
 				       :value, _self.collection_name,
 				       :max_length, 32,
 				       :col_alignment, :fill )

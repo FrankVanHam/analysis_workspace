@@ -53,9 +53,9 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method topology_collection.activate_editor_in(dialog, holder)
-	dialog.edit_follow_topology_dialog(holder,
-					 _self.base_collection,
-					 .geom_name, _self.target_collection)
+	_return dialog.edit_follow_topology_dialog(holder,
+						   _self.base_collection,
+						   .geom_name, _self.target_collection)
 _endmethod
 $
 

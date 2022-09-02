@@ -55,11 +55,11 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_eq_dialog.build_link_button(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
 				:row_alignment, :fill)
-	.items[:link] << button_item.new_safe(rc, _self.message(:link),
+	.items[:link] << sw_button_item.new_safe(rc, _self.message(:link),
 					      _self, :|link()|,
 					      :min_width, 75,
 					      :row_alignment, :top)
-	.items[:swap] << button_item.new_safe(rc, _self.message(:swap),
+	.items[:swap] << sw_button_item.new_safe(rc, _self.message(:swap),
 					      _self, :|swap()|,
 					      :min_width, 75,
 					      :row_alignment, :bottom)
@@ -79,10 +79,10 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_eq_dialog.build_result_collection(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested,
 				:row_alignment, :fill)
-	label_item.new(rc, _self.message(:table_name))
-	.items[:result_table] << text_item.new(rc, _unset, :col_alignment, :fill)
-	label_item.new(rc, _self.message(:table_link))
-	.items[:result_eq] << label_item.new(rc, _unset, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:table_name))
+	.items[:result_table] << sw_text_item.new(rc, _unset, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:table_link))
+	.items[:result_eq] << sw_label_item.new(rc, _unset, :col_alignment, :fill)
 _endmethod
 $
 

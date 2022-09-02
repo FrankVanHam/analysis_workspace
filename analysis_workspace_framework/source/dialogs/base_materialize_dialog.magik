@@ -56,7 +56,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_materialize_dialog.build_top_label(container)
-	text_window.new(container, 4, 100, _unset,
+	sw_text_window.new(container, 4, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
@@ -68,7 +68,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method base_materialize_dialog.build_progress(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
 				:col_alignment, :fill, :col_resize_values, {100,0})
-	.items[:progress_label] << label_item.new(rc, _self.message(:no_progress), :col_alignment, :fill)
+	.items[:progress_label] << sw_label_item.new(rc, _self.message(:no_progress), :col_alignment, :fill)
 	.items[:interrupt] << image_button_item.new_safe(rc, _self.stop_image,
 							 _self, :|interrupt()|,
 							 :insensitive_image, _self.grey_stop_image,
@@ -82,10 +82,10 @@ _private _method base_materialize_dialog.build_buttons(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
 				:row_alignment, :fill,
 				:col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
+	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
 						:row_alignment, :bottom,
 						:min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
+	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
 						:row_alignment, :bottom,
 						:min_width, 75)
 _endmethod

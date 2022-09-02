@@ -99,3 +99,4 @@
 :closed_trail_col_name		       Closed Trail
 :trail_col_name			       Trail Geometry
 :copy_holder			       Copy of #1
+:cannot_delete			       The collection #1 can not be deleted because it is used by #2 collections.

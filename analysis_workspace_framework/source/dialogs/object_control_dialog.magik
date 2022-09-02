@@ -74,8 +74,8 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _private _method object_control_dialog.build_buttons(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:add] << button_item.new_safe(rc, _self.message(:add), _self, :|add()|, :min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:close), _self, :|close()|, :min_width, 75)
+	.items[:add] << sw_button_item.new(rc, :label, _self.message(:add), :model, _self, :selector, {:|perform_safely()|, :|add()|}, :min_width, 75)
+	.items[:cancel] << sw_button_item.new(rc, :label, _self.message(:close), :model, _self, :selector, {:|perform_safely()|, :|close()|}, :min_width, 75)
 _endmethod
 $
 
@@ -93,7 +93,6 @@ _private _method object_control_dialog.filter_ds()
 _endmethod
 $
 
-
 _pragma(classify_level=advanced, topic={analysis})
 _method object_control_dialog.double_clicked()
 	_self.perform_safely(:|add()|)
@@ -102,14 +101,15 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method object_control_dialog.add()
-
 	_local cols << _self.current_selected_collections
-	_local ana_cols << rope.new_for(cols.size)
+	_local holders << rope.new_for(cols.size)
 	_for i_col _over cols.fast_elements()
 	_loop
-		ana_cols.add(rwan:sw_collection.new(.dsm, i_col))
+		holders.add(.parent_model.new_holder(
+				    rwan:sw_collection.new(.dsm, i_col),
+				    i_col.external_name.copy()))
 	_endloop
-	.parent_model.add_collections(ana_cols)
+	.parent_model.add_holders(holders)
 	_self.close()
 _endmethod
 $

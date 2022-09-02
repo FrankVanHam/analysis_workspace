@@ -26,3 +26,12 @@ _method panel_item_with_value_mixin.rwan_value_with_notify << new_value
 	_endif 
 _endmethod
 $
+
+_method sw_text_item.rwan_value_with_notify << new_value
+	_self.value << new_value
+	_if _self.change_selector _isnt _unset
+	_then
+		_self.change_selector.send_to(_self.model, new_value)
+	_endif 
+_endmethod
+$

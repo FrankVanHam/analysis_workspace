@@ -40,7 +40,7 @@ _method runner_dialog.activate_in(container)
 	.top_frame << container.top_frame
 	
 	_local rc << rowcol.new(container,  1, _unset, _unset)
-	.items[:busy_with] << label_item.new(rc, _unset ,
+	.items[:busy_with] << sw_label_item.new(rc, _unset ,
 					     :max_width, 100,
 					     :min_width, 100)
 	
@@ -244,10 +244,10 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.manage_actions()
-	_local sel << _self.selected_holders
-	_local select? << sel.empty?.not
+	_local sel << _self.selected_holder
+	_local select? << sel _isnt _unset
 	_local record_sel? << select? _andif
-			      sel.an_element().is_record_collection?
+			      sel.is_record_collection?
 	
 	_local open? << _self.open?
 	

@@ -76,7 +76,8 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_area_collection()
-	_local area_col << _self.area_surrounding_parkers_piece(.ds)
+	_local area << _self.area_surrounding_parkers_piece(.ds)
+	_local area_col << rwan:area_collection.new(.ds, area)
 	_local retrieved_area << _self.basic_storage_test(area_col)
 	
 	_self.assert_true((area_col.area.area-retrieved_area.area.area).abs < 0.001, "Area should be the same")
@@ -87,10 +88,9 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_spatial_analysis_collection()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
-	_local area_col << _self.area_surrounding_parkers_piece(.ds)
-	_local area << area_col.area
-	_local geom << rwan:area_collection.new(.ds, area)
-	_local hcol1 << hcol.filter_by_geometry(:location, :within, geom)
+	_local area << _self.area_surrounding_parkers_piece(.ds)
+	_local area_col << rwan:area_collection.new(.ds, area)
+	_local hcol1 << hcol.filter_by_geometry(:location, :within, area_col, :area)
 	
 	_return _self.basic_storage_test(hcol1)
 _endmethod
@@ -196,6 +196,8 @@ _method dataset_test_case.basic_storage_test(col)
 	
 	_self.assert_true(col_back.is_class_of?(col), "Classes should match")
 	_self.assert_true(col.equals?(col_back), "what goes in, should come out")
+	_global y
+	y << {col, col_back}
 	
 	_return col_back
 _endmethod

@@ -60,9 +60,9 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method distance_filter_collection.activate_editor_in(dialog, holder)
-	dialog.edit_distance_filter_dialog(holder,
-					   _self.base_collection, .arg,
-					   .geom_name, .distance, .inverse?)
+	_return dialog.edit_distance_filter_dialog(holder,
+						   _self.base_collection, .arg,
+						   .geom_name, .distance, .inverse?)
 _endmethod
 $
 

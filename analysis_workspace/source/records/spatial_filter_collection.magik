@@ -26,26 +26,32 @@ _pragma(classify_level=basic, topic={analysis})
 ## field of the base collection.
 def_slotted_exemplar(:spatial_filter_collection,
 	{
-		{:geom_name, _unset},
-		{:selector, _unset},
-		{:arg, _unset}
-	}, :base_record_collection)
+		{:source_collection, _unset},
+		{:source_geom_name,  _unset},
+		{:operator,          _unset},
+		{:filter_collection, _unset},
+		{:filter_geom_name,  _unset}
+	}, :base_collection)
 $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.new(dsm, base_col, geom_name, selector, arg)
-	_if geom_name _is _unset _then condition.raise(:error) _endif 
-	_return _clone.init(dsm, base_col, geom_name, selector, arg)
+_method spatial_filter_collection.new(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
+	_return _clone.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method spatial_filter_collection.init(dsm, base_col, geom_name, selector, arg)
-	.geom_name << geom_name
-	.selector << selector
-	.arg << arg
-	_return _super.init(dsm, base_col)
+_private _method spatial_filter_collection.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
+	.source_collection << source_col
+	.source_geom_name << source_geom_name
+	.operator << operator
+	.filter_collection << filter_col
+	.filter_geom_name << filter_geom_name
+
+	.source_collection.add_use(_self)
+	.filter_collection.add_use(_self)
+	_return _super.init(dsm)
 _endmethod
 $
 
@@ -57,112 +63,147 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.activate_editor_in(dialog, holder)
-	dialog.edit_spatial_filter_dialog(holder,
-					  _self.base_collection, .arg,
-					  .geom_name, .selector)
+	_return dialog.edit_spatial_filter_dialog(holder,
+						  _self.source_collection,
+						  .source_geom_name, .operator,
+						  .filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.update(geom_name, selector)
-	.geom_name << geom_name
-	.selector << selector
+_method spatial_filter_collection.geometry_refs
+	_return _self.source_collection.geometry_refs
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.update(source_geom_name, operator, filter_collection, filter_geom_name)
+
+	.filter_collection.remove_use(_self)
+	
+	.source_geom_name << source_geom_name
+	.operator << operator
+	.filter_collection << filter_collection
+	.filter_geom_name << filter_geom_name
+
+	.filter_collection.add_use(_self)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
 _method spatial_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:geom_name, :selector, :arg})
-	values.add_all_last({.geom_name, .selector, .arg})
+	keys.add_all_last({:source_collection, :source_geom_name, :selector, :filter_collection, :filter_geom_name})
+	values.add_all_last({.source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name})
 	_return keys, values
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
-_private _method spatial_filter_collection.init_from_serial(dsm, base_cols, geom_name, selector, arg)
-    _super.init_from_serial(dsm, base_cols)
-    .geom_name << geom_name
-    .selector << selector
-    .arg << arg
+_private _method spatial_filter_collection.init_from_serial(dsm, nrefs, source_col, source_geom_name, operator, filter_collection, filter_geom_name)
+    _super.init_from_serial(dsm, nrefs)
+    .source_collection << source_col
+    .source_geom_name << source_geom_name
+    .operator << operator
+    .filter_collection << filter_collection
+    .filter_geom_name << filter_geom_name
     _return _self 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
-_method spatial_filter_collection.base_collections
-	_return {_self.base_collection, .arg}
-_endmethod
-$
+#_pragma(classify_level=basic, topic={demo})
+#_method spatial_filter_collection.source_collections
+#	_return {_self.source_collection, .arg}
+#_endmethod
+#$
 
 _pragma(classify_level=basic, topic={demo})
 _method spatial_filter_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.base_collections, .geom_name, .selector, .arg)
+	_return _self.is_class_of?(other) _andif
+		other.equals_in_details?(.nrefs, .source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
-_method spatial_filter_collection.equals_in_details?(base_cols, geom_name, selector, arg)
-	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
-	
-	_return .geom_name = geom_name _andif
-		.selector = selector _andif
-		.arg.equals?(arg)
+_method spatial_filter_collection.equals_in_details?(nrefs, source_col, source_geom_name, operator, filter_collection, filter_geom_name)
+	_return _super.equals_in_details?(nrefs) _andif
+		.source_collection.equals?(source_col) _andif
+		.source_geom_name = source_geom_name _andif
+		.operator = operator _andif
+		.filter_collection.equals?(filter_collection) _andif
+		.filter_geom_name = filter_geom_name
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis, collections})
-_method spatial_filter_collection.size
-	_local geom << _self.need_geometry(.arg)
-	_return _self.base_collection.size_filtered_by_geometry(.geom_name, .selector, geom)
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_method spatial_filter_collection.size
+#	_local geom << _self.need_geometry(.arg)
+#	_return _self.source_collection.size_filtered_by_geometry(.source_geom_name, .operator, geom)
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_method spatial_filter_collection.includes?(rec)
+#	_local geom << rec.geometry(.source_geom_name)
+#	_if geom _is _unset
+#	_then
+#		_return _false
+#	_endif
+#	_local rec_gs << geometry_set.new_with(geom)
+#	_local geom_arg << _self.need_geometry(.arg)
+#	_return rec_gs.select(.operator, geom_arg).empty?.not
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_iter _method spatial_filter_collection.fast_elements()
+#	_local geom << _self.need_geometry(.arg)
+#	_for i_rec _over _self.source_collection.fast_elements_filtered_by_geometry(.source_geom_name, .operator, geom)
+#	_loop
+#		_loopbody(i_rec)
+#	_endloop
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_method spatial_filter_collection.convert_to_geometry()
+#	_local geom << _self.need_geometry(.arg)
+#	_return _self.source_collection.convert_to_geometry_filtered_by_geometry(.source_geom_name, .operator, geom)
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method spatial_filter_collection.need_geometry(arg)
+#	_return arg.convert_to_geometry()
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method spatial_filter_collection.description(translator)
+#	_local base_name << translator.name_for_collection(_self.source_collection)
+#	_local target_name << translator.name_for_collection(.arg)
+#	_return _self.message(:description, base_name, .source_geom_name,
+#			      .operator.write_string, target_name)
+#_endmethod
+#$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method spatial_filter_collection.display_tree_in(owner)
+	_return owner.display_tree_for_spatial_filter_collection(_self, .source_collection, .source_geom_name, .operator,
+								 .filter_collection, .filter_geom_name)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis, collections})
-_method spatial_filter_collection.includes?(rec)
-	_local geom << rec.geometry(.geom_name)
-	_if geom _is _unset
-	_then
-		_return _false
-	_endif
-	_local rec_gs << geometry_set.new_with(geom)
-	_local geom_arg << _self.need_geometry(.arg)
-	_return rec_gs.select(.selector, geom_arg).empty?.not
-_endmethod
-$
+_pragma(classify_level=advanced, topic={analysis})
+_method spatial_filter_collection.discard()
+	.source_collection.remove_use(_self)
+	.filter_collection.remove_use(_self)
 
-
-_pragma(classify_level=basic, topic={analysis, collections})
-_iter _method spatial_filter_collection.fast_elements()
-	_local geom << _self.need_geometry(.arg)
-	_for i_rec _over _self.base_collection.fast_elements_filtered_by_geometry(.geom_name, .selector, geom)
-	_loop
-		_loopbody(i_rec)
-	_endloop
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
-_method spatial_filter_collection.convert_to_geometry()
-	_local geom << _self.need_geometry(.arg)
-	_return _self.base_collection.convert_to_geometry_filtered_by_geometry(.geom_name, .selector, geom)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_collection.need_geometry(arg)
-	_return arg.convert_to_geometry()
-_endmethod
-$
-
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.description(translator)
-	_local base_name << translator.name_for_collection(_self.base_collection)
-	_local target_name << translator.name_for_collection(.arg)
-	_return _self.message(:description, base_name, .geom_name,
-			      .selector.write_string, target_name)
+	_super.discard()
 _endmethod
 $

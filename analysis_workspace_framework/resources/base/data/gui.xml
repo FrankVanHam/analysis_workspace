@@ -13,6 +13,7 @@
     </submenu>
     <submenu name="edit" mnemonic_id="edit_m">
       <action name="construct.edit"/>
+      <action name="construct.view"/>
       <action name="construct.delete"/>
       <action name="construct.copy"/>
       <separator/>
@@ -108,6 +109,7 @@
   </toolbar>
   <toolbar name="tree">
     <action name="construct.edit"/>
+    <action name="construct.view"/>
     <action name="construct.delete"/>
     <action name="construct.copy"/>
     <section/>

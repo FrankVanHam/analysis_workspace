@@ -59,10 +59,16 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method base_analysis_test_case.area_surrounding_parkers_piece(dsm)
-	_local sectors << _self.drafting_sectors("test_finding_hotels_near_parks")
+	_local sectors << sector_rope.new_with(
+				  sector.new_with_xy(
+					  545469870,258401157,
+					  545804939,258204608,
+					  545566151,257797532,
+					  545340709,257850820,
+					  545216784,258142642,
+					  545469870,258401157))
 	_local world << _self.hotel_collection.dataset.world
-	_local area <<  pseudo_area.new_for_world(sectors, world)
-	_return rwan:area_collection.new(dsm, area)
+	_return pseudo_area.new_for_world(sectors, world)
 _endmethod
 $
 

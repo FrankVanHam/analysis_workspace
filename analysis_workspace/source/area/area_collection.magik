@@ -56,19 +56,19 @@ _private _method area_collection.init_copy()
 	_return _self
 _endmethod
 $
-
-_pragma(classify_level=basic, topic={analysis})
-_method area_collection.convert_to_geometry_is_fast?
-	_return _true  
-_endmethod
-$
-
-
-_pragma(classify_level=basic, topic={analysis})
-_method area_collection.world
-	_return .area.world
-_endmethod
-$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method area_collection.convert_to_geometry_is_fast?
+#	_return _true  
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method area_collection.world
+#	_return .area.world
+#_endmethod
+#$
 
 _pragma(classify_level=restricted, topic={demo})
 _method area_collection.serial_slots()
@@ -86,8 +86,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
-_private _method area_collection.init_from_serial(dsm, base_cols, id)
-	_super.init_from_serial(dsm, base_cols)
+_private _method area_collection.init_from_serial(dsm, nrefs, id)
+	_super.init_from_serial(dsm, nrefs)
 	.id << id
 	
 	.area << .dsm.area(.id)
@@ -97,37 +97,45 @@ $
 
 _pragma(classify_level=restricted, topic={demo})
 _method area_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.base_collections, .area)
+	_return _self.is_class_of?(other) _andif
+		other.equals_in_details?(.nrefs, .area)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
-_method area_collection.equals_in_details?(base_cols, area)
-	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
-	
-	_return .area.equal_to?(area)
+_method area_collection.equals_in_details?(nrefs, area)
+	_return _super.equals_in_details?(nrefs) _andif
+		.area.equal_to?(area)
 _endmethod
 $
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method area_collection.area
+#	_return .area
+#_endmethod
+#$
+
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_collection.area
-	_return .area
+_method area_collection.geometry_refs
+	>> {(geom_ref.new(:area,
+			  _self.message(:area),
+			  :area,
+			  _false))}
 _endmethod
 $
 
-
-_pragma(classify_level=basic, topic={analysis})
-_method area_collection.description(translator)
-	_local world_unit << .area.world.unit.squared
-	_local area_value << unit_value(.area.area, world_unit)
-	area_value << area_value.convert_to(world_unit.base_unit)
-	
-	_local format << unit_specific_format.new_with_properties(area_value.unit,
-								  :float_decimal_places,0)
-	_return _self.message(:description, .area.npolygons, format.format(area_value))
-_endmethod
-$
+#_pragma(classify_level=basic, topic={analysis})
+#_method area_collection.description(translator)
+#	_local world_unit << .area.world.unit.squared
+#	_local area_value << unit_value(.area.area, world_unit)
+#	area_value << area_value.convert_to(world_unit.base_unit)
+#	
+#	_local format << unit_specific_format.new_with_properties(area_value.unit,
+#								  :float_decimal_places,0)
+#	_return _self.message(:description, .area.npolygons, format.format(area_value))
+#_endmethod
+#$
 
 
 _pragma(classify_level=basic, topic={analysis})
@@ -142,5 +150,12 @@ _method area_collection.discard()
 		.id << _unset
 	_endif
 	_super.discard()
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method area_collection.display_tree_in(owner)
+	_return owner.display_tree_for_area_collection(_self,.area)
 _endmethod
 $

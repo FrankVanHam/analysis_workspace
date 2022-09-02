@@ -80,7 +80,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_stop_dialog.build_top_label(container)
-	text_window.new(container, 3, 100, _unset,
+	sw_text_window.new(container, 3, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
@@ -92,8 +92,8 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_stop_dialog.build_source_selection(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
 				:col_alignment, :fill)
-	label_item.new(rc, _self.message(:collections))
-	text_choice_item.new(rc, _unset, :text_items, _self.collection_items, :col_alignment, :fill,
+	sw_label_item.new(rc, _self.message(:collections))
+	sw_text_item.new(rc, _unset, :text_items, _self.collection_items, :col_alignment, :fill,
 			     :model, _self,
 			     :change_selector, :|collection_changed()|,
 			     :balloon_help_text, _self.message(:possible_collections_balloon) )
@@ -152,8 +152,8 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_stop_dialog.build_buttons(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
+	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
 _endmethod
 $
 

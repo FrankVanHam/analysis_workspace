@@ -152,6 +152,10 @@ _method construct_plugin.init_actions()
 				       :engine, _self.dialog,
 				       :action_message, :|edit()|,
 				       :image, {:edit_object, :ui_resources}))
+	_self.add_action(sw_action.new(:view,
+				       :engine, _self.dialog,
+				       :action_message, :|view()|,
+				       :image, {:view, _self.module_name}))
 	_self.add_action(sw_action.new(:delete,
 				       :engine, _self.dialog,
 				       :action_message, :|delete()|,

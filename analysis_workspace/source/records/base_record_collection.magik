@@ -108,8 +108,10 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.filter_by_geometry(geom_name, selector, arg)
-	_return sw:get_global_value(@rwan:spatial_filter_collection).new(.dsm, _self, geom_name, selector, arg)
+_method base_record_collection.filter_by_geometry(geom_name, operator, filter_collection, filter_geometry)
+	_return sw:get_global_value(@rwan:spatial_filter_collection).new(.dsm,
+									 _self, geom_name, operator,
+									 filter_collection, filter_geometry)
 _endmethod
 $
 

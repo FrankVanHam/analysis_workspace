@@ -63,6 +63,11 @@ _private _method workspace.init()
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={roos,analysis})
+_method workspace.open?
+	>> .dsm _isnt _unset
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={demo})
 _method workspace.serial_slots()
@@ -181,7 +186,13 @@ _endmethod
 $
 _pragma(classify_level=basic, topic={demo})
 _method workspace.top_holders
-	_return .holders
+	## return the top holders, that have nrefs = 0
+	_local tops << rope.new_for(.holders.size)
+	_for i_holder _over .holders.fast_elements()
+	_loop
+		_if i_holder.nrefs = 0 _then tops.add(i_holder) _endif
+	_endloop
+	_return tops
 _endmethod
 $
 

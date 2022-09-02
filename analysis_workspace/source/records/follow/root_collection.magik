@@ -48,9 +48,9 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method root_collection.activate_editor_in(dialog, holder)
-	dialog.edit_follow_root_dialog(holder,
-				       _self.base_collection,
-				       _self.target_collection)
+	_return dialog.edit_follow_root_dialog(holder,
+					       _self.base_collection,
+					       _self.target_collection)
 _endmethod
 $
 

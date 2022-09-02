@@ -1,0 +1,55 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:geom_ref)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog that constructs a spatial filter collection that does
+## a spatial interaction with another collection. use this to
+## find elements of collection A with a spatial relation to
+## elements of collection B.
+##
+def_slotted_exemplar(:geom_ref,
+	{
+		{:name,          _unset, :readable},
+		{:external_name, _unset, :readable},
+		{:geom_category, _unset, :readable},
+		{:topology?,     _unset, :readable}
+	})
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method geom_ref.new(name, external_name, geom_category, topology?)
+	>> _clone.init(name, external_name, geom_category, topology?)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method geom_ref.init(name, external_name, geom_category, topology?)
+	.name << name
+	.external_name << external_name
+	.geom_category << geom_category
+	.topology? << topology?
+	>> _self
+_endmethod
+$

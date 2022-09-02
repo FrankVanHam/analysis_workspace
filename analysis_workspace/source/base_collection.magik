@@ -23,14 +23,12 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 ##
-## Top base class for all analysis collections. These collections are
-## hierarchical and work on other collections, except for
-## the leaf collections that hold their own data.
+## Top base class for all analysis collections.
 ##
 def_slotted_exemplar(:base_collection,
 	{
-		{:dsm,              _unset},
-		{:base_collections, _unset}
+		{:dsm,    _unset},
+		{:nrefs,  _unset}
 	})
 $
 
@@ -45,26 +43,25 @@ base_collection.define_shared_constant(:serial_structure, :slotted, :public)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method base_collection.init(dsm, _gather base_cols)
+_private _method base_collection.init(dsm)
 	.dsm << dsm
-	_if base_cols.empty?.not _andif base_cols[1] _is _unset _then condition.raise(:error, :string, "only valid base collections allowed") _endif 
-	.base_collections << base_cols
+	.nrefs << 0
 	_return _self 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.base_collections
-	_return .base_collections
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.base_collection
-	_return .base_collections.an_element()
-_endmethod
-$
-
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.base_collections
+#	_return .base_collections
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.base_collection
+#	_return .base_collections.an_element()
+#_endmethod
+#$
+#
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.is_record_collection?
 	_return _false 
@@ -78,45 +75,83 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_collection.nrefs
+	>> .nrefs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.add_use(col)
+	.nrefs +<< 1
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.remove_use(col)
+	.nrefs -<< 1
+_endmethod
+$
+
+
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.viewable?
+#	_return _self.editable? 
+#_endmethod
+#$
+#
+_pragma(classify_level=basic, topic={demo})
+_method base_collection.has_geometry?
+	# has self a geometry field or geometry?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method base_collection.geometry_refs
+	>> {}	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _abstract _method base_collection.activate_editor_in(plugin)
 	## Callback method from the plugin to let the collection
 	## determine what editor to use.	
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.origin_is_sw_collection?
-	_if _self.base_collection _isnt _unset 
-	_then
-		_return _self.base_collection.origin_is_sw_collection?
-	_else
-		_return _false
-	_endif 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.is_sw_collection?
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.is_spatial?
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.is_area?
-	_return _false 
-_endmethod
-$
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.origin_is_sw_collection?
+#	_if _self.base_collection _isnt _unset 
+#	_then
+#		_return _self.base_collection.origin_is_sw_collection?
+#	_else
+#		_return _false
+#	_endif 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.is_sw_collection?
+#	_return _false 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.is_spatial?
+#	_return _false 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.is_area?
+#	_return _false 
+#_endmethod
+#$
 
 _pragma(classify_level=basic, topic={demo})
 _method base_collection.serial_slots()
-    _local keys   << rope.new_with(:oop, :base_collections)
-    _local values << rope.new_with(_self.as_oop, .base_collections)
+    _local keys   << rope.new_with(:oop, :nrefs)
+    _local values << rope.new_with(_self.as_oop, .nrefs)
     _return keys, values
 _endmethod
 $
@@ -138,9 +173,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={demo})
-_private _method base_collection.init_from_serial(dsm, base_cols)
+_private _method base_collection.init_from_serial(dsm, nrefs)
 	.dsm << dsm
-	.base_collections << base_cols
+	.nrefs << nrefs
 	_return _self 
 _endmethod
 $
@@ -148,125 +183,116 @@ $
 _pragma(classify_level=basic, topic={demo})
 _method base_collection.equals?(other)
 	_if _not _self.is_class_of?(other) _then _return _false _endif
-	_return other.equals_in_details?(.base_collections)
+	_return _self.equals_in_details?(.nrefs)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={demo})
-_method base_collection.equals_in_details?(other_bases)
-	_if .base_collections.size <> other_bases.size _then _return _false _endif
-	
-	_for i_index, i_col _over .base_collections.fast_keys_and_elements()
-	_loop
-		_if _not i_col.equals?(other_bases[i_index])
-		_then
-			_return _false
-		_endif
-	_endloop
-	_return _true 
+_method base_collection.equals_in_details?(nrefs)
+	_return .nrefs = nrefs
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.is_leaf?
-	_return .base_collections.empty?
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method base_collection.expose()
-	## Expose the inner basic collection.
-	_if _self.base_collection _isnt _unset 
-	_then
-		_return _self.base_collection.expose()
-	_else 
-		_return _unset
-	_endif 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.world
-	_return _self.base_collection.world
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_iter _method base_collection.branch_to_root()
-	_loopbody(_self)
-	_if _self.base_collection _isnt _unset 
-	_then
-		_for i_col _over _self.base_collection.branch_to_root()
-		_loop
-			_loopbody(i_col)
-		_endloop
-	_endif 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.size_is_fast?
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.convert_to_geometry_is_fast?
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_abstract _method base_collection.size
-	
-_endmethod
-$
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.is_leaf?
+#	_return .base_collections.empty?
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_method base_collection.expose()
+#	## Expose the inner basic collection.
+#	_if _self.base_collection _isnt _unset 
+#	_then
+#		_return _self.base_collection.expose()
+#	_else 
+#		_return _unset
+#	_endif 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.world
+#	_return _self.base_collection.world
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_iter _method base_collection.branch_to_root()
+#	_loopbody(_self)
+#	_if _self.base_collection _isnt _unset 
+#	_then
+#		_for i_col _over _self.base_collection.branch_to_root()
+#		_loop
+#			_loopbody(i_col)
+#		_endloop
+#	_endif 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.size_is_fast?
+#	_return _false 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.convert_to_geometry_is_fast?
+#	_return _false 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_abstract _method base_collection.size
+#	
+#_endmethod
+#$
 
 _pragma(classify_level=basic, topic={analysis})
 _abstract _iter _method base_collection.fast_elements()
 	
 _endmethod
 $
-
-_pragma(classify_level=basic, topic={analysis})
-_iter _method base_collection.fast_geometries(geom_name)
-	_for i_rec _over _self.fast_elements()
-	_loop
-		_local geom << i_rec.geometry(geom_name)
-		_if geom _isnt _unset
-		_then
-			_loopbody(geom)
-		_endif 
-	_endloop 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.goto_bounds
-	_return _self.convert_to_geometry(_unset).bounds
-_endmethod
-$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_iter _method base_collection.fast_geometries(geom_name)
+#	_for i_rec _over _self.fast_elements()
+#	_loop
+#		_local geom << i_rec.geometry(geom_name)
+#		_if geom _isnt _unset
+#		_then
+#			_loopbody(geom)
+#		_endif 
+#	_endloop 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method base_collection.goto_bounds
+#	_return _self.convert_to_geometry(_unset).bounds
+#_endmethod
+#$
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.discard()
-	_if _self.base_collection _isnt _unset
+	_if .source_collection _isnt _unset
 	_then
-		_self.base_collection.discard()
+		.source_collection.discard()
 	_endif 
 _endmethod
 $
 
-_pragma(classify_level=advanced, topic={analysis})
-_method base_collection.description(translator)
-	_return _self.class_name
-_endmethod
-$
+#_pragma(classify_level=advanced, topic={analysis})
+#_method base_collection.description(translator)
+#	_return _self.class_name
+#_endmethod
+#$
 
-_pragma(classify_level=advanced, topic={analysis})
-_method base_collection.description(name_translator)
-	_return _self.description
-_endmethod
-$
+#_pragma(classify_level=advanced, topic={analysis})
+#_method base_collection.description(name_translator)
+#	_return _self.description
+#_endmethod
+#$
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_collection.copy()
@@ -286,3 +312,10 @@ _method base_collection.message(id, _gather args)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.filter_by_geometry(geom_name, operator, filter_collection, filter_geometry)
+	_return spatial_filter_collection.new(.dsm,
+					      _self, geom_name, operator,
+					      filter_collection, filter_geometry)
+_endmethod
+$

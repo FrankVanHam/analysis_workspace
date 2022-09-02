@@ -112,23 +112,23 @@ _private _method collection_holder.init_from_serial(collection, name, colour)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method collection_holder.is_spatial?
-	_return .collection.is_spatial?
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method collection_holder.is_area?
-	_return .collection.is_area?
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method collection_holder.is_record_collection?
-	_return .collection.is_record_collection?
-_endmethod
-$
+#_pragma(classify_level=basic, topic={analysis})
+#_method collection_holder.is_spatial?
+#	_return .collection.is_spatial?
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method collection_holder.is_area?
+#	_return .collection.is_area?
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method collection_holder.is_record_collection?
+#	_return .collection.is_record_collection?
+#_endmethod
+#$
 
 _pragma(classify_level=basic, topic={analysis})
 _method collection_holder.editable?
@@ -136,6 +136,17 @@ _method collection_holder.editable?
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.viewable?
+	_return .collection.viewable?
+_endmethod
+$
+
+#_pragma(classify_level=basic, topic={analysis})
+#_method collection_holder.has_geometry?
+#	_return .collection.has_geometry?
+#_endmethod
+#$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.collection
@@ -151,10 +162,15 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.activate_editor_in(editor)
-	.collection.activate_editor_in(editor, _self)
+	_return .collection.activate_editor_in(editor, _self)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.nrefs
+	_return .collection.nrefs
+_endmethod
+$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder[key]

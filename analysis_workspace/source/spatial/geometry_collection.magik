@@ -26,7 +26,7 @@ _pragma(classify_level=basic, topic={analysis})
 ##
 def_slotted_exemplar(:geometry_collection,
 	{
-		{:id, _unset},
+		{:id,       _unset},
 		{:geometry, _unset, :readable}
 	}, :base_spatial_collection)
 $
@@ -86,40 +86,41 @@ $
 _pragma(classify_level=basic, topic={demo})
 _method geometry_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.base_collections, .geometry)
+		other.equals_in_details?(.geometry)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
-_method geometry_collection.equals_in_details?(base_cols, geometry)
-	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
+_method geometry_collection.equals_in_details?(geometry)
+	_if _not _super.equals_in_details?() _then _return _false _endif
 	_return _self.geometry_sets_equal?(.geometry, geometry)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
-_private _method geometry_collection.geometry_sets_equal?( gs1, gs2 )
-	_if gs1.size <> gs2.size _then _return _false _endif 
-	_for i_geom _over gs1.fast_elements()
-	_loop @outer
-		_for i_geom2 _over gs2.fast_elements()
-		_loop
-			_if i_geom.equal_to?(i_geom2)
-			_then
-				_continue @outer
-			_endif
-		_endloop
-		_return _false
-	_endloop
-	_return _true 
-_endmethod
-$
+#_pragma(classify_level=restricted, topic={demo})
+#_private _method geometry_collection.geometry_sets_equal?( gs1, gs2 )
+#	_if gs1.size <> gs2.size _then _return _false _endif 
+#	_for i_geom _over gs1.fast_elements()
+#	_loop @outer
+#		_for i_geom2 _over gs2.fast_elements()
+#		_loop
+#			_if i_geom.equal_to?(i_geom2)
+#			_then
+#				_continue @outer
+#			_endif
+#		_endloop
+#		_return _false
+#	_endloop
+#	_return _true 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method geometry_collection.size
+#	_return .geometry.size
+#_endmethod
+#$
 
-_pragma(classify_level=basic, topic={analysis})
-_method geometry_collection.size
-	_return .geometry.size
-_endmethod
-$
 
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.convert_to_geometry(_optional bounds)
@@ -131,28 +132,28 @@ _method geometry_collection.convert_to_geometry(_optional bounds)
 	_endif 
 _endmethod
 $
-
-_pragma(classify_level=basic, topic={analysis})
-_method geometry_collection.convert_to_geometry_is_fast?
-	_return _true  
-_endmethod
-$
-
-
-_pragma(classify_level=basic, topic={analysis})
-_method geometry_collection.description(translator)
-	_if .geometry.is_collection?
-	_then
-		size << .geometry.size
-		a_geom << .geometry.an_element()
-	_else
-		size << 1
-		a_geom << .geometry
-	_endif
-	
-	_return _self.message(:description, size, a_geom.geom_category)
-_endmethod
-$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method geometry_collection.convert_to_geometry_is_fast?
+#	_return _true  
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method geometry_collection.description(translator)
+#	_if .geometry.is_collection?
+#	_then
+#		size << .geometry.size
+#		a_geom << .geometry.an_element()
+#	_else
+#		size << 1
+#		a_geom << .geometry
+#	_endif
+#	
+#	_return _self.message(:description, size, a_geom.geom_category)
+#_endmethod
+#$
 
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.discard()
@@ -166,5 +167,11 @@ _method geometry_collection.discard()
 		.id << _unset
 	_endif
 	_super.discard()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method geometry_collection.display_tree_in(owner)
+	_return owner.display_tree_for_geometry_collection(_self,.geometry)
 _endmethod
 $

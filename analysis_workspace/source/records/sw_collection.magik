@@ -26,8 +26,9 @@ _pragma(classify_level=basic, topic={analysis})
 ## A collection that is based on a actual smallworld collection.
 def_slotted_exemplar(:sw_collection,
 	{
-		{:actual_ds_name, _unset}
-	}, :base_source_collection)
+		{:actual_ds_name,        _unset},
+		{:actual_table_name, _unset}
+	}, :base_collection)
 $
 
 
@@ -39,19 +40,26 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_collection.init(dsm, actual_col)
+	.actual_table_name << actual_col.name
 	.actual_ds_name << actual_col.dataset.original_dataset_name
-	_return _super.init(dsm, _unset, actual_col.name)
+	_return _super.init(dsm)
 _endmethod
 $
-
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method sw_collection.origin_is_sw_collection?
+#	_return _true 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method sw_collection.is_sw_collection?
+#	_return _true 
+#_endmethod
+#$
+#
 _pragma(classify_level=basic, topic={analysis})
-_method sw_collection.origin_is_sw_collection?
-	_return _true 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method sw_collection.is_sw_collection?
+_method sw_collection.is_record_collection?
 	_return _true 
 _endmethod
 $
@@ -59,37 +67,69 @@ $
 _pragma(classify_level=restricted, topic={demo})
 _method sw_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:actual_ds_name})
-	values.add_all_last({.actual_ds_name})
+	keys.add_all_last({:actual_ds_name, :actual_table_name})
+	values.add_all_last({.actual_ds_name, .actual_table_name})
 	_return keys, values
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
-_private _method sw_collection.init_from_serial(dsm, base_cols, actual_table_name, actual_ds_name)
-	_super.init_from_serial(dsm, base_cols, actual_table_name)
+_private _method sw_collection.init_from_serial(dsm, nrefs, actual_ds_name, actual_table_name)
+	_super.init_from_serial(dsm, nrefs)
 	.actual_ds_name << actual_ds_name
+	.actual_table_name << actual_table_name
 	_return _self 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={demo})
 _method sw_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.base_collections, .actual_ds_name, .actual_table_name)
+	_return _self.is_class_of?(other) _andif
+		other.equals_in_details?(.nrefs, .actual_ds_name, .actual_table_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={demo})
-_method sw_collection.equals_in_details?(base_cols, actual_ds_name, actual_table_name)
-	_if _not _super.equals_in_details?(base_cols, actual_table_name) _then _return _false _endif
-	_return .actual_ds_name = actual_ds_name
+_method sw_collection.equals_in_details?(nrefs, actual_ds_name, actual_table_name)
+	show(_self, nrefs, actual_ds_name, actual_table_name, .nrefs, .actual_ds_name, .actual_table_name)
+	_return _super.equals_in_details?(nrefs) _andif
+		.actual_ds_name = actual_ds_name _andif
+		.actual_table_name = actual_table_name
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={demo})
 _method sw_collection.actual_collection
 	_return gis_program_manager.databases[.actual_ds_name].collections[.actual_table_name]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method sw_collection.expose()
+	## Expose the internal smallworld collection
+	_return _self.actual_collection
+_endmethod
+$
+
+#
+#_pragma(classify_level=basic, topic={demo})
+#_method sw_collection.has_geometry?
+#	_return _self.actual_collection.descriptor.has_geometry_fields?
+#_endmethod
+#$
+#
+_pragma(classify_level=basic, topic={demo})
+_method sw_collection.geometry_refs
+	_local refs << rope.new()
+	_for i_fd _over _self.actual_collection.descriptor.geometry_fields()
+	_loop
+		_if i_fd.name _is :meatball _then _continue _endif 
+		refs.add(geom_ref.new(i_fd.name,
+				      i_fd.external_name,
+				      i_fd.geom_category,
+				      i_fd.has_topology?))
+	_endloop
+	_return refs
 _endmethod
 $
 
@@ -104,9 +144,15 @@ _method sw_collection.size
 	_return _self.actual_collection.size
 _endmethod
 $
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method sw_collection.description(translator)
+#	_return _self.actual_collection.external_name
+#_endmethod
+#$
 
-_pragma(classify_level=basic, topic={analysis})
-_method sw_collection.description(translator)
-	_return _self.actual_collection.external_name
+_pragma(classify_level=advanced, topic={analysis})
+_method sw_collection.display_tree_in(owner)
+	_return owner.display_tree_for_sw_collection(_self, _self.actual_collection)
 _endmethod
 $

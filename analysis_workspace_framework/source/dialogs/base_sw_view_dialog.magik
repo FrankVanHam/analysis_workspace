@@ -85,7 +85,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_sw_view_dialog.build_top_label(container)
-	text_window.new(container, 4, 100, _unset,
+	sw_text_window.new(container, 4, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
@@ -113,7 +113,7 @@ _private _method base_sw_view_dialog.build_source_tree(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
 				:col_alignment, :fill,
 				:row_alignment, :fill)
-	.items[:source_table] << label_item.new(rc, .source_table.external_name)
+	.items[:source_table] << sw_label_item.new(rc, .source_table.external_name)
 	.items[:source_tree] << tree_item.new(rc,
 					      :model, _self,
 					      :distribute_spare_width, :always,
@@ -170,7 +170,7 @@ _private _method base_sw_view_dialog.build_linked_tree(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
 				:col_alignment, :fill,
 				:row_alignment, :fill)
-	.items[:linked_table] << label_item.new(rc, _self.message(:no_table_yet))
+	.items[:linked_table] << sw_label_item.new(rc, _self.message(:no_table_yet))
 	.items[:linked_tree] << tree_item.new(rc,
 					      :model, _self,
 					      :distribute_spare_width, :always,
@@ -193,7 +193,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method base_sw_view_dialog.build_arrow(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
 				:row_alignment, :fill)
-	image_item.new(rc,  _self.arrow_item,
+	sw_image_item.new(rc,  _self.arrow_item,
 		       :row_alignment, :top)
 	.items[:move_up]   << image_button_item.new_safe( rc, _self.move_up_image, _self, :|move_up()|,
 							  :row_alignment, :bottom,
@@ -239,8 +239,8 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_sw_view_dialog.build_buttons(container) 
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
+	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
 _endmethod
 $
 

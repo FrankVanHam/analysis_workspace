@@ -6,6 +6,7 @@ view_creator
 analysis_dataset_manager
 materialization_setting
 large_record_register
+geom_ref
 
 records/
 area/
@@ -13,3 +14,4 @@ spatial/
 sw/
 workspace/
 grouping/
+

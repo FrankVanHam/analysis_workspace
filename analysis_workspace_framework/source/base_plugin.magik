@@ -141,7 +141,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.open?
-	>> .workspace _isnt _unset
+	>> .workspace.open?
 _endmethod
 $
 

@@ -75,7 +75,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.build_top_label(container)
-	text_window.new(container, 5, 100, _unset,
+	sw_text_window.new(container, 5, 100, _unset,
 			:horizontal_scrollbar?, _false,
 			:editable?, _false,
 			:contents, _self.message(:top_label),
@@ -86,17 +86,17 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.build_trace_selection(container) 
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	label_item.new(rc, _self.message(:source_collection))
-	.items[:col] << label_item.new(rc, _self.collection_description, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:source_collection))
+	.items[:col] << sw_label_item.new(rc, _self.collection_description, :col_alignment, :fill)
 	
-	label_item.new(rc, _self.message(:geometry)) 
-	.items[:geometry_choice] << text_choice_item.new(rc, _unset,
+	sw_label_item.new(rc, _self.message(:geometry)) 
+	.items[:geometry_choice] << sw_text_item.new(rc, _unset,
 							 :model, _self,
 							 :change_selector, :|geometry_changed()|,
 							 :col_alignment, :fill)
 	
-	label_item.new(rc, _self.message(:topology) ) 
-	.items[:topology_choice] << text_choice_item.new(rc, _unset,
+	sw_label_item.new(rc, _self.message(:topology) ) 
+	.items[:topology_choice] << sw_text_item.new(rc, _unset,
 							 :model, _self,
 							 :change_selector, :|target_changed()|,
 							 :col_alignment, :fill)  
@@ -106,7 +106,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.build_length_item(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	label_item.new(rc, _self.message(:max_length))
+	sw_label_item.new(rc, _self.message(:max_length))
 	.items[:max_length] << ti << managed_value_text_item.new(rc, _unset, 
 								 :model, _self,
 								 :change_selector, :|max_length_changed()|,
@@ -123,7 +123,7 @@ _private _method trace_dialog.build_stop_predicates(container)
 
 	_local rrc << _self.new_toolbar(rc)
 	rrc.col_alignment << :left
-	label_item.new(rrc, _self.message(:stop_predicates))
+	sw_label_item.new(rrc, _self.message(:stop_predicates))
 	.items[:add_predicate] << image_button_item.new_safe(rrc,_self.add_image,
 							     _self,:|add_predicate()|,
 							     :balloon_help_id, :add_predicate_tt,
@@ -162,8 +162,8 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.build_buttons(container) 
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok) , _self, :|ok()|, :min_width, 75) 
-	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel) , _self, :|cancel()|, :min_width, 75) 
+	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok) , _self, :|ok()|, :min_width, 75) 
+	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel) , _self, :|cancel()|, :min_width, 75) 
 _endmethod
 $
 _pragma(classify_level=restricted, topic={analysis})

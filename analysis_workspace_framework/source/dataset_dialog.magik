@@ -41,12 +41,12 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method dataset_dialog.manage_actions()
 	_local open? << _self.open?
-	_local dirty? << _self.workspace.dirty?
+	_local dirty? << open? _andif _self.workspace.dirty?
 	
 	.owner.action(:new_file).enabled? << _true  
 	.owner.action(:save).enabled? << open? _andif dirty?
 	.owner.action(:save_as).enabled? << open?
-	.owner.action(:open).enabled? << open? 
+	.owner.action(:open).enabled? << _true 
 	.owner.action(:close).enabled? << open? 
 _endmethod
 $
@@ -143,8 +143,10 @@ _method dataset_dialog.open_default_ds()
 			workspace << dsm.retrieve()
 			.owner.publish_workspace(workspace)
 			.owner.add_to_application(workspace.dsm)
+			_return
 		_endif 
-	_endif 
+	_endif
+	.owner.publish_workspace(rwan:workspace.new())
 _endmethod
 $
 
