@@ -51,7 +51,7 @@ _private _method area_materialized_collection.init_copy()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method area_materialized_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:id})
@@ -66,7 +66,7 @@ _method area_materialized_collection.origin_is_sw_collection?
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method area_materialized_collection.init_from_serial(dsm, base_col, id)
 	_super.init_from_serial(dsm, base_col)
 	.id << id
@@ -74,14 +74,14 @@ _private _method area_materialized_collection.init_from_serial(dsm, base_col, id
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method area_materialized_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.base_collections, .id)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method area_materialized_collection.equals_in_details?(base_cols, id)
 	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
 	

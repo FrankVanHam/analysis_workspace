@@ -75,7 +75,7 @@ _method base_follow_collection.target_collection
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_follow_collection.equals?(other)
 	_if _not _self.is_class_of?(other) _then _return _false _endif
 	_return other.equals_in_details?(.base_collections, .target_ds_name, .target_table_name)

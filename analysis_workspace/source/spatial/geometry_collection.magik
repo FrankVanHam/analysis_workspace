@@ -36,6 +36,10 @@ _method geometry_collection.new(dsm, geometry)
 	_if _not geometry.is_kind_of?(geometry_set_mixin)
 	_then
 		condition.raise(:error, :string, "Input must be geometry set")
+	_endif
+	_if geometry.empty?
+	_then
+		condition.raise(:error, :string, "Input can not be empty geometry set")
 	_endif 
 	_return _clone.init(dsm, geometry)
 _endmethod
@@ -49,6 +53,17 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_private _method geometry_collection.geom_category
+	_local geom << .geometry.an_element()
+	_if geom _isnt _unset
+	_then
+		_return geom.geom_category
+	_endif 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _private _method geometry_collection.init_copy()
 	_if .id _isnt _unset
 	_then 
@@ -58,7 +73,7 @@ _private _method geometry_collection.init_copy()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method geometry_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:geometry})
@@ -73,31 +88,46 @@ _method geometry_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _private _method geometry_collection.init_from_serial(dsm, base_cols, id)
 	_super.init_from_serial(dsm, base_cols)
 	.id << id
-	
 	.geometry << .dsm.geometry_set(.id)
 	_return _self 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.geometry)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method geometry_collection.equals_in_details?(geometry)
 	_if _not _super.equals_in_details?() _then _return _false _endif
 	_return _self.geometry_sets_equal?(.geometry, geometry)
 _endmethod
 $
 
-#_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
+_method geometry_collection.geometry_refs
+	>> {(geom_ref.new(:geometry,
+			  _self.message(:geometry),
+			  _self.geom_category,
+			  _false))}
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method geometry_collection.geometry_set(geom_name)
+	_return .geometry
+_endmethod
+$
+
+
+#_pragma(classify_level=restricted, topic={analysis})
 #_private _method geometry_collection.geometry_sets_equal?( gs1, gs2 )
 #	_if gs1.size <> gs2.size _then _return _false _endif 
 #	_for i_geom _over gs1.fast_elements()
@@ -121,17 +151,17 @@ $
 #_endmethod
 #$
 
-
-_pragma(classify_level=basic, topic={analysis})
-_method geometry_collection.convert_to_geometry(_optional bounds)
-	_if bounds _is _unset
-	_then 
-		_return .geometry
-	_else
-		.geometry.select(:bounds_interacting_with, bounds)
-	_endif 
-_endmethod
-$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method geometry_collection.convert_to_geometry(_optional bounds)
+#	_if bounds _is _unset
+#	_then 
+#		_return .geometry
+#	_else
+#		.geometry.select(:bounds_interacting_with, bounds)
+#	_endif 
+#_endmethod
+#$
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method geometry_collection.convert_to_geometry_is_fast?

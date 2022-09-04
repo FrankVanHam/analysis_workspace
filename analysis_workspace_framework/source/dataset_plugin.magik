@@ -28,7 +28,7 @@ def_slotted_exemplar(:dataset_plugin,
 	:base_plugin)
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 ##
 ## defines the name of the dataset_manager.
 dataset_plugin.def_property( :dsm_name,

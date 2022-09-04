@@ -447,108 +447,108 @@ _private _method tree_builder.sw_geom_field_image(fd)
 _endmethod
 $
 
-
-_pragma(classify_level=advanced, topic={analysis})
-_method materialized_collection.display_tree_in(owner)
-	_return owner.display_tree_for_materialized_collection(_self, _self.base_collection, _self.actual_collection)
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
-_method distance_filter_collection.display_tree_in(owner)
-	_return owner.display_tree_for_distance_filter_collection(_self, _self.base_collection, .geom_name, .distance, .arg)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method predicate_filter_collection.display_tree_in(owner)
-	_return owner.display_tree_for_predicate_collection(_self, _self.base_collection, .pred)
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
-_method spatial_collection.display_tree_in(owner)
-	_return owner.display_tree_for_spatial_collection(_self, _self.base_collection, .geom_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method topology_collection.display_tree_in(owner)
-	_return owner.display_tree_for_topology_collection(_self, _self.base_collection, _self.target_collection, .geom_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method trace_collection.display_tree_in(owner)
-	_return owner.display_tree_for_trace_collection(_self, _self.base_collection, _self.target_collection, .geom_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method root_collection.display_tree_in(owner)
-	_return owner.display_tree_for_root_collection(_self, _self.base_collection, _self.target_collection)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method record_set.display_tree_in(owner)
-	_return owner.display_tree_for_set(_self, .base_set)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method method_collection.display_tree_in(owner)
-	_return owner.display_tree_for_method_analysis(_self, _self.base_collection, _self.target_collection, .methd)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method join_collection.display_tree_in(owner)
-	_return owner.display_tree_for_join_analysis(_self, _self.base_collection, _self.target_collection, .methd)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method buffer_collection.display_tree_in(owner)
-	_return owner.display_tree_for_buffer(_self,_self.base_collection, .geom_name, .distance)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method area_materialized_collection.display_tree_in(owner)
-	_return owner.display_tree_for_area_materialized_collection(_self, _self.base_collection)
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
-_method base_binary_op_collection.display_tree_in(owner)
-	_return owner.display_tree_for_binary_op_collection(_self,_self.base_collection, _self.other_collection, _self.operation)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method spatial_binary_op_collection.display_tree_in(owner)
-	_return owner.display_tree_for_spatial_operation_collection(_self,_self.base_collection, _self.other_collection, .operation)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method area_binary_op_collection.display_tree_in(owner)
-	_return owner.display_tree_for_area_operation_collection(_self,_self.base_collection, _self.other_collection, .operation)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method spatial_materialized_collection.display_tree_in(owner)
-	_return owner.display_tree_for_spatial_materialized_collection(_self,_self.base_collection)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method sw_view_collection.display_tree_in(owner)
-	_return owner.display_tree_for_sw_view_collection(_self)
-_endmethod
-$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method materialized_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_materialized_collection(_self, _self.base_collection, _self.actual_collection)
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method distance_filter_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_distance_filter_collection(_self, _self.base_collection, .geom_name, .distance, .arg)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method predicate_filter_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_predicate_collection(_self, _self.base_collection, .pred)
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method spatial_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_spatial_collection(_self, _self.base_collection, .geom_name)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method topology_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_topology_collection(_self, _self.base_collection, _self.target_collection, .geom_name)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method trace_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_trace_collection(_self, _self.base_collection, _self.target_collection, .geom_name)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method root_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_root_collection(_self, _self.base_collection, _self.target_collection)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method record_set.display_tree_in(owner)
+#	_return owner.display_tree_for_set(_self, .base_set)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method method_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_method_analysis(_self, _self.base_collection, _self.target_collection, .methd)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method join_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_join_analysis(_self, _self.base_collection, _self.target_collection, .methd)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method buffer_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_buffer(_self,_self.base_collection, .geom_name, .distance)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method area_materialized_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_area_materialized_collection(_self, _self.base_collection)
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method base_binary_op_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_binary_op_collection(_self,_self.base_collection, _self.other_collection, _self.operation)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method spatial_binary_op_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_spatial_operation_collection(_self,_self.base_collection, _self.other_collection, .operation)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method area_binary_op_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_area_operation_collection(_self,_self.base_collection, _self.other_collection, .operation)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method spatial_materialized_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_spatial_materialized_collection(_self,_self.base_collection)
+#_endmethod
+#$
+#
+#_pragma(classify_level=advanced, topic={analysis})
+#_method sw_view_collection.display_tree_in(owner)
+#	_return owner.display_tree_for_sw_view_collection(_self)
+#_endmethod
+#$

@@ -37,12 +37,10 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.activate_in(container)
-	.top_frame << container.top_frame
-	
-	_local rc << rowcol.new(container,  1, _unset, _unset)
-	.items[:busy_with] << sw_label_item.new(rc, _unset ,
-					     :max_width, 100,
-					     :min_width, 100)
+	_local rc << rowcol.new(container,  1, _unset, :pixel, :style, :nested,
+				:col_alignment, :fill
+			    )
+	.items[:busy_with] << sw_label_item.new(rc, _unset, 	:col_alignment, :fill)
 	
 	.items[:interrupt] << image_button_item.new_safe(rc, _self.stop_image,
 							  _self, :|cancel_run()|,
@@ -160,8 +158,7 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.do_send_to_explorer()
 	_local col << _self.selected_holder.collection
-	_local lazy << lazy_record_collection.new_for_rw_analysis_collection(col)
-	.owner.explore(lazy)
+	.owner.explore(analysis_ds_collection_proxy.new(col))
 _endmethod
 $
 
@@ -176,7 +173,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.do_export_to_excel()
 	_local name << _self.selected_top_holder.name
 	_local col << _self.selected_top_holder.collection
-	_local lazy << lazy_record_collection.new_for_rw_analysis_collection(col)
+	_local lazy << analysis_ds_collection_proxy.new(col)
 	
 	_local fname << system.temp_file_name("export.xlsx")
 	_local engine << collection_export_engine.new( _self )
@@ -204,7 +201,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.do_export_to_access()
 	_local name << _self.selected_top_holder.name
 	_local col << _self.selected_top_holder.collection
-	_local lazy << lazy_record_collection.new_for_rw_analysis_collection(col)
+	_local lazy << analysis_ds_collection_proxy.new(col)
 	
 	_local fname << system.temp_file_name("export.accdb")
 	_local engine << collection_export_engine.new( _self )

@@ -76,31 +76,31 @@ _method spatial_collection.equals_in_details?(base_cols, geom_name)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_collection.size
-	_return _self.base_collection.size_for_geometry(.geom_name )
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_collection.convert_to_geometry()
-	_return _self.base_collection.convert_to_geometry(.geom_name )
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_iter _method spatial_collection.fast_geometries()
-	_for i_geom _over _self.base_collection.fast_geometries(.geom_name)
-	_loop
-		_loopbody(i_geom)
-	_endloop 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_collection.description(translator)
-	_local base_name << translator.name_for_collection(_self.base_collection)
-	_return _self.message(:description, .geom_name, base_name)
-_endmethod
-$
-
+#_pragma(classify_level=basic, topic={analysis})
+#_method spatial_collection.size
+#	_return _self.base_collection.size_for_geometry(.geom_name )
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method spatial_collection.convert_to_geometry()
+#	_return _self.base_collection.convert_to_geometry(.geom_name )
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_iter _method spatial_collection.fast_geometries()
+#	_for i_geom _over _self.base_collection.fast_geometries(.geom_name)
+#	_loop
+#		_loopbody(i_geom)
+#	_endloop 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method spatial_collection.description(translator)
+#	_local base_name << translator.name_for_collection(_self.base_collection)
+#	_return _self.message(:description, .geom_name, base_name)
+#_endmethod
+#$
+#

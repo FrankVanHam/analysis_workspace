@@ -18,11 +18,24 @@
 _package rwan
 $
 
-#remex(:base_analysis_test_case)
+#remex(:spatial_analysis_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
-def_slotted_exemplar(:base_analysis_test_case,
-	{
-	},
-	{:test_case, :base_analysis_test_case_mixin})
+##
+## Test using sw_collections
+#
+def_slotted_exemplar(:sw_collection_test_case,
+	{},
+	:base_analysis_db_test_case)
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_collection_test_case.test_basic_size()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	# road analytic collection and area 
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_self.assert_equals(_self.min_road_collection.size, acol.size, "sizes should match")
+_endmethod
+$
+

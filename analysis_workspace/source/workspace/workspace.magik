@@ -69,7 +69,7 @@ _method workspace.open?
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.serial_slots()
     _local keys   << rope.new_with(:holders, :create_date, :create_user)
     _local values << rope.new_with(.holders, .create_date, .create_user)
@@ -77,14 +77,14 @@ _method workspace.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.new_from_serial(keys,values)
     _return _clone.init_from_serial(_scatter values)
 _endmethod
 $
 
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _private _method workspace.init_from_serial(holders,
 					    create_date, create_user)
 	.dirty? << _false
@@ -95,7 +95,7 @@ _private _method workspace.init_from_serial(holders,
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.holder_for(col)
 	_for i_holder _over .holders.fast_elements()
 	_loop
@@ -107,33 +107,33 @@ _method workspace.holder_for(col)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.name_for_collection(col)
 	_return _self.holder_for(col).name
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.add_holder(holder)
 	_self.add_holders({holder}) 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.add_holders(holders)
 	.holders.add_all_last(holders)
 	.dirty? << _true 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.remove_holder(holder)
 	.holders.remove(holder)
 	.dirty? << _true 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.move_up(holder)
 	_local top_holders << _self.top_holders
 	_local index << top_holders.index_of(holder)
@@ -151,7 +151,7 @@ _method workspace.move_up(holder)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.can_move_up?(holder)
 	_local top_holders << _self.top_holders
 	_local index << top_holders.index_of(holder)
@@ -159,7 +159,7 @@ _method workspace.can_move_up?(holder)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.move_down(holder)
 	_local top_holders << _self.top_holders
 	_local index << top_holders.index_of(holder)
@@ -177,14 +177,14 @@ _method workspace.move_down(holder)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.can_move_down?(holder)
 	_local top_holders << _self.top_holders
 	_local index << top_holders.index_of(holder)
 	_return index <> top_holders.size 
 _endmethod
 $
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.top_holders
 	## return the top holders, that have nrefs = 0
 	_local tops << rope.new_for(.holders.size)
@@ -196,7 +196,7 @@ _method workspace.top_holders
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.top_holders(holders)
 	_return holders
 	_local uses << set.new()
@@ -217,25 +217,25 @@ _method workspace.top_holders(holders)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.all_holders
 	_return .holders
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.set_dirty()
 	.dirty? << _true 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.set_clean()
 	.dirty? << _false 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.empty?
 	_return .holders.empty?
 _endmethod
@@ -247,7 +247,7 @@ _method workspace.set_dataset_manager(dsm)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method workspace.save()
 	.dsm.store(_self)
 	_self.set_clean()	

@@ -128,7 +128,7 @@ _private _method sw_view_collection.convert_to_joins(eqs)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method sw_view_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:int_name, :ext_name, :ds_name, :table_names, :eqs, :linked_field_name, :field_specs})
@@ -137,7 +137,7 @@ _method sw_view_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_collection.init_from_serial(dsm, base_cols,b,int_name, ext_name, ds_name, table_names, eqs, linked_field_name, field_specs)
 	
 	_super.init_from_serial(dsm, base_cols, int_name)
@@ -155,14 +155,14 @@ _private _method sw_view_collection.init_from_serial(dsm, base_cols,b,int_name, 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method sw_view_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.int_name, .ext_name, .ds_name, .table_names, .eqs, .linked_field_name, .field_specs)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method sw_view_collection.equals_in_details?(int_name, ext_name, ds_name, table_names, eqs, linked_field_name, field_specs)
 	_return .int_name = int_name _andif
 		.ext_name = ext_name _andif
@@ -174,7 +174,7 @@ _method sw_view_collection.equals_in_details?(int_name, ext_name, ds_name, table
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_collection.vectors_eq?(v1, v2)
 	_if v1.size <> v2.size _then _return _false _endif
 	_for i_index, i_vec _over v1.fast_keys_and_elements()
@@ -251,7 +251,7 @@ _method sw_view_collection.is_sw_collection?
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method sw_view_collection.actual_collection
 	_return .actual_view_collection
 _endmethod

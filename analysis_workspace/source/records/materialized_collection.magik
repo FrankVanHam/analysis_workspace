@@ -63,13 +63,13 @@ _method materialized_collection.is_sw_collection?
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _private _method materialized_collection.init_from_serial(dsm, base_cols, name)
 	_return _super.init_from_serial(dsm, base_cols, name)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.actual_collection
 	_return .dsm.materialized_collection(.actual_table_name)
 _endmethod
@@ -95,7 +95,7 @@ _method materialized_collection.description(translator)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.discard()
 	_if .actual_table_name _isnt _unset
 	_then

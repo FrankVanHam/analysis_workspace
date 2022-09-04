@@ -1,0 +1,92 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+#remex(:analysis_ds_collection_proxy)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## will be used to push an analysis collection into the
+## smallworld application to mimick a regular collection.
+##
+## obviously only works for analysis collections that hold records
+##
+def_slotted_exemplar(:analysis_ds_collection_proxy,
+	{
+		{:collection,    _unset},
+		{:sw_collection, _unset}
+	},
+	:dd_collection_mixin)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.new(col)
+	_if col.is_record_collection?.not _then condition.raise(:error, :string, "this only works for record collections") _endif
+	_return _clone.init(col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method analysis_ds_collection_proxy.init(col)
+	.collection << col
+	.sw_collection << col.expose()
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.name
+	_return .sw_collection.name
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.descriptor
+	_return .sw_collection.descriptor
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.record_exemplar
+	_return .sw_collection.record_exemplar
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.source_view
+	_return .sw_collection.source_view
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.read_stream()
+	_return .collection.read_stream()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.size_is_fast?
+	_return .collection.size_is_fast?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_ds_collection_proxy.size
+	_return .collection.size
+_endmethod
+$

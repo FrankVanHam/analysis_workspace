@@ -1,0 +1,87 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:base_analysis_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:base_analysis_db_test_case,
+	{
+	},
+	{:db_test_case, :base_analysis_test_case_mixin})
+$
+
+_pragma(classify_level=basic, topic={analysis},usage=subclassable)
+_method base_analysis_db_test_case.databases
+	## 
+	## 
+	_if (views << .ds_views) _is _unset _then views << .ds_views << property_list.new() _endif
+
+	views[:gis] << gis_program_manager.databases[:gis]
+	views[:mapbase] << gis_program_manager.databases[:mapbase]
+	views[:electricity] << gis_program_manager.databases[:electricity]
+	
+	_self.check_for_in_memory_database()
+	
+	>> views
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_db_test_case.create_road(name, oords)
+	_local col << _self.min_road_collection
+	_local ch << pseudo_chain.new_for_world(
+			     sector_rope.new_with(
+				     sector.new_with_xy(_scatter oords)),
+			     col.dataset.world)
+	record_transaction.new_insert(col,
+				      property_list.new_with(
+					      :name, name,
+					      :centre_line, ch)).run()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_db_test_case.create_park(name, oords)
+	 _local col << _self.park_collection
+	_local ch << pseudo_area.new_for_world(
+			     sector_rope.new_with(
+				     sector.new_with_xy(_scatter oords)),
+			     col.dataset.world)
+	record_transaction.new_insert(col,
+				      property_list.new_with(
+					      :name, name,
+					      :coverage, ch)).run()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_db_test_case.create_hotel(name, oords)
+	 _local col << _self.hotel_collection
+	 _local ch << pseudo_point.new_for_world(
+			      sector_rope.new_with(
+				      sector.new_with_xy(_scatter oords)),
+			      col.dataset.world)
+	 record_transaction.new_insert(col,
+				       property_list.new_with(
+					       :name, name,
+					       :location, ch)).run()
+_endmethod
+$
+

@@ -47,7 +47,7 @@ _private _method base_source_collection.init(dsm, base_col, actual_table_name)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method base_source_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:actual_table_name})
@@ -56,7 +56,7 @@ _method base_source_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method base_source_collection.init_from_serial(dsm, base_cols, actual_table_name)
     _super.init_from_serial(dsm, base_cols)
     .actual_table_name << actual_table_name
@@ -64,21 +64,21 @@ _private _method base_source_collection.init_from_serial(dsm, base_cols, actual_
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_source_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.base_collections, .actual_table_name)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method base_source_collection.equals_in_details?(base_cols, actual_table_name)
 	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
 	_return .actual_table_name = actual_table_name
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _abstract _method base_source_collection.actual_collection
 	## Subclasses need to implement this method to return the
 	## actual collection that holds the records.

@@ -70,7 +70,7 @@ $
 #_endmethod
 #$
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method area_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:area})
@@ -85,7 +85,7 @@ _method area_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method area_collection.init_from_serial(dsm, nrefs, id)
 	_super.init_from_serial(dsm, nrefs)
 	.id << id
@@ -95,14 +95,14 @@ _private _method area_collection.init_from_serial(dsm, nrefs, id)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method area_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
 		other.equals_in_details?(.nrefs, .area)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method area_collection.equals_in_details?(nrefs, area)
 	_return _super.equals_in_details?(nrefs) _andif
 		.area.equal_to?(area)
@@ -124,6 +124,13 @@ _method area_collection.geometry_refs
 			  _false))}
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_collection.geometry_set(geom_name)
+	_return geometry_set.new_with(.area)
+_endmethod
+$
+
 
 #_pragma(classify_level=basic, topic={analysis})
 #_method area_collection.description(translator)
@@ -149,6 +156,7 @@ _method area_collection.discard()
 		_endif 
 		.id << _unset
 	_endif
+	.area << _unset 
 	_super.discard()
 _endmethod
 $

@@ -15,14 +15,14 @@
 #  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-_package rwan
+_package sw
 $
 
-#remex(:base_analysis_test_case)
-
-_pragma(classify_level=basic, topic={analysis})
-def_slotted_exemplar(:base_analysis_test_case,
-	{
-	},
-	{:test_case, :base_analysis_test_case_mixin})
+_pragma(classify_level=basic, topic={analysis}, usage=redefinable)
+_method ds_record.rwan_world_for(geom_name)
+	##
+	## Return the world that is associated with the geometry.
+	##
+	_return _self.dataset.world
+_endmethod
 $

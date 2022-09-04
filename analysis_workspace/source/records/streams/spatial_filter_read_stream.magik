@@ -23,27 +23,41 @@ $
 
 _pragma(classify_level=basic, topic={analysis, collections})
 def_slotted_exemplar(:spatial_filter_read_stream,
-	##
+	## stream that filters the sourcestream on spatial predicate.
 	{
-		{:base_stream, _unset },
-		{:geom_name,   _unset },
-		{:selector,    _unset },
-		{:arg,         _unset }
+		{:source_stream,    _unset},
+		{:source_geom_name, _unset},
+		{:operator,         _unset},
+		{:filter_gs,        _unset}
 	}, :input_stream_with_unget_mixin)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method spatial_filter_read_stream.new(base_stream, geom_name, selector, arg)
-	_return _clone.init(base_stream, geom_name, selector, arg)
+spatial_filter_read_stream.define_shared_constant(
+	:supported_operations,
+	{:disjoint_from ,:interacting_with ,:touching ,:dividing ,:overlaying ,:overlapping ,:within ,:containing ,:equal_to},
+	:private)
+$
+	
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_read_stream.new(source_stream, source_geom_name, operator, filter_gs)
+	_return _clone.init(source_stream, source_geom_name, operator, filter_gs)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method spatial_filter_read_stream.init(base_stream, geom_name, selector, arg)
-	.base_stream << base_stream
-	.geom_name << geom_name
-	.selector << selector
-	.arg << arg
+_private _method spatial_filter_read_stream.init(source_stream, source_geom_name, operator, filter_gs)
+	.source_stream << source_stream
+	.source_geom_name << source_geom_name
+	
+	_if _self.supported_operations.includes?(operator).not
+	_then
+		condition.raise(:error, :string, write_string("Operator ", operator, " is not supported"))
+	_endif
+	
+	.operator  << operator
+	.filter_gs << filter_gs
 	_return _self 
 _endmethod
 $
@@ -51,19 +65,89 @@ $
 _pragma(classify_level=basic, topic={analysis, collections})
 _method spatial_filter_read_stream.get()
 	_loop
-		_local rec << .base_stream.get()
-		_if rec _is _unset _then _leave _endif #Exhausted
+		_local rec << .source_stream.get()
+		_if rec _is _unset _then _return _unset _endif #exhausted
 
-		_local geom << rec.geometry(.geom_name)
-		_if geom _is _unset _then _continue _endif
-		
-		_local gs << geometry_set.new_with(geom)
-		_if gs.select(.selector, .arg).empty?.not
-		_then
-			_return rec
-		_endif 
-	_endloop
-	_return _unset 
+		_local geom << rec.geometry(.source_geom_name)
+		_if geom _isnt _unset
+		_then 	
+			_local meth << write_string("match_", .operator, "()").as_symbol()
+			_local match? << _self.perform_private(meth, geom)
+			_if match?
+			_then
+				_return rec
+			_endif
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_disjoint_from(geom)
+	## Test if geom is disjoint from all of the filters.
+	_return .filter_gs.interacts_with?(geom).not
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_interacting_with(geom)
+	## Test if geom interacts with any of the filter geometries.
+	_return _self.match_any?(geom, :|interacts_with?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_touching(geom)
+	_return _self.match_any?(geom, :|touches?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_dividing(geom)
+	_return _self.match_any?(geom, :|divides?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_overlaying(geom)
+	_return _self.match_any?(geom, :|overlays?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_overlapping(geom)
+	_return _self.match_any?(geom, :|overlaps?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_within(geom)
+	_return _self.match_any?(geom, :|within?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_containing(geom)
+	_return _self.match_any?(geom, :|contains?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_equal_to(geom)
+	_return _self.match_any?(geom, :|equal_to?()|)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_read_stream.match_any?(geom, test_meth)
+	 _for i_geom _over .filter_gs.fast_elements()
+	 _loop
+		 _if geom.perform(test_meth, i_geom)
+		 _then
+			 _return _true
+		 _endif
+	 _endloop
+	 _return _false
 _endmethod
 $
 
@@ -75,6 +159,12 @@ $
 
 _pragma(classify_level=basic, topic={analysis, collections})
 _method spatial_filter_read_stream.close()
-	
+	.source_stream.close()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_read_stream.reset()
+	.source_stream.reset()
 _endmethod
 $

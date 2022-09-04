@@ -74,7 +74,7 @@ _method distance_filter_collection.update(geom_name, distance, inverse?)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last(  {:geom_name, :distance, :arg, :inverse})
@@ -83,7 +83,7 @@ _method distance_filter_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_collection.init_from_serial(dsm, base_cols, geom_name, distance, arg, inverse?)
     _super.init_from_serial(dsm, base_cols)
     .geom_name << geom_name
@@ -94,26 +94,26 @@ _private _method distance_filter_collection.init_from_serial(dsm, base_cols, geo
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_collection.single_strategy?
 	_return .arg.convert_to_geometry_is_fast?
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method distance_filter_collection.base_collections
 	_return {_self.base_collection, .arg}
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method distance_filter_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.base_collections, .geom_name, .distance, .arg, .inverse?)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.equals_in_details?(base_cols, geom_name, distance, arg, inverse?)
 	_if _not _super.equals_in_details?(base_cols) _then _return _false _endif
 	

@@ -23,7 +23,11 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 ##
-## Top base class for all analysis collections.
+## Base class for all analysis collections defining the abstract
+## interface that must be implemented by all subclasses.
+##
+## Note that subclasses either supply records, areas or
+## geometry in general.
 ##
 def_slotted_exemplar(:base_collection,
 	{
@@ -62,9 +66,11 @@ $
 #_endmethod
 #$
 #
+
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.is_record_collection?
-	_return _false 
+	## is this a collection of records?
+	_return _false
 _endmethod
 $
 
@@ -99,18 +105,38 @@ $
 #_endmethod
 #$
 #
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.has_geometry?
 	# has self a geometry field or geometry?
 	_return _true 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.geometry_refs
+	## Expose the base geometry fields that can be used on self
 	>> {}	
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.expose()
+	## Expose the base smallworld collection. Could be unset 
+	## 
+	_return _unset
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.assert_geom_name(name)
+	## make sure that name is a valid geometry name for me.
+	_if rope.new_from(_self.geometry_refs).select(predicate.eq(:name, name)).empty?
+	_then
+		condition.raise(:error, :string, write_string( "The geometry named ", name, " is not available for ", _self))
+	_endif 
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _abstract _method base_collection.activate_editor_in(plugin)
@@ -148,7 +174,7 @@ $
 #_endmethod
 #$
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.serial_slots()
     _local keys   << rope.new_with(:oop, :nrefs)
     _local values << rope.new_with(_self.as_oop, .nrefs)
@@ -156,7 +182,7 @@ _method base_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.new_from_serial(keys,values)
 	_dynamic !current_analysis_dataset_manager!
 	
@@ -172,7 +198,7 @@ _method base_collection.new_from_serial(keys,values)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _private _method base_collection.init_from_serial(dsm, nrefs)
 	.dsm << dsm
 	.nrefs << nrefs
@@ -180,14 +206,14 @@ _private _method base_collection.init_from_serial(dsm, nrefs)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.equals?(other)
 	_if _not _self.is_class_of?(other) _then _return _false _endif
 	_return _self.equals_in_details?(.nrefs)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.equals_in_details?(nrefs)
 	_return .nrefs = nrefs
 _endmethod
@@ -199,17 +225,6 @@ $
 #_endmethod
 #$
 #
-#_pragma(classify_level=restricted, topic={analysis})
-#_method base_collection.expose()
-#	## Expose the inner basic collection.
-#	_if _self.base_collection _isnt _unset 
-#	_then
-#		_return _self.base_collection.expose()
-#	_else 
-#		_return _unset
-#	_endif 
-#_endmethod
-#$
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_collection.world
@@ -230,11 +245,35 @@ $
 #_endmethod
 #$
 #
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_collection.size_is_fast?
-#	_return _false 
-#_endmethod
-#$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _method base_collection.goto_bounds
+	## Provide the bounds of the collection
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _method base_collection.size
+	## Provide the bounds of the collection
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _method base_collection.geometry_set(geom_name)
+	## Return a geometry set for the geometry geom_name.
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.size_is_fast?
+	_return _false 
+_endmethod
+$
+
+
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_collection.convert_to_geometry_is_fast?
@@ -242,17 +281,7 @@ $
 #_endmethod
 #$
 #
-#_pragma(classify_level=basic, topic={analysis})
-#_abstract _method base_collection.size
-#	
-#_endmethod
-#$
 
-_pragma(classify_level=basic, topic={analysis})
-_abstract _iter _method base_collection.fast_elements()
-	
-_endmethod
-$
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_iter _method base_collection.fast_geometries(geom_name)
@@ -267,18 +296,15 @@ $
 #_endmethod
 #$
 #
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_collection.goto_bounds
-#	_return _self.convert_to_geometry(_unset).bounds
-#_endmethod
-#$
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.discard()
-	_if .source_collection _isnt _unset
-	_then
-		.source_collection.discard()
-	_endif 
+	.dsm << _unset
+	.nrefs << 0
+#	_if .source_collection _isnt _unset
+#	_then
+#		.source_collection.discard()
+#	_endif 
 _endmethod
 $
 

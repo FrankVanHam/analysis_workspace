@@ -1,0 +1,243 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+_pragma(classify_level=basic, topic={analysis})
+def_mixin(:base_analysis_test_case_mixin)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case_mixin.area_collection(dsm, oords)
+	_local sectors << sector_rope.new_with(
+				  sector.new_with_xy(_scatter oords))
+	sectors.close()
+	_local an_area << pseudo_area.new(sectors)
+	_return rwan:area_collection.new(dsm, an_area)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case_mixin.areas_collection(dsm, coord_sets)
+	_local gs << geometry_set.new()
+	_for i_oords _over coord_sets.fast_elements()
+	_loop 
+		_local sectors << sector_rope.new_with(
+					  sector.new_with_xy(_scatter i_oords))
+		sectors.close()
+		_local an_area << pseudo_area.new(sectors)
+		gs.add(an_area)
+	_endloop 
+	_return rwan:geometry_collection.new(dsm, gs)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case_mixin.points_collection(dsm, coord_sets)
+	_local gs << geometry_set.new()
+	_for i_oords _over coord_sets.fast_elements()
+	_loop 
+		_local sectors << sector_rope.new_with(
+					  sector.new_with_xy(_scatter i_oords))
+		_local a_point << pseudo_point.new(sectors)
+		gs.add(a_point)
+	_endloop 
+	_return rwan:geometry_collection.new(dsm, gs)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case_mixin.lines_collection(dsm, coord_sets)
+	_local gs << geometry_set.new()
+	_for i_oords _over coord_sets.fast_elements()
+	_loop 
+		_local sectors << sector_rope.new_with(
+					  sector.new_with_xy(_scatter i_oords))
+		_local a_chain << pseudo_chain.new(sectors)
+		gs.add(a_chain)
+	_endloop 
+	_return rwan:geometry_collection.new(dsm, gs)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.drafting_sectors(text)
+
+	_local coord << _self.drafting_text_coord(text)
+	_local box << bounding_box.new_centred(coord.x, coord.y, 5)
+	_local gs << _self.gv.collections[:drafting_lines].geometry_set(
+								  _self.gv.world,
+								  box )
+	gs << gs.select(:interacting_with, box)
+	_return gs.an_element()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.drafting_text_coord(text)
+	_local the_text << _if text.size > 30
+			   _then >> text.slice(1,30)
+			   _else >> text
+			   _endif 
+	_for i_rwo _over _self.gv.collections[:drafting_texts].fast_elements()
+	_loop
+		_for i_text _over i_rwo.geometries(_false).fast_elements()
+		_loop
+			_if i_text.string = the_text
+			_then
+				_return i_text.coord
+			_endif 
+		_endloop
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.area_surrounding_parkers_piece(dsm)
+	_local sectors << sector_rope.new_with(
+				  sector.new_with_xy(
+					  545469870,258401157,
+					  545804939,258204608,
+					  545566151,257797532,
+					  545340709,257850820,
+					  545216784,258142642,
+					  545469870,258401157))
+	_local world << _self.hotel_collection.dataset.world
+	_return pseudo_area.new_for_world(sectors, world)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.min_road_collection
+	_return _self.gv.collections[:min_road]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.hotel_collection
+	_return _self.gv.collections[:hotel]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.office_collection
+	_return _self.gv.collections[:office]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.company_collection
+	_return _self.gv.collections[:company]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.poi_collection
+	_return _self.gv.collections[:pl_of_interest]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.roundabout_collection
+	_return _self.gv.collections[:roundabout]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.road_works_collection
+	_return _self.gv.collections[:road_works]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.pub_rest_collection
+	_return _self.gv.collections[:pub_rest]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.park_collection
+	_return _self.gv.collections[:park]
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.footpath_collection
+	_return _self.gv.collections[:footpath]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.gv
+	_return gis_program_manager.databases[:gis]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.cable_collection
+	_return _self.ev.collections[:cable]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.supply_point_collection
+	_return _self.ev.collections[:supply_point]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.customer_collection
+	_return _self.ev.collections[:customer]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.ev
+	_return gis_program_manager.databases[:electricity]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.map_feature
+	_return _self.mbv.collections[:map_feature]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.mbv
+	_return gis_program_manager.databases[:mapbase]
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.haig_and_chesterton_set(dsm)
+	_local col << _self.min_road_collection
+	_local set << equality_set.new_with(
+			      col.select(predicate.eq(:name, "Haig Road")).an_element(),
+			      col.select(predicate.eq(:name, "Chesterton Road")).an_element())
+	
+	_return rwan:record_set.new(dsm, set)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case_mixin.chesterton_roundabout_roads_geometry_set(dsm)
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local sectors << _self.drafting_sectors("test_topology_query")
+	_local an_area << pseudo_area.new(sectors)
+	_local area_col << rwan:area_collection.new(dsm, an_area)
+	_return rcol.filter_by_geometry( :centre_line, :interacting_with, area_col)
+_endmethod
+$

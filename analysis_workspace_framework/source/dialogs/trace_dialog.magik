@@ -21,7 +21,7 @@ $
 #remex(:trace_dialog)
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 ##
 ## dialog to construct a trace collection to trace topology
 ## of the source collection to find records of the target

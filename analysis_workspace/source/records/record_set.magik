@@ -60,7 +60,7 @@ _method record_set.origin_is_sw_collection?
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method record_set.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:base_set})
@@ -74,7 +74,7 @@ _method record_set.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method record_set.init_from_serial(dsm, base_cols, urn_rope)
     _super.init_from_serial(dsm, base_cols)
     .base_set << rwo_set.new(urn_rope.size)

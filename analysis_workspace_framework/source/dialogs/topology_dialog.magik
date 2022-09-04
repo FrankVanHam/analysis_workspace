@@ -21,7 +21,7 @@ $
 #remex(:topology_dialog)
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 ##
 ## dialog to construct a topology collection to follow topology
 ## of the source collection.

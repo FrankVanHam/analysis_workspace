@@ -1,6 +1,8 @@
 declare_package
 globals
 base_collection
+analysis_ds_collection_proxy
+
 materialized_collection_creator
 view_creator
 analysis_dataset_manager
@@ -14,4 +16,5 @@ spatial/
 sw/
 workspace/
 grouping/
+
 

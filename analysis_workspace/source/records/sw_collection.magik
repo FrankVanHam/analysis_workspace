@@ -28,7 +28,7 @@ def_slotted_exemplar(:sw_collection,
 	{
 		{:actual_ds_name,        _unset},
 		{:actual_table_name, _unset}
-	}, :base_collection)
+	}, :base_record_collection)
 $
 
 
@@ -64,7 +64,7 @@ _method sw_collection.is_record_collection?
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method sw_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:actual_ds_name, :actual_table_name})
@@ -73,7 +73,7 @@ _method sw_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method sw_collection.init_from_serial(dsm, nrefs, actual_ds_name, actual_table_name)
 	_super.init_from_serial(dsm, nrefs)
 	.actual_ds_name << actual_ds_name
@@ -82,43 +82,51 @@ _private _method sw_collection.init_from_serial(dsm, nrefs, actual_ds_name, actu
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method sw_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
 		other.equals_in_details?(.nrefs, .actual_ds_name, .actual_table_name)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method sw_collection.equals_in_details?(nrefs, actual_ds_name, actual_table_name)
-	show(_self, nrefs, actual_ds_name, actual_table_name, .nrefs, .actual_ds_name, .actual_table_name)
 	_return _super.equals_in_details?(nrefs) _andif
 		.actual_ds_name = actual_ds_name _andif
 		.actual_table_name = actual_table_name
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method sw_collection.actual_collection
 	_return gis_program_manager.databases[.actual_ds_name].collections[.actual_table_name]
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method sw_collection.expose()
 	## Expose the internal smallworld collection
 	_return _self.actual_collection
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method sw_collection.geometry_set(geom_name)
+	## Return a geometry set for the geometry geom_name.
+	_local sw_col << _self.actual_collection
+	_local world  << sw_col.record_exemplar.rwan_world_for(geom_name)
+	_return sw_col.geometry_set(world, _unset, geom_name)
+_endmethod
+$
+
 #
-#_pragma(classify_level=basic, topic={demo})
+#_pragma(classify_level=basic, topic={analysis})
 #_method sw_collection.has_geometry?
 #	_return _self.actual_collection.descriptor.has_geometry_fields?
 #_endmethod
 #$
 #
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method sw_collection.geometry_refs
 	_local refs << rope.new()
 	_for i_fd _over _self.actual_collection.descriptor.geometry_fields()
@@ -144,6 +152,42 @@ _method sw_collection.size
 	_return _self.actual_collection.size
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_collection.read_stream(_optional filter)
+	## Provide a stream on the content of self.
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream_for_actual_collection(_self.actual_collection)
+	_else 
+		_return _self.actual_collection.read_stream()
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_collection.goto_bounds
+	_if _self.actual_collection.descriptor.has_geometry_fields?.not
+	_then
+		_return _unset
+	_endif 
+	_local bounds << _unset
+	_for i_rec _over _self.fast_elements()
+	_loop
+		_try 
+			sub_bounds << i_rec.goto_bounds
+		_when error
+		_endtry
+		_if sub_bounds _isnt _unset
+		_then 
+			bounds << sub_bounds.union(bounds)
+		_endif 
+	_endloop
+	_return bounds
+_endmethod
+$
+
+
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method sw_collection.description(translator)

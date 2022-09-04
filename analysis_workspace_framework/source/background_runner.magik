@@ -27,10 +27,13 @@ _pragma(classify_level=advanced, topic={analysis})
 ##
 def_slotted_exemplar(:background_runner,
 	{
-		{:thread, _unset},
 		{:busy_label, _unset}
 	},
-	:model)
+	:engine_model)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+background_runner.define_shared_constant(:priority, 3, :private)
 $
 
 message_handler.new(:background_runner).add_uses(:model, :gen_graphics)
@@ -60,10 +63,10 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method background_runner.cancel_run()
-	_if .thread _isnt _unset
+	_if (.task _isnt _unset) _andif
+	    .task.completed?.not
 	_then
-	     .thread.kill(:kill)
-	     .thread << _unset
+	     .task.cancel()
 	     .busy_label.label << _self.message(:interrupted)
 	_endif 
 _endmethod
@@ -71,13 +74,8 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method background_runner.run_in_background(receiver, meth, args, descr)
-	_if .thread _isnt _unset
-	_then
-		.thread.kill(:kill)
-	_endif
-	.thread << _proc(me,receiver,  meth, args, descr)
-			   me.perform(:|running_in_background()|, receiver, meth, args, descr)
-		   _endproc.fork_at(3, _self, receiver, meth, args, descr)
+	_self.cancel_run()
+	_self.run_engine( _self.priority,:|running_in_background()|, receiver, meth, args, descr)
 _endmethod
 $
 
@@ -89,7 +87,7 @@ _method background_runner.running_in_background(receiver, meth, args, descr)
 	_protect
 		receiver.perform(meth, _scatter args)
 	_protection
-		.thread << _unset
+		.task << _unset
 		.busy_label.label << _self.message(:finished_with, _unset, descr)
 		_self.changed(:ended_running)
 	_endprotect
@@ -98,6 +96,6 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method background_runner.running?
-	_return .thread _isnt _unset 
+	_return (.task _isnt _unset) _andif (.task.completed?.not)
 _endmethod
 $

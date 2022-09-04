@@ -18,11 +18,38 @@
 _package rwan
 $
 
-#remex(:base_analysis_test_case)
+#remex(:collection_filter)
+$
 
 _pragma(classify_level=basic, topic={analysis})
-def_slotted_exemplar(:base_analysis_test_case,
+##
+## holder of sequential filter that should be applied to a sw
+## collection. 
+##
+def_slotted_exemplar(:collection_filter,
 	{
-	},
-	{:test_case, :base_analysis_test_case_mixin})
+		{:filters, _unset}
+	})
 $
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method collection_filter.new(filter)
+	_return _clone.init(filter)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method collection_filter.init(filter)
+	.filters << rope.new_with(filter)
+	_return _self
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method collection_filter.add(filter)
+	.filters.add(filter)
+_endmethod
+$
+

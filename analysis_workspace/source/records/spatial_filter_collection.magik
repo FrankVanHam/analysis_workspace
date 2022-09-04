@@ -31,9 +31,8 @@ def_slotted_exemplar(:spatial_filter_collection,
 		{:operator,          _unset},
 		{:filter_collection, _unset},
 		{:filter_geom_name,  _unset}
-	}, :base_collection)
+	}, :base_record_collection)
 $
-
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.new(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
@@ -48,6 +47,10 @@ _private _method spatial_filter_collection.init(dsm, source_col, source_geom_nam
 	.operator << operator
 	.filter_collection << filter_col
 	.filter_geom_name << filter_geom_name
+
+	# protext agains nonsense
+	.source_collection.assert_geom_name(.source_geom_name)
+	.filter_collection.assert_geom_name(.filter_geom_name)
 
 	.source_collection.add_use(_self)
 	.filter_collection.add_use(_self)
@@ -64,7 +67,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_spatial_filter_dialog(holder,
-						  _self.source_collection,
+						  .source_collection,
 						  .source_geom_name, .operator,
 						  .filter_collection, .filter_geom_name)
 _endmethod
@@ -72,10 +75,15 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.geometry_refs
-	_return _self.source_collection.geometry_refs
+	_return .source_collection.geometry_refs
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.expose()
+	_return .source_collection.expose()
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.update(source_geom_name, operator, filter_collection, filter_geom_name)
@@ -87,11 +95,15 @@ _method spatial_filter_collection.update(source_geom_name, operator, filter_coll
 	.filter_collection << filter_collection
 	.filter_geom_name << filter_geom_name
 
+	# protext agains nonsense
+	.source_collection.assert_geom_name(.source_geom_name)
+	.filter_collection.assert_geom_name(.filter_geom_name)
+
 	.filter_collection.add_use(_self)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:source_collection, :source_geom_name, :selector, :filter_collection, :filter_geom_name})
@@ -100,7 +112,7 @@ _method spatial_filter_collection.serial_slots()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_collection.init_from_serial(dsm, nrefs, source_col, source_geom_name, operator, filter_collection, filter_geom_name)
     _super.init_from_serial(dsm, nrefs)
     .source_collection << source_col
@@ -112,20 +124,20 @@ _private _method spatial_filter_collection.init_from_serial(dsm, nrefs, source_c
 _endmethod
 $
 
-#_pragma(classify_level=basic, topic={demo})
+#_pragma(classify_level=basic, topic={analysis})
 #_method spatial_filter_collection.source_collections
 #	_return {_self.source_collection, .arg}
 #_endmethod
 #$
 
-_pragma(classify_level=basic, topic={demo})
+_pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
 		other.equals_in_details?(.nrefs, .source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={demo})
+_pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_collection.equals_in_details?(nrefs, source_col, source_geom_name, operator, filter_collection, filter_geom_name)
 	_return _super.equals_in_details?(nrefs) _andif
 		.source_collection.equals?(source_col) _andif
@@ -135,6 +147,57 @@ _method spatial_filter_collection.equals_in_details?(nrefs, source_col, source_g
 		.filter_geom_name = filter_geom_name
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_collection.size_is_fast?
+	## no, size is generally not fast as it is spatially filtered.
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. Otherwise setmyself as the filter of my
+	## source_collection
+	#
+	_local str << .source_collection.read_stream(_self)
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream_for_spatial_filter(str)
+	_else 
+		_return str
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_collection.filter_stream_for_actual_collection(actual_collection)
+	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
+
+	# if the operator is restricting to the filter, then set the
+	# bounds.
+	_local bounds << _if .operator _isnt :disjoint_from
+			 _then >> filter_gs.bounds
+			 _else >> _unset 
+			 _endif 
+	_local world << actual_collection.record_exemplar.rwan_world_for(.source_geom_name)
+	_local gs << actual_collection.geometry_set(world, bounds, .source_geom_name)
+	_local rwo_stream << gs_rwo_set.new(actual_collection.dataset,
+					    property_list.new_with(
+						    :data_source, gs)).read_stream()
+	
+	_return rwan:spatial_filter_read_stream.new(rwo_stream, .source_geom_name, .operator, filter_gs)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_collection.filter_stream_for_spatial_filter(stream)
+	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
+	_return rwan:spatial_filter_read_stream.new(stream, .source_geom_name, .operator, filter_gs)
+_endmethod
+$
+
 
 #_pragma(classify_level=basic, topic={analysis, collections})
 #_method spatial_filter_collection.size
@@ -204,6 +267,7 @@ _method spatial_filter_collection.discard()
 	.source_collection.remove_use(_self)
 	.filter_collection.remove_use(_self)
 
+	.source_collection << .source_geom_name << .operator << .filter_collection << .filter_geom_name << _unset 
 	_super.discard()
 _endmethod
 $
