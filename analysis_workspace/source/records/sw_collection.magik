@@ -97,6 +97,8 @@ _method sw_collection.equals_in_details?(nrefs, actual_ds_name, actual_table_nam
 _endmethod
 $
 
+###############################################################################
+
 _pragma(classify_level=basic, topic={analysis})
 _method sw_collection.actual_collection
 	_return gis_program_manager.databases[.actual_ds_name].collections[.actual_table_name]

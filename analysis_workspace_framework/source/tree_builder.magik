@@ -455,12 +455,7 @@ $
 #$
 #
 #
-#_pragma(classify_level=advanced, topic={analysis})
-#_method distance_filter_collection.display_tree_in(owner)
-#	_return owner.display_tree_for_distance_filter_collection(_self, _self.base_collection, .geom_name, .distance, .arg)
-#_endmethod
-#$
-#
+
 #_pragma(classify_level=advanced, topic={analysis})
 #_method predicate_filter_collection.display_tree_in(owner)
 #	_return owner.display_tree_for_predicate_collection(_self, _self.base_collection, .pred)

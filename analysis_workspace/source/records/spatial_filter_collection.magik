@@ -48,19 +48,13 @@ _private _method spatial_filter_collection.init(dsm, source_col, source_geom_nam
 	.filter_collection << filter_col
 	.filter_geom_name << filter_geom_name
 
-	# protext agains nonsense
+	# protect agains nonsense
 	.source_collection.assert_geom_name(.source_geom_name)
 	.filter_collection.assert_geom_name(.filter_geom_name)
 
 	.source_collection.add_use(_self)
 	.filter_collection.add_use(_self)
 	_return _super.init(dsm)
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.editable?
-	_return _true 
 _endmethod
 $
 
@@ -74,20 +68,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.geometry_refs
-	_return .source_collection.geometry_refs
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.expose()
-	_return .source_collection.expose()
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.update(source_geom_name, operator, filter_collection, filter_geom_name)
-
 	.filter_collection.remove_use(_self)
 	
 	.source_geom_name << source_geom_name
@@ -106,7 +87,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:source_collection, :source_geom_name, :selector, :filter_collection, :filter_geom_name})
+	keys.add_all_last({:source_collection, :source_geom_name, :operator, :filter_collection, :filter_geom_name})
 	values.add_all_last({.source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name})
 	_return keys, values
 _endmethod
@@ -123,12 +104,6 @@ _private _method spatial_filter_collection.init_from_serial(dsm, nrefs, source_c
     _return _self 
 _endmethod
 $
-
-#_pragma(classify_level=basic, topic={analysis})
-#_method spatial_filter_collection.source_collections
-#	_return {_self.source_collection, .arg}
-#_endmethod
-#$
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.equals?(other)
@@ -148,6 +123,26 @@ _method spatial_filter_collection.equals_in_details?(nrefs, source_col, source_g
 _endmethod
 $
 
+###################################################################################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.editable?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.geometry_refs
+	_return .source_collection.geometry_refs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.expose()
+	_return .source_collection.expose()
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_collection.size_is_fast?
 	## no, size is generally not fast as it is spatially filtered.
@@ -158,13 +153,13 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
-	## filter my results. Otherwise setmyself as the filter of my
+	## filter my results. Otherwise set myself as the filter of my
 	## source_collection
 	#
 	_local str << .source_collection.read_stream(_self)
 	_if filter _isnt _unset
 	_then
-		_return filter.filter_stream_for_spatial_filter(str)
+		_return filter.filter_stream(str)
 	_else 
 		_return str
 	_endif 
@@ -175,24 +170,37 @@ _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_collection.filter_stream_for_actual_collection(actual_collection)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
 
-	# if the operator is restricting to the filter, then set the
-	# bounds.
+	# limit the source by the filter bounds to only look in that
+	# bounds. Except for disjoint operation...
 	_local bounds << _if .operator _isnt :disjoint_from
 			 _then >> filter_gs.bounds
 			 _else >> _unset 
 			 _endif 
-	_local world << actual_collection.record_exemplar.rwan_world_for(.source_geom_name)
-	_local gs << actual_collection.geometry_set(world, bounds, .source_geom_name)
-	_local rwo_stream << gs_rwo_set.new(actual_collection.dataset,
-					    property_list.new_with(
-						    :data_source, gs)).read_stream()
-	
-	_return rwan:spatial_filter_read_stream.new(rwo_stream, .source_geom_name, .operator, filter_gs)
+	_local source_stream << _self.source_rwo_stream(actual_collection, bounds)
+	_return rwan:spatial_filter_read_stream.new(source_stream, .source_geom_name, .operator, filter_gs)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.filter_stream_for_spatial_filter(stream)
+_private _method spatial_filter_collection.source_rwo_stream(actual_collection, bounds)
+	_local source_gs << _self.source_geometry_set(actual_collection, bounds)
+	_return gs_rwo_set.new(actual_collection.dataset,
+			       property_list.new_with(
+				       :data_source, gs)).read_stream()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method spatial_filter_collection.source_geometry_set(actual_collection, bounds)
+	# if the operator is restricting to the filter, then set the
+	# bounds.
+	_local world << actual_collection.record_exemplar.rwan_world_for(.source_geom_name)
+	_return actual_collection.geometry_set(world, bounds, .source_geom_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
 	_return rwan:spatial_filter_read_stream.new(stream, .source_geom_name, .operator, filter_gs)
 _endmethod

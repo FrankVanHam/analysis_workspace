@@ -214,8 +214,7 @@ _method construct_dialog.add_trail()
 	_local pseudo << _self.trail
 	_if pseudo.geom_category _is :area
 	_then
-		#col << rwan:area_collection.new(dsm, pseudo)
-		col  << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
+		col << rwan:area_collection.new(dsm, pseudo)
 		msg << _self.message(:closed_trail_col_name)
 	_else
 		col  << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
@@ -716,33 +715,31 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_distance_filter_dialog()
-	_local (record_holder, arg_holder) << _self.selected_col_and_spatial()
-	_if record_holder _is _unset _orif arg_holder _is _unset
-	_then
-		_self.user_error(:please_select_a_collection_and_geometry)
-	_endif
-	_return _self.do_create_distance_filter_dialog(_unset, record_holder, arg_holder)
+	_local dia << distance_filter_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_holder)
+	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_distance_filter_dialog(holder,
-						    base_col, arg,
-						    geom_name, distance, inverse?)
-	_local record_holder << _self.workspace.holder_for(base_col)
-	_local arg_holder    << _self.workspace.holder_for(arg)
-	_return _self.do_create_distance_filter_dialog(holder, record_holder, arg_holder,
-						       geom_name, distance, inverse?)
+_method construct_dialog.edit_distance_filter_dialog(holder, source_col, source_geom_name,
+						    distance, inverse?,
+						    filter_col, filter_geom_name)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	_local filter_holder << _self.workspace.holder_for(filter_col)
+	_return _self.do_create_distance_filter_dialog(holder, source_holder, source_geom_name,
+							distance, inverse?, filter_holder, filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.do_create_distance_filter_dialog(holder, record_holder, arg_holder,
-								   _optional geom_name, distance, inverse?)
+_private _method construct_dialog.do_create_distance_filter_dialog(holder, source_holder, source_geom_name,
+								    distance, inverse?, filter_holder, filter_geom_name)
 	dia << distance_filter_dialog.new_dialog(_self)
-	dia.set_holder(holder, record_holder, arg_holder,
-		       _self.dataset_manager,
-		       geom_name, distance, inverse?)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, source_geom_name,
+		       distance, inverse?, filter_holder, filter_geom_name)
 	dia.activate()
 	_return dia
 _endmethod

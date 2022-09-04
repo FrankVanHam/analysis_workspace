@@ -60,7 +60,6 @@ _method spatial_filter_dialog.set_holder(workspace,
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
@@ -159,13 +158,6 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.construct_spatial_predicate()
 	_return .source_holder.collection.filter_by_geometry(.source_geom_name, .operator,
 							     .filter_holder.collection, .filter_geom_name)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_dialog.cancel()
-	_self.close()
 _endmethod
 $
 

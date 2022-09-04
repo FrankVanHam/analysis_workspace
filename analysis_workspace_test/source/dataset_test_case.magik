@@ -96,6 +96,17 @@ _method dataset_test_case.test_spatial_analysis_collection()
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_distance_analysis_collection()
+	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
+	_local area << _self.area_surrounding_parkers_piece(.ds)
+	_local area_col << rwan:area_collection.new(.ds, area)
+	_local hcol1 << hcol.filter_by_distance(:location, length_value(10,:m), _false, area_col, :area)
+	
+	_return _self.basic_storage_test(hcol1)
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_predicate_filter()

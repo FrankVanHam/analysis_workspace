@@ -233,3 +233,4 @@ _method base_source_collection.convert_to_geometry(_optional geom_name)
 	_return _self.actual_collection.geometry_set(_self.world, !rwan_limit_bounds!, geom_name)
 _endmethod
 $
+

@@ -3,3 +3,4 @@
 :point		point
 :area		area
 :text		text
+:geometry	Geometry

@@ -1,0 +1,124 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:distance_filter_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test distance filters.
+##
+def_slotted_exemplar(:distance_filter_col_test_case,
+	{},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_nref_check()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	# road analytic collection and area 
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
+
+	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_self.assert_equals(1, acol.nrefs, "source collection is used once")
+	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
+
+	_local filter_col1 << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_self.assert_equals(2, acol.nrefs, "source collection is used twice")
+	_self.assert_equals(2, area_col.nrefs, "area collection is used twice")
+	
+	filter_col1.discard()
+	_self.assert_equals(1, acol.nrefs, "source collection is used once again")
+	_self.assert_equals(1, area_col.nrefs, "area collection is used once again")
+
+	_local area_col1 << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
+	filter_col.update(:centre_line, length_value(10,:m), _false, area_col1, :area)
+	_self.assert_equals(0, area_col.nrefs, "area collection is free")
+	_self.assert_equals(1, area_col1.nrefs, "area collection 1 is used once")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_exposure()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	# road analytic collection and area 
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
+
+	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_self.assert_equals( _self.min_road_collection, filter_col.expose(), "the core collection is still the road collection")
+
+	_local filter_col2 << filter_col.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_self.assert_equals( _self.min_road_collection, filter_col2.expose(), "the core (2) collection is still the road collection")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_nref_check()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	# road analytic collection and area 
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
+
+	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_self.assert_equals(1, acol.nrefs, "source collection is used once")
+	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
+
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_distance()
+	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
+	
+	_local pcol << _self.points_collection(dsm, {{0,51000},{0,52000}})
+	_local fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "one park is within 1 meter")
+
+	pcol << _self.points_collection(dsm, {{0,51000},{1000,51000}})
+	fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "one park is within 1 meter, with 2 hits, but still one park")
+
+	fcol << acol.filter_by_distance(:coverage, length_value(0.9,:m), _false, pcol, :geometry)
+	_self.assert_equals(0, fcol.size, "no park within 0.9 m")
+	
+	pcol << _self.points_collection(dsm, {{0,51000}})
+	fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, pcol, :geometry)
+	fcol << fcol.filter_by_distance(:coverage, length_value(0.9,:m), _true, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "one park of the parks within 1 meter is not within 0.9 meter")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_area_collection()
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_sw_collection()
+	
+_endmethod
+$

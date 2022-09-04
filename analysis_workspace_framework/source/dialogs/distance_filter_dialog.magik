@@ -26,42 +26,49 @@ _pragma(classify_level=basic, topic={analysis})
 ## collection.
 def_slotted_exemplar(:distance_filter_dialog,
 	{
-		{:items,          _unset},
-		{:holder,         _unset},
-		{:record_holder,  _unset},
-		{:spatial_holder, _unset},
-		{:geom_name,      _unset},
-		{:distance,       _unset},
-		{:inverse?,       _unset}
+		{:distance,  _unset},
+		{:inverse?,  _unset}
 	},
-	:model)
+	:base_dialog)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-message_handler.new(:distance_filter_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:distance_filter_dialog).add_uses(:model, :base_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_dialog.set_holder(holder, record_holder, spatial_holder, dsm,
-					  _optional geom_name, distance, inverse?)
+_method distance_filter_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
+	.inverse? << _false
+	.distance << length_value.new(10,:m)
+_endmethod
+$
+_pragma(classify_level=restricted, topic={analysis})
+_method distance_filter_dialog.set_holder(workspace,
+					 holder, source_holder, source_geom_name,
+					 distance, inverse?, filter_holder, filter_geom_name)
+	.workspace << workspace
 	.holder << holder
-	.record_holder << record_holder
-	.spatial_holder << spatial_holder
-	.geom_name << geom_name
+	.source_holder << source_holder
+	.source_geom_name << source_geom_name
 	.distance << distance
-	.inverse? << inverse?.default(_false)
+	.inverse? << inverse?
+	.filter_holder << filter_holder
+	.filter_geom_name << filter_geom_name
+	.name << holder.name
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
-	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:row_alignment, :fill,
 				:col_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_distance_options(rc)
+	_self.build_name(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
 	_self.build_buttons(rc)
 	_return rc
@@ -69,28 +76,10 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method distance_filter_dialog.build_top_label(container)
-	sw_text_window.new(container, 7, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:min_width, 400,
-			:col_alignment, :fill)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.build_distance_options(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	sw_label_item.new(rc, _self.message(:source_collection))
-	.items[:col] << sw_label_item.new(rc, .record_holder.name, :col_alignment, :fill)
-	
-	sw_label_item.new(rc, _self.message(:geometry))
-	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {},
-							 :model, _self,
-							 :change_selector, :|geometry_changed()|,
-							 :col_alignment, :fill)
+	_self.build_source_selection_rc(rc)
+	_self.build_filter_selection_rc(rc)
 	
 	sw_label_item.new(rc, _self.message(:distance))
 	.items[:distance] << ti << managed_value_text_item.new(rc, _unset,
@@ -104,71 +93,29 @@ _private _method distance_filter_dialog.build_distance_options(container)
 					     :model, _self,
 					     :change_selector, :|inverse_changed()|,
 					     :col_alignment, :fill)
-	
-	sw_label_item.new(rc, _self.message(:target))
-	sw_label_item.new(rc, .spatial_holder.name, :col_alignment, :fill)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method distance_filter_dialog.build_buttons(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_dialog.on_activation()
-	_self.initialise_geometry_choice()
+	_self.initialise_source_geometry_choice()
+	_self.initialise_filter_holder_choice()
 	_self.initialise_distance()
 	_self.initialise_inverse()
-	_self.manage_actions()
+	_self.initialise_name()
 	_return _super.on_activation()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.initialise_distance()
-	_if .distance _isnt _unset
-	_then
-		.items[:distance].value << .distance
-	_else
-		.items[:distance].value << .distance << length_value.new(10,:m)
-	_endif 
+	.items[:distance].value << .distance
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.initialise_inverse()
-	_if .inverse? _isnt _unset
-	_then
-		.items[:inverse?].value << .inverse?
-	_endif 	 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method distance_filter_dialog.initialise_geometry_choice()
-	_local choice << .items[:geometry_choice]
-	choice.text_items << items << _self.geom_field_items
-	_local fd << _if .geom_name _is _unset
-		     _then
-			     >>  _self.most_likely_geom_field(items)
-		     _else
-			     >> .record_holder.collection.expose().field(.geom_name)
-		     _endif
-	choice.rwan_value_with_notify << fd
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_dialog.geometry_changed(value)
-	.geom_name << value.name
+	.items[:inverse?].value << .inverse?
 _endmethod
 $
 
@@ -185,40 +132,16 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method distance_filter_dialog.most_likely_geom_field(items)
-	_if items.size = 1
-	_then
-		_return items[1][1]
-	_endif 
-	_local _constant topo_cats << {:chain, :point, :area}
-	_for i_vec _over items.fast_elements()
-	_loop
-		_local geom_cat << i_vec[1].geom_category
-		_if topo_cats.includes?(geom_cat)
-		_then
-			_return i_vec[1]
-		_endif
-	_endloop
-	_return items[1][1]	 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_dialog.manage_actions()
-	_local col? << .record_holder.is_record_collection?
-	.items[:col].enabled? << col?
-	.items[:geometry_choice].enabled? << col?
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_dialog.ok()
 	_if .holder _is _unset
 	_then 
 		_local new_col << _self.construct_distance_filter()
-		.parent_model.add_collection(new_col)
+		.parent_model.add_holder(.parent_model.new_holder(new_col,
+								  .name))
 	_else
-		.holder.collection.update(.geom_name, .distance, .inverse?)
+		.holder.name << .name
+		.holder.collection.update(.source_geom_name, .distance, .inverse?,
+					  .filter_holder.collection, .filter_geom_name)
 		.parent_model.update_holder(.holder)
 	_endif 
 	_self.close()
@@ -227,36 +150,21 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.construct_distance_filter()
-	_local new_col << .record_holder.collection.distance_collection(.geom_name, .distance, .spatial_holder.collection, .inverse?)
-	_return new_col
+	_return .source_holder.collection.filter_by_distance(.source_geom_name, .distance, .inverse?,
+							     .filter_holder.collection,.filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_dialog.cancel()
-	_self.close()
+_method distance_filter_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif .source_geom_name _isnt _unset _andif .filter_geom_name _isnt _unset
+
+	.items[:source_geometry_choice] .enabled? << .readonly?.not
+	.items[:filter_holder_choice].enabled? << .readonly?.not
+	.items[:filter_geometry_choice].enabled? << .readonly?.not
+	.items[:name].enabled? << .readonly?.not
+	.items[:distance].enabled? << .readonly?.not
+	.items[:inverse?].enabled? << .readonly?.not
 _endmethod
 $
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method distance_filter_dialog.geom_field_items
-	_return _self.geom_field_items_for(.record_holder.collection)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method distance_filter_dialog.geom_field_items_for(col)
-	_local items << rope.new()
-	_local sw_col << col.expose()
-	_for i_fd _over sw_col.descriptor.geometry_fields()
-	_loop
-		_if i_fd.name _is :meatball _then _continue _endif 
-		items.add( {i_fd, i_fd.external_name} )
-	_endloop
-	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
-	items << rope.new_from(items)
-	_return items
-_endmethod
-$
-
-
