@@ -240,12 +240,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method sw_view_collection.origin_is_sw_collection?
-	_return _true 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method sw_view_collection.is_sw_collection?
 	_return _true 
 _endmethod

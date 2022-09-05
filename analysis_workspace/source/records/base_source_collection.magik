@@ -227,10 +227,4 @@ _method base_source_collection.size_filtered_by_geometry(geom_name, selector, ar
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method base_source_collection.convert_to_geometry(_optional geom_name)
-	_dynamic !rwan_limit_bounds!
-	_return _self.actual_collection.geometry_set(_self.world, !rwan_limit_bounds!, geom_name)
-_endmethod
-$
 

@@ -131,6 +131,15 @@ _method area_collection.geometry_set(geom_name)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method area_collection.goto_bounds
+	## Return the bounds of self.
+	## 
+	_return .area.bounds
+_endmethod
+$
+
+
 
 #_pragma(classify_level=basic, topic={analysis})
 #_method area_collection.description(translator)

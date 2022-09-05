@@ -247,9 +247,10 @@ $
 #
 
 _pragma(classify_level=basic, topic={analysis})
-_abstract _method base_collection.goto_bounds
+_method base_collection.goto_bounds
 	## Provide the bounds of the collection
-	
+	show(_self)
+	condition.raise(:error, :string, "Subclass should implement")
 _endmethod
 $
 
@@ -261,8 +262,10 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_abstract _method base_collection.geometry_set(geom_name)
+_method base_collection.geometry_set(geom_name)
 	## Return a geometry set for the geometry geom_name.
+	show(_self)
+	condition.raise(:error, :string, "Subclass should implement")
 _endmethod
 $
 

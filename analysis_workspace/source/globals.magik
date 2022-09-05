@@ -2,7 +2,6 @@ _package rwan
 
 _block
 	_global !current_analysis_dataset_manager!
-	_global !rwan_limit_bounds!
 	_global !root_query!
 _endblock
 $

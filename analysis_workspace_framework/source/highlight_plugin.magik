@@ -132,13 +132,8 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds)
-	_dynamic !rwan_limit_bounds! << window_bounds
-	_local gs << col.convert_to_geometry()
+	_local gs << _self.highlight_gs(col, window_bounds)
 
-	_if _not gs.is_collection?
-	_then
-		gs << geometry_set.new_with(gs)
-	_endif
 	_local clr << given_colour
 
 	_local thick << line_style.new_with_properties(
@@ -149,7 +144,7 @@ _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds
 
 	_local sts << transient_style_system.new(clr)
 
-	sts.deferred? << col.origin_is_sw_collection?
+	sts.deferred? << col.is_record_collection?
 
 	_local pstyle << composite_point_style.new(
 				 {pseudo_chain.new(
@@ -167,11 +162,36 @@ _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds
 	sts.set_default_style(:chain,
 			      thick)
 
-	_local comp << composite_geometry_set.new({gs})
-	comp.style_system << sts
-	_return comp, clr
+	gs.style_system << sts
+	_return gs, clr
 _endmethod
 $
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method highlight_plugin.highlight_gs(org_col, window_bounds)
+	## 
+	## Construct a geometry set that is used to highlight the set.
+
+	_local col << org_col.copy()
+	_local bound_col << area_collection.new(_unset, pseudo_area.new(window_bounds))
+	_local gss << rope.new()
+	_for i_ref _over col.geometry_refs.fast_elements()
+	_loop
+		geom_col << col.filter_by_geometry(i_ref.name, :interacting_with, bound_col, :area)
+#		# todo, remove the test. The filter_by_geometry() must work on all.
+#		_if col.is_record_collection?
+#		_then 
+#			geom_col << col.filter_by_geometry(i_ref.name, :interacting_with, bound_col, :area)
+#		_else
+#			geom_col << col
+#		_endif 
+			
+		gss.add(geom_col.geometry_set(i_ref.name))
+	_endloop
+	_return composite_geometry_set.new(gss)
+_endmethod
+$
+
 
 _pragma(classify_level=restricted)
 _method highlight_plugin.terminate()

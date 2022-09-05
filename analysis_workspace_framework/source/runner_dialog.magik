@@ -250,7 +250,7 @@ _method runner_dialog.manage_actions()
 	
 	.owner.action(:explorer).enabled? << open? _andif record_sel?
 	.owner.action(:goto).enabled? << open? _andif select?
-	.owner.action(:goto_one).enabled? << open? _andif select?
+	.owner.action(:goto_one).enabled? << open? _andif record_sel?
 	.owner.action(:refresh_map).enabled? << _true 
 	.owner.action(:excel).enabled? << open? _andif record_sel?
 	.owner.action(:access).enabled? << open? _andif record_sel?

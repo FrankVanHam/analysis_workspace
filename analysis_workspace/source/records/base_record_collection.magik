@@ -38,6 +38,25 @@ _method base_record_collection.is_record_collection?
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.geometry_set(geom_name)
+	## Defaults to retrieving the set by getting the geometries
+	## from the individual records.
+	## 
+	_local gs << geometry_set.new()
+	_for i_rec _over _self.fast_elements()
+	_loop
+		_local geom << i_rec.geometry(geom_name)
+		_if geom _isnt _unset
+		_then
+			gs.add(geom)
+		_endif
+	_endloop
+	_return gs
+_endmethod
+$
+
+
 _pragma(classify_level=basic, topic={demo})
 _abstract _method base_record_collection.read_stream()
 	## Provide a stream on the content of self.

@@ -186,7 +186,7 @@ _private _method spatial_filter_collection.source_rwo_stream(actual_collection, 
 	_local source_gs << _self.source_geometry_set(actual_collection, bounds)
 	_return gs_rwo_set.new(actual_collection.dataset,
 			       property_list.new_with(
-				       :data_source, gs)).read_stream()
+				       :data_source, source_gs)).read_stream()
 _endmethod
 $
 

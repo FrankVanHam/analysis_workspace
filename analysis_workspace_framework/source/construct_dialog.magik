@@ -832,32 +832,6 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.selection_info()
-	_local holders << _self.selected_top_holders
-	_local colnr << swcolnr << reccolnr << spatialnr << areanr << 0
-	_for i_holder _over holders.fast_elements()
-	_loop
-		colnr +<< 1
-		_if i_holder.is_spatial?
-		_then
-			spatialnr +<< 1
-		_elif i_holder.is_area?
-		_then
-			areanr +<< 1
-		_else
-			reccolnr +<< 1
-			_if i_holder.collection.origin_is_sw_collection?
-			_then
-				swcolnr +<< 1
-			_endif
-		_endif
-	_endloop
-	_return colnr, swcolnr, reccolnr, spatialnr, areanr
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
 _private _method construct_dialog.selected_spatial()
 	_return _self.selected_spatial_and_spatial()
 _endmethod
