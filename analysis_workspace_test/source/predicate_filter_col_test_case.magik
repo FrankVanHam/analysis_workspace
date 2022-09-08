@@ -1,0 +1,97 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:predicate_filter_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using predicate filters.
+##
+def_slotted_exemplar(:predicate_filter_col_test_case,
+	{},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_col_test_case.test_nref_check()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local filter_col << acol.filter_by_predicate(predicate.eq(:name, "Frank"))
+	_self.assert_equals(1, acol.nrefs, "source collection is used once")
+	
+	_local filter_col1 << acol.filter_by_predicate(predicate.eq(:road_type, "B-Road"))
+	_self.assert_equals(2, acol.nrefs, "source collection is used twice")
+	
+	filter_col1.discard()
+	_self.assert_equals(1, acol.nrefs, "source collection is used once again")
+	
+	filter_col.discard()
+	_self.assert_equals(0, acol.nrefs, "area collection is free")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_col_test_case.test_exposure()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local filter_col << acol.filter_by_predicate(predicate.eq(:name, "Frank"))
+	
+	_self.assert_equals( _self.min_road_collection, filter_col.expose(), "the core collection is still the road collection")
+	
+	_local filter_col1 << acol.filter_by_predicate(predicate.eq(:road_type, "B-Road"))
+	_self.assert_equals( _self.min_road_collection, filter_col1.expose(), "the core (2) collection is still the road collection")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_col_test_case.test_filter_geometry_collection()
+	_self.create_road("GS1", {100, 200, 10000,200})
+	_self.create_road("GS2", {100, 100, 10000, 0})
+	_self.create_road("GS3", {50100, 50100, 60000, 60000})
+	
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local park_col << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local area_col << _self.area_collection(dsm, {0,0,50000,0,50000,50000,0,50000,0,0})
+	
+	_local fcol << road_col.filter_by_predicate(predicate.wild(:name, "GS?"))
+	_local fcol2 << fcol.filter_by_geometry(:centre_line, :within, area_col, :geometry)
+	_self.assert_equals(2, fcol2.size, "2 lines fall inside the area")
+	
+	fcol << road_col.filter_by_geometry(:centre_line, :within, area_col, :geometry)
+	fcol2 << fcol.filter_by_predicate(predicate.wild(:name, "GS?"))
+	_self.assert_equals(2, fcol2.size, "2 lines fall inside the area(2)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_col_test_case.test_geometry_set()
+	_self.create_road("GS1", {0,0,10000,0})
+	_self.create_road("GS2", {100, 100, 10000, 0})
+	
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	
+	_local fcol << acol.filter_by_predicate(predicate.wild(:name, "GS?"))
+	_local gs << fcol.geometry_set(:centre_line)
+	_self.assert_equals(2, gs.size, "two roads should match")
+_endmethod
+$

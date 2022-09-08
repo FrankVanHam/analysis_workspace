@@ -387,6 +387,13 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.filter_by_predicate(predicate)
+	_return predicate_filter_collection.new(.dsm,
+						_self, predicate)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_geometry(geom_name, operator, filter_collection, filter_geometry)
 	_return spatial_filter_collection.new(.dsm,
 					      _self, geom_name, operator,

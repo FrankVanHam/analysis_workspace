@@ -182,6 +182,13 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_collection.filter_stream(stream)
+	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
+	_return rwan:spatial_filter_read_stream.new(stream, .source_geom_name, .operator, filter_gs)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_collection.source_rwo_stream(actual_collection, bounds)
 	_local source_gs << _self.source_geometry_set(actual_collection, bounds)
 	_return gs_rwo_set.new(actual_collection.dataset,
@@ -199,12 +206,6 @@ _private _method spatial_filter_collection.source_geometry_set(actual_collection
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.filter_stream(stream)
-	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return rwan:spatial_filter_read_stream.new(stream, .source_geom_name, .operator, filter_gs)
-_endmethod
-$
 
 
 #_pragma(classify_level=basic, topic={analysis, collections})

@@ -153,6 +153,13 @@ _method predicate_filter_collection.filter_stream_for_actual_collection(actual_c
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.filter_stream(stream)
+	
+	_return rwan:predicate_filter_read_stream.new(stream, .s)
+_endmethod
+$
+
 
 #
 #_pragma(classify_level=basic, topic={analysis, collections})

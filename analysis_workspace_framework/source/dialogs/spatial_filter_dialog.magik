@@ -178,6 +178,7 @@ _private _method spatial_filter_dialog.default_image
 	_return smallworld_product.get_raster_image( :explain_interacting_with, _self.module_name )
 _endmethod
 $
+
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.manage_actions()
 	_local has_name? << .name.default("") <> ""
