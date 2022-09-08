@@ -28,7 +28,7 @@ _method base_analysis_test_case_mixin.area_collection(dsm, oords)
 				  sector.new_with_xy(_scatter oords))
 	sectors.close()
 	_local an_area << pseudo_area.new(sectors)
-	_return rwan:area_collection.new(dsm, an_area)
+	_return rwan:geometry_collection.new(dsm, geometry_set.new_with(an_area))
 _endmethod
 $
 

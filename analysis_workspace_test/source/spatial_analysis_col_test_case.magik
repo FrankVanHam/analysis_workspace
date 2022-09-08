@@ -40,11 +40,11 @@ _method spatial_analysis_col_test_case.test_nref_check()
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
 
-	_local filter_col << acol.filter_by_geometry(:centre_line, :within, area_col, :area)
+	_local filter_col << acol.filter_by_geometry(:centre_line, :within, area_col, :geometry)
 	_self.assert_equals(1, acol.nrefs, "source collection is used once")
 	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
 
-	_local filter_col1 << acol.filter_by_geometry(:centre_line, :within, area_col, :area)
+	_local filter_col1 << acol.filter_by_geometry(:centre_line, :within, area_col, :geometry)
 	_self.assert_equals(2, acol.nrefs, "source collection is used twice")
 	_self.assert_equals(2, area_col.nrefs, "area collection is used twice")
 	
@@ -53,7 +53,7 @@ _method spatial_analysis_col_test_case.test_nref_check()
 	_self.assert_equals(1, area_col.nrefs, "area collection is used once again")
 
 	_local area_col1 << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
-	filter_col.update(:centre_line, :within, area_col1, :area)
+	filter_col.update(:centre_line, :within, area_col1, :geometry)
 	_self.assert_equals(0, area_col.nrefs, "area collection is free")
 	_self.assert_equals(1, area_col1.nrefs, "area collection 1 is used once")
 _endmethod
@@ -67,10 +67,10 @@ _method spatial_analysis_col_test_case.test_exposure()
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
 
-	_local filter_col << acol.filter_by_geometry(:centre_line, :within, area_col, :area)
+	_local filter_col << acol.filter_by_geometry(:centre_line, :within, area_col, :geometry)
 	_self.assert_equals( _self.min_road_collection, filter_col.expose(), "the core collection is still the road collection")
 
-	_local filter_col2 << filter_col.filter_by_geometry(:centre_line, :within, area_col, :area)
+	_local filter_col2 << filter_col.filter_by_geometry(:centre_line, :within, area_col, :geometry)
 	_self.assert_equals( _self.min_road_collection, filter_col2.expose(), "the core (2) collection is still the road collection")
 _endmethod
 $
@@ -83,7 +83,7 @@ _method spatial_analysis_col_test_case.test_nref_check()
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
 
-	_local filter_col << acol.filter_by_geometry(:centre_line, :within, area_col, :area)
+	_local filter_col << acol.filter_by_geometry(:centre_line, :within, area_col, :geometry)
 	_self.assert_equals(1, acol.nrefs, "source collection is used once")
 	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
 
@@ -99,7 +99,7 @@ _method spatial_analysis_col_test_case.test_disjoint()
 	# limit to this p1 area.
 	_local overlapping_area_col << _self.area_collection(
 					       dsm, {-10,-10, 50000+10,-10, 50000+10, 50000+10, -10, 50000+10, -10, -10})
-	_local one_park_col << acol.filter_by_geometry(:coverage, :within, overlapping_area_col, :area)
+	_local one_park_col << acol.filter_by_geometry(:coverage, :within, overlapping_area_col, :geometry)
 	_self.assert_equals(1, one_park_col.size, "the overlapping col should have one area")
 
 	_local pcol << _self.points_collection(dsm, {{60000,60000}})
@@ -259,7 +259,7 @@ _method spatial_analysis_col_test_case.test_area_collection()
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
 	
 	_local pcol << _self.area_collection(dsm, {25000, 25000, 40000, 25000, 40000, 40000, 25000, 40000, 25000, 25000})
-	_local fcol << acol.filter_by_geometry(:coverage, :containing, pcol, :area)
+	_local fcol << acol.filter_by_geometry(:coverage, :containing, pcol, :geometry)
 	_self.assert_equals(1, fcol.size, "the park is containing the area")
 _endmethod
 $
@@ -278,3 +278,16 @@ _method spatial_analysis_col_test_case.test_sw_collection()
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_analysis_col_test_case.test_geometry_set()
+	_self.create_park("outside", {0,0,50000,0,50000,50000,0,50000,0,0})
+	_self.create_park("inside", {25000, 25000, 40000, 25000, 40000, 40000, 25000, 40000, 25000, 25000})
+	
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
+	
+	_local fcol << acol.filter_by_geometry(:coverage, :containing, acol, :coverage)
+	_local gs << fcol.geometry_set(:coverage)
+	_self.assert_equals(1, gs.size, "One element")
+_endmethod
+$

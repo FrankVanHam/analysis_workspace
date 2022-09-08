@@ -58,7 +58,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_analysis_collection()
+_method dataset_test_case.test_sw_collection()
 	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
 	_return _self.basic_storage_test(rcol)
 _endmethod
@@ -66,21 +66,18 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_geometry_collection()
-	_local area_col << _self.area_surrounding_parkers_piece(.ds)
-	_local area << area_col.area
+	_local area << _self.area_surrounding_parkers_piece(.ds)
 	_local gs << geometry_set.new_with(area)
-	_local geom << rwan:geometry_collection.new(.ds, gs)
-	_self.basic_storage_test(geom)
+	_local gcol << rwan:geometry_collection.new(.ds, gs)
+	_self.basic_storage_test(gcol)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_area_collection()
 	_local area << _self.area_surrounding_parkers_piece(.ds)
-	_local area_col << rwan:area_collection.new(.ds, area)
-	_local retrieved_area << _self.basic_storage_test(area_col)
-	
-	_self.assert_true((area_col.area.area-retrieved_area.area.area).abs < 0.001, "Area should be the same")
+	_local area_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(area))
+	_self.basic_storage_test(area_col)
 _endmethod
 $
 
@@ -89,8 +86,8 @@ _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_spatial_analysis_collection()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local area << _self.area_surrounding_parkers_piece(.ds)
-	_local area_col << rwan:area_collection.new(.ds, area)
-	_local hcol1 << hcol.filter_by_geometry(:location, :within, area_col, :area)
+	_local area_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(area))
+	_local hcol1 << hcol.filter_by_geometry(:location, :within, area_col, :geometry)
 	
 	_return _self.basic_storage_test(hcol1)
 _endmethod
@@ -100,8 +97,8 @@ _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_distance_analysis_collection()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local area << _self.area_surrounding_parkers_piece(.ds)
-	_local area_col << rwan:area_collection.new(.ds, area)
-	_local hcol1 << hcol.filter_by_distance(:location, length_value(10,:m), _false, area_col, :area)
+	_local area_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(area))
+	_local hcol1 << hcol.filter_by_distance(:location, length_value(10,:m), _false, area_col, :geometry)
 	
 	_return _self.basic_storage_test(hcol1)
 _endmethod

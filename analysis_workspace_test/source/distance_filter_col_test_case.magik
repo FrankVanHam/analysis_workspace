@@ -37,11 +37,11 @@ _method distance_filter_col_test_case.test_nref_check()
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
 
-	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :geometry)
 	_self.assert_equals(1, acol.nrefs, "source collection is used once")
 	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
 
-	_local filter_col1 << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_local filter_col1 << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :geometry)
 	_self.assert_equals(2, acol.nrefs, "source collection is used twice")
 	_self.assert_equals(2, area_col.nrefs, "area collection is used twice")
 	
@@ -50,7 +50,7 @@ _method distance_filter_col_test_case.test_nref_check()
 	_self.assert_equals(1, area_col.nrefs, "area collection is used once again")
 
 	_local area_col1 << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
-	filter_col.update(:centre_line, length_value(10,:m), _false, area_col1, :area)
+	filter_col.update(:centre_line, length_value(10,:m), _false, area_col1, :geometry)
 	_self.assert_equals(0, area_col.nrefs, "area collection is free")
 	_self.assert_equals(1, area_col1.nrefs, "area collection 1 is used once")
 _endmethod
@@ -64,10 +64,10 @@ _method distance_filter_col_test_case.test_exposure()
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
 
-	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :geometry)
 	_self.assert_equals( _self.min_road_collection, filter_col.expose(), "the core collection is still the road collection")
 
-	_local filter_col2 << filter_col.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_local filter_col2 << filter_col.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :geometry)
 	_self.assert_equals( _self.min_road_collection, filter_col2.expose(), "the core (2) collection is still the road collection")
 _endmethod
 $
@@ -80,7 +80,7 @@ _method distance_filter_col_test_case.test_nref_check()
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
 
-	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :area)
+	_local filter_col << acol.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :geometry)
 	_self.assert_equals(1, acol.nrefs, "source collection is used once")
 	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
 
@@ -118,7 +118,7 @@ _method distance_filter_col_test_case.test_area_collection()
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
 	
 	_local pcol << _self.area_collection(dsm, {51000, 0, 100000, 0, 100000, 50000, 51000, 50000, 51000, 0})
-	_local fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, pcol, :area)
+	_local fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, pcol, :geometry)
 	_self.assert_equals(1, fcol.size, "one park is within 1 meter of the area")
 _endmethod
 $
@@ -135,11 +135,23 @@ _method distance_filter_col_test_case.test_spatial_filter_collection()
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
 	
 	_local area_col << _self.area_collection(dsm, {-10,-10, 20010, -10, 20010, 20010, -10, 20010, -10, -10})
-	_local fcol << acol.filter_by_geometry(:coverage, :within, area_col, :area)
+	_local fcol << acol.filter_by_geometry(:coverage, :within, area_col, :geometry)
 	_self.assert_equals(3, fcol.size, "3 parks in all")
 	
 	_local tcol << fcol.filter_by_distance(:coverage, length_value(1,:m), _false, fcol, :coverage)
-	show(tcol.size)
 	_self.assert_equals(3, tcol.size, "3 parks in all")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_geometry_set()
+	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
+	
+	_local pcol << _self.area_collection(dsm, {51000, 0, 100000, 0, 100000, 50000, 51000, 50000, 51000, 0})
+	_local fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, pcol, :geometry)
+	_local gs << fcol.geometry_set(:coverage)
+	_self.assert_equals(1, gs.size, "1 geometry")
 _endmethod
 $

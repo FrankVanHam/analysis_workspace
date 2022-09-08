@@ -1,0 +1,63 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:spatial_filter_record_read_stream)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+def_slotted_exemplar(:spatial_filter_record_read_stream,
+	## stream that filters the sourcestream on spatial predicate.
+	{
+		{:source_geom_name, _unset}
+	}, :spatial_filter_base_read_stream)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_record_read_stream.new(source_stream, source_geom_name, operator, filter_gs)
+	_return _clone.init(source_stream, source_geom_name, operator, filter_gs)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method spatial_filter_record_read_stream.init(source_stream, source_geom_name, operator, filter_gs)
+	.source_geom_name << source_geom_name
+	_return _super.init( source_stream, operator, filter_gs)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method spatial_filter_record_read_stream.get()
+	_loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset _then _return _unset _endif #exhausted
+
+		_local geom << rec.geometry(.source_geom_name)
+		_if geom _isnt _unset
+		_then 	
+			_local meth << write_string("match_", .operator, "()").as_symbol()
+			_local match? << _self.perform_private(meth, geom)
+			_if match?
+			_then
+				_return rec
+			_endif
+		_endif
+	_endloop 
+_endmethod
+$

@@ -63,61 +63,6 @@ _abstract _method base_record_collection.read_stream()
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={demo})
-_iter _method base_record_collection.fast_elements()
-	_local str << _self.read_stream()
-	_protect
-		_loop 
-			_local value << str.get()
-			_if value _is _unset _then _leave _endif
-			_loopbody(value)
-		_endloop
-	_protection
-		str.close()
-	_endprotect 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={demo})
-_method base_record_collection.an_element()
-	_local str << _self.read_stream()
-	_protect
-		_return str.get()
-	_protection
-		str.close()
-	_endprotect 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.size
-	_if _self.size_is_fast?
-	_then
-		condition.raise(:error, :string, write("If size is fast, then dont use this slow-ass method"))
-	_endif
-	_local c << 0
-	_for i_rec _over _self.fast_elements()
-	_loop
-		c +<< 1
-	_endloop
-	_return c
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.append_to_filter(_optional filter)
-	## 
-	## Append self to filter and return the filter. If filter is
-	## unset then create the filter.
-	_return  _if filter _isnt _unset
-		 _then
-			 >> filter.add(_self)
-		 _else
-			 >> collection_filter.new(_self)
-		 _endif 
-_endmethod
-$
-
 
 #
 #_pragma(classify_level=basic, topic={analysis})

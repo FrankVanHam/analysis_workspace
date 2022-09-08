@@ -30,6 +30,37 @@ def_slotted_exemplar(:base_spatial_collection,
 	:base_collection)
 $
 
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.geometry_refs
+	>> {(geom_ref.new(:geometry,
+			  _self.message(:geometry),
+			  _self.geom_category,
+			  _false))}
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_abstract _iter _method base_spatial_collection.fast_elements()
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.geometry_set(geom_name)
+	## Defaults to retrieving the set by getting the geometries
+	## from the individual records.
+	## 
+	_local gs << geometry_set.new()
+	_for i_geom _over _self.fast_elements()
+	_loop
+		gs.add(i_geom)
+	_endloop
+	_return gs
+_endmethod
+$
+
+
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_spatial_collection.is_spatial?
 #	_return _true  
@@ -107,3 +138,12 @@ $
 #	_return _self.message(:description)
 #_endmethod
 #$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.filter_by_geometry(geom_name, operator, filter_collection, filter_geometry)
+	_return spatial_filter_geometry_collection.new(.dsm,
+						       _self, operator,
+						       filter_collection, filter_geometry)
+_endmethod
+$

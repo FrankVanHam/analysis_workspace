@@ -212,12 +212,11 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.add_trail()
 	_local dsm << _self.dataset_manager
 	_local pseudo << _self.trail
+	col << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
 	_if pseudo.geom_category _is :area
 	_then
-		col << rwan:area_collection.new(dsm, pseudo)
 		msg << _self.message(:closed_trail_col_name)
 	_else
-		col  << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
 		msg << _self.message(:trail_col_name)
 	_endif
 	_self.add_holder(_self.new_holder(col, msg))
@@ -916,9 +915,13 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.manage_actions()
-	_local holder << _self.selected_top_holder
+	_local holders << _self.selected_top_holders
+	_local holder << _if holders.size = 1
+			 _then >> holders.an_element()
+			 _else >> _unset
+			 _endif 
 	_local any_top_sel? << holder _isnt _unset _andif holder.nrefs=0
-	_local any_sel? << _self.any_selection?
+	_local record? << holder _isnt _unset _andif holder.is_record_collection?
 	_local open? << _self.open?
 	.owner.action(:add_collections).enabled? << open?
 	.owner.action(:add_trail).enabled? << open? _andif _self.has_trail?
@@ -928,8 +931,8 @@ _method construct_dialog.manage_actions()
 	.owner.action(:add_explorer_selection).enabled? << open? _andif _self.has_explorer_selection?
 	.owner.action(:add_scrapbook).enabled? << open?
 	.owner.action(:spatial_filter).enabled? << open? _andif any_top_sel?
-	.owner.action(:distance_filter).enabled? << open?
-	.owner.action(:predicate_filter).enabled? << open?
+	.owner.action(:distance_filter).enabled? << open? _andif any_top_sel?
+	.owner.action(:predicate_filter).enabled? << open? _andif any_top_sel? _andif record?
 
 	.owner.action(:follow_topology).enabled? << open?
 	.owner.action(:follow_trace).enabled? << open?
@@ -950,11 +953,11 @@ _method construct_dialog.manage_actions()
 	.owner.action(:materialize).enabled? << open?
 	.owner.action(:materialize_spatial).enabled? << open?
 
-	.owner.action(:edit).enabled? << open? _andif any_sel? _andif holder.editable?
-	.owner.action(:view).enabled? << open? _andif any_sel? _andif holder.editable?
+	.owner.action(:edit).enabled? << open? _andif any_top_sel? _andif holder.editable?
+	.owner.action(:view).enabled? << open? _andif any_top_sel? _andif holder.editable?
 	.owner.action(:delete).enabled? << open? _andif any_top_sel?
 	.owner.action(:move_up).enabled? << open?  _andif any_top_sel?   _andif _self.can_move_up?
 	.owner.action(:move_down).enabled? << open?  _andif any_top_sel? _andif _self.can_move_down?
-	.owner.action(:copy).enabled? << open?  _andif any_sel?
+	.owner.action(:copy).enabled? << open?  _andif any_top_sel?
 _endmethod
 $

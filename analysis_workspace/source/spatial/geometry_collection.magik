@@ -100,25 +100,35 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.geometry)
+		other.equals_in_details?(.nrefs, .geometry)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method geometry_collection.equals_in_details?(geometry)
-	_if _not _super.equals_in_details?() _then _return _false _endif
-	_return _self.geometry_sets_equal?(.geometry, geometry)
+_method geometry_collection.equals_in_details?(nrefs, geometry)
+	_return _super.equals_in_details?(nrefs) _andif 
+		_self.geometry_sets_equal?(.geometry, geometry)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method geometry_collection.geometry_refs
-	>> {(geom_ref.new(:geometry,
-			  _self.message(:geometry),
-			  _self.geom_category,
-			  _false))}
+_pragma(classify_level=restricted, topic={analysis})
+_private _method geometry_collection.geometry_sets_equal?( gs1, gs2 )
+	_if gs1.size <> gs2.size _then _return _false _endif 
+	_for i_geom _over gs1.fast_elements()
+	_loop @outer
+		_for i_geom2 _over gs2.fast_elements()
+		_loop
+			_if i_geom.equal_to?(i_geom2)
+			_then
+				_continue @outer
+			_endif
+		_endloop
+		_return _false
+	_endloop
+	_return _true 
 _endmethod
 $
+###########################################################################
 
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.geometry_set(geom_name)
@@ -126,25 +136,23 @@ _method geometry_collection.geometry_set(geom_name)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method geometry_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. Otherwise set myself as the filter of my
+	## source_collection
+	#
+	_local str << .geometry.read_stream()
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream(str)
+	_else 
+		_return str
+	_endif 
+_endmethod
+$
 
-#_pragma(classify_level=restricted, topic={analysis})
-#_private _method geometry_collection.geometry_sets_equal?( gs1, gs2 )
-#	_if gs1.size <> gs2.size _then _return _false _endif 
-#	_for i_geom _over gs1.fast_elements()
-#	_loop @outer
-#		_for i_geom2 _over gs2.fast_elements()
-#		_loop
-#			_if i_geom.equal_to?(i_geom2)
-#			_then
-#				_continue @outer
-#			_endif
-#		_endloop
-#		_return _false
-#	_endloop
-#	_return _true 
-#_endmethod
-#$
-#
+
 #_pragma(classify_level=basic, topic={analysis})
 #_method geometry_collection.size
 #	_return .geometry.size

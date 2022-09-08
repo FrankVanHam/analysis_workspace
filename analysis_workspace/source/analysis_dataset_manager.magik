@@ -268,11 +268,7 @@ _method analysis_dataset_manager.materialize_spatial(spatial_col)
 	_handling self_intersecting, warning, information _with _proc() _endproc
 
 	_self.report(:converting_to_geometry)
-	_local gs << spatial_col.convert_to_geometry(_unset)
-	_if _not gs.is_collection?
-	_then
-		gs << geometry_set.new_with(gs)
-	_endif
+	_local gs << spatial_col.geometry_set(:geometry)
 	.ds_view.switch(:write)
 	_local col << .ds_view.collections[:geom_holder]
 	_local recex << col.new_detached_record()

@@ -2,7 +2,7 @@ base_record_collection
 collection_filter
 #predicate_filter_collection
 spatial_filter_collection
-#distance_filter_collection
+distance_filter_collection
 #distance_area_filter_collection
 #
 #base_source_collection
@@ -12,5 +12,4 @@ sw_collection
 #materialized_collection
 #binary_op/
 #follow/
-#streams/
 #binary_op/

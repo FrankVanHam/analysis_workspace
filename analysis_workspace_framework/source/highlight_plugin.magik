@@ -118,6 +118,7 @@ _pragma(classify_level=restricted)
 _method highlight_plugin.map_damage_notify(graphics_context, map_view)
 	## Callback method from P_MAP_VIEW to allow us to render onto
 	## it. Only render on the main map.
+	_handling error _with _proc(c) !traceback!() _endproc 
 	_if map_view.map_manager.current_map_view _is map_view
 	_then
 		_for i_col, i_colour _over _self.highlight_collections()
@@ -173,11 +174,11 @@ _private _method highlight_plugin.highlight_gs(org_col, window_bounds)
 	## Construct a geometry set that is used to highlight the set.
 
 	_local col << org_col.copy()
-	_local bound_col << area_collection.new(_unset, pseudo_area.new(window_bounds))
+	_local bound_col << geometry_collection.new(_unset, geometry_set.new_with(pseudo_area.new(window_bounds)))
 	_local gss << rope.new()
 	_for i_ref _over col.geometry_refs.fast_elements()
 	_loop
-		geom_col << col.filter_by_geometry(i_ref.name, :interacting_with, bound_col, :area)
+		geom_col << col.filter_by_geometry(i_ref.name, :interacting_with, bound_col, :geometry)
 #		# todo, remove the test. The filter_by_geometry() must work on all.
 #		_if col.is_record_collection?
 #		_then 

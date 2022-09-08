@@ -190,6 +190,7 @@ _method distance_filter_collection.read_stream(_optional filter)
 	_endif 
 _endmethod
 $
+
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_collection.world_distance
 	_local world << .source_collection.expose().record_exemplar.rwan_world_for(.source_geom_name)

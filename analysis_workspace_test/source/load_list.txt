@@ -18,3 +18,4 @@ follow_analysis_test_case
 trace_analysis_test_case
 sw_collection_test_case
 distance_filter_col_test_case
+geometry_col_test_case

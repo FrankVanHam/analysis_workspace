@@ -127,6 +127,47 @@ _method base_collection.expose()
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={demo})
+_iter _method base_collection.fast_elements()
+	_local str << _self.read_stream()
+	_protect
+		_loop 
+			_local value << str.get()
+			_if value _is _unset _then _leave _endif
+			_loopbody(value)
+		_endloop
+	_protection
+		str.close()
+	_endprotect 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method base_collection.an_element()
+	_local str << _self.read_stream()
+	_protect
+		_return str.get()
+	_protection
+		str.close()
+	_endprotect 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.size
+	_if _self.size_is_fast?
+	_then
+		condition.raise(:error, :string, write("If size is fast, then dont use this slow-ass method"))
+	_endif
+	_local c << 0
+	_for i_rec _over _self.fast_elements()
+	_loop
+		c +<< 1
+	_endloop
+	_return c
+_endmethod
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.assert_geom_name(name)
 	## make sure that name is a valid geometry name for me.
