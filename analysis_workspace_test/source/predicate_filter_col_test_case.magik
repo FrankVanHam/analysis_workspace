@@ -83,6 +83,27 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_col_test_case.test_filter_distance_collection()
+	_self.create_road("GS1", {100, 200, 10000,200})
+	_self.create_road("GS2", {100, 100, 10000, 0})
+	_self.create_road("GS3", {50100, 50100, 60000, 60000})
+	
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local park_col << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local area_col << _self.area_collection(dsm, {0,0,50000,0,50000,50000,0,50000,0,0})
+	
+	_local fcol << road_col.filter_by_predicate(predicate.wild(:name, "GS?"))
+	_local fcol2 << fcol.filter_by_distance(:centre_line, length_value(1,:mm), _false, area_col, :geometry)
+	_self.assert_equals(2, fcol2.size, "2 lines fall inside the area")
+	
+	fcol << road_col.filter_by_distance(:centre_line, length_value(1,:mm), _false, area_col, :geometry)
+	fcol2 << fcol.filter_by_predicate(predicate.wild(:name, "GS?"))
+	_self.assert_equals(2, fcol2.size, "2 lines fall inside the area(2)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method predicate_filter_col_test_case.test_geometry_set()
 	_self.create_road("GS1", {0,0,10000,0})
 	_self.create_road("GS2", {100, 100, 10000, 0})
@@ -93,5 +114,6 @@ _method predicate_filter_col_test_case.test_geometry_set()
 	_local fcol << acol.filter_by_predicate(predicate.wild(:name, "GS?"))
 	_local gs << fcol.geometry_set(:centre_line)
 	_self.assert_equals(2, gs.size, "two roads should match")
+	_self.assert_not_unset(fcol.goto_bounds)
 _endmethod
 $

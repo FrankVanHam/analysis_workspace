@@ -41,12 +41,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_abstract _iter _method base_spatial_collection.fast_elements()
-	
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.geometry_set(geom_name)
 	## Defaults to retrieving the set by getting the geometries
 	## from the individual records.
@@ -60,6 +54,15 @@ _method base_spatial_collection.geometry_set(geom_name)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.geom_category
+	_local geom << _self.an_element()
+	_if geom _isnt _unset
+	_then
+		_return geom.geom_category
+	_endif 
+_endmethod
+$
 
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_spatial_collection.is_spatial?
@@ -145,5 +148,13 @@ _method base_spatial_collection.filter_by_geometry(geom_name, operator, filter_c
 	_return spatial_filter_geometry_collection.new(.dsm,
 						       _self, operator,
 						       filter_collection, filter_geometry)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.filter_by_distance(geom_name, distance, inverse?, filter_collection, filter_geometry)
+	_return distance_filter_geometry_collection.new(.dsm,
+							_self, distance, inverse?,
+							filter_collection, filter_geometry)
 _endmethod
 $

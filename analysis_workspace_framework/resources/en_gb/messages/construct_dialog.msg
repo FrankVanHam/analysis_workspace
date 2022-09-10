@@ -26,10 +26,10 @@
 :add_scrapbook_tooltip		Add the contents of the scrapbook to the workspace
 
 :spatial_filter			Spatial
-:spatial_filter_tooltip		Filter the record collection on a spatial relation (eg inside) with a geometry or area collection
+:spatial_filter_tooltip		Filter the record collection on a spatial relation (eg inside) with a geometry
 
 :distance_filter		Distance
-:distance_filter_tooltip	Filter the records that are either with or outside a distance from a geometry or area collection
+:distance_filter_tooltip	Filter the records that are either with or outside a distance from a geometry
 
 :predicate_filter		Predicate
 :predicate_filter_tooltip	Filter a record collection based on a (complex) predicate

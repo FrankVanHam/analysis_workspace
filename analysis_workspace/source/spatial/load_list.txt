@@ -5,3 +5,4 @@ base_spatial_collection
 geometry_collection
 #spatial_materialized_collection
 spatial_filter_geometry_collection
+distance_filter_geometry_collection

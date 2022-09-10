@@ -178,5 +178,27 @@ _private _method predicate_filter_dialog.manage_actions()
 	.items[:ok].enabled? << .readonly?.not _andif has_predicate? _andif has_name?
 	
 	.items[:name].enabled? << .readonly?.not
+	_if .readonly?
+	_then
+		.predicate_component.disable()
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method query_predicate_component.disable()
+	_local items << .items
+	items[:field].enabled? << _false
+	items[:operator].enabled? << _false
+	items[:operand_combo].enabled? << _false
+	items[:operand_text].enabled? << _false
+	items[:operand_choice].enabled? << _false
+	items[:parts].enabled? << _false 
+	items[:add].enabled? << _false 
+	items[:update].enabled? << _false 
+	items[:remove_popup].enabled? << _false 
+	items[:remove].enabled? << _false 
+	items[:or].enabled? << _false 
+	items[:clear].enabled? << _false 
 _endmethod
 $

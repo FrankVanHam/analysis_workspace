@@ -64,11 +64,10 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method distance_filter_collection.activate_editor_in(dialog, holder)
-	_return dialog.edit_distance_filter_dialog(holder,
-						  .source_collection,
-						  .source_geom_name, .distance, .inverse?,
-						  .filter_collection, .filter_geom_name)
+_method distance_filter_collection.init_copy()
+	.source_collection.add_use(_self)
+	.filter_collection.add_use(_self)
+	>> _super.init_copy()
 _endmethod
 $
 
@@ -89,6 +88,17 @@ _method distance_filter_collection.update(source_geom_name, distance, inverse?, 
 	.filter_collection.add_use(_self)
 _endmethod
 $
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_collection.activate_editor_in(dialog, holder)
+	_return dialog.edit_distance_filter_dialog(holder,
+						  .source_collection,
+						  .source_geom_name, .distance, .inverse?,
+						  .filter_collection, .filter_geom_name)
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.serial_slots()
@@ -203,14 +213,14 @@ _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.filter_stream_for_actual_collection(actual_collection)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
 	_local source_stream << actual_collection.read_stream()
-	_return rwan:distance_filter_read_stream.new(source_stream, .source_geom_name, _self.world_distance, .inverse?, filter_gs)
+	_return rwan:distance_filter_record_read_stream.new(source_stream, .source_geom_name, _self.world_distance, .inverse?, filter_gs)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return rwan:distance_filter_read_stream.new(stream, .source_geom_name, _self.world_distance, .inverse?, filter_gs)
+	_return rwan:distance_filter_record_read_stream.new(stream, .source_geom_name, _self.world_distance, .inverse?, filter_gs)
 _endmethod
 $
 
@@ -323,6 +333,12 @@ $
 #$
 #
 
+_pragma(classify_level=advanced, topic={analysis})
+_method distance_filter_collection.display_tree_in(owner)
+	_return owner.display_tree_for_distance_filter_collection(_self, .source_collection, .source_geom_name, .distance, .filter_collection)
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.discard()
 	.source_collection.remove_use(_self)
@@ -330,12 +346,5 @@ _method distance_filter_collection.discard()
 
 	.source_collection << .source_geom_name << .distance << .inverse? << .filter_collection << .filter_geom_name << _unset
 	_super.discard()
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
-_method distance_filter_collection.display_tree_in(owner)
-	_return owner.display_tree_for_distance_filter_collection(_self, .source_collection, .source_geom_name, .distance, .filter_collection)
 _endmethod
 $

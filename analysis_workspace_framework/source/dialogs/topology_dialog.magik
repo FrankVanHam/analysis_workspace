@@ -28,34 +28,42 @@ _pragma(classify_level=basic, topic={analysis})
 ##
 def_slotted_exemplar(:topology_dialog,
 	{
-		{:items,         _unset},
-		{:holder,        _unset},
-		{:record_holder, _unset},
-		{:geom_name,     _unset},
 		{:target_collection, _unset}
-	}, :model )
+	},
+	:base_dialog)
 $
 
-message_handler.new(:topology_dialog).add_uses(:model, :gen_graphics) 
+message_handler.new(:topology_dialog).add_uses(:model, :base_dialog) 
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.set_holder(holder, record_holder, dsm, geom_name, target_col)
-	.holder        << holder
-	.record_holder << record_holder
-	.geom_name     << geom_name
+_method topology_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.set_holder(workspace,
+				   holder, source_holder, source_geom_name,
+				   target_col)
+	.workspace << workspace
+	.holder << holder
+	.source_holder << source_holder
+	.source_geom_name << source_geom_name
 	.target_collection << target_col
+	.name << holder.name
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method topology_dialog.activate_in(container) 
 	container.top_frame.modality << :primary_modal
-	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:col_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_topology_selection(rc)
+	_self.build_name(rc)
 	panel_separator.new(rc, :col_alignment, :fill) 
 	_self.build_buttons(rc) 
 	_return rc
@@ -63,64 +71,30 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.build_top_label(container)
-	sw_text_window.new(container, 5, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill)
-_endmethod
-$
-_pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.build_topology_selection(container) 
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	sw_label_item.new(rc, _self.message(:source_collection))
-	.items[:col] << sw_label_item.new(rc, _self.collection_description, :col_alignment, :fill)
-	
-	sw_label_item.new(rc, _self.message(:geometry)) 
-	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {},
-							 :model, _self,
-							 :change_selector, :|geometry_changed()|,
-							 :col_alignment, :fill)
+	_self.build_source_selection_rc(rc)
 	
 	sw_label_item.new(rc, _self.message(:topology) ) 
-	.items[:topology_choice] << sw_text_item.new(rc, _unset, :text_items, {},
-							 :model, _self,
-							 :change_selector, :|target_changed()|,
-							 :col_alignment, :fill)  
+	.items[:topology_choice] << sw_text_item.new(rc,
+						     :text_items, {},
+						     :model, _self,
+						     :change_selector, :|target_changed()|,
+						     :col_alignment, :fill)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.build_buttons(container) 
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok) , _self, :|ok()|, 
-						:row_alignment, :bottom,
-						:min_width, 75) 
-	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel) , _self, :|cancel()|, 
-						:row_alignment, :bottom,
-						:min_width, 75) 
-_endmethod
-$
 _pragma(classify_level=restricted, topic={analysis})
 _method topology_dialog.on_activation() 
-	_self.initialise_geometry_choice()
+	_self.initialise_source_geometry_choice()
 	_self.initialise_target_choice()
-	_return _super(model).on_activation()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.initialise_geometry_choice()
-	_local items << _self.geom_field_items
-	.items[:geometry_choice].text_items << items
-	_self.set_current_geom_field(items)
+	_return _super.on_activation()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.initialise_target_choice()
-	_local geom_field << .record_holder.collection.expose().field(.geom_name)
+	_local geom_field << .source_holder.collection.expose().field(.source_geom_name)
 	_local items << _self.topology_items(geom_field)
 	.items[:topology_choice].text_items << items
 	_self.set_current_target_collection(items)
@@ -149,47 +123,15 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.set_current_geom_field(items)
-	_local value << _unset
-	_if items.size > 0
-	_then
-		value << items[1][1]
-		_local _constant topo_cats << {:chain, :point, :area}
-		_for i_vec _over items.fast_elements()
-		_loop
-			_local geom_cat << i_vec[1].geom_category
-			_if topo_cats.includes?(geom_cat)
-			_then
-				value << i_vec[1]
-				_leave 
-			_endif
-		_endloop
-	_endif
-	_if .geom_name _isnt _unset
-	_then
-		_for i_vec _over items.fast_elements()
-		_loop
-			_if i_vec[1].name = .geom_name
-			_then
-				value << i_vec[1]
-			_endif
-		_endloop
-	_endif
-	_if value _isnt _unset
-	_then 
-		.items[:geometry_choice].rwan_value_with_notify << value
-	_endif
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
 _method topology_dialog.ok()
 	_if .holder _is _unset
 	_then
-		_local col << .record_holder.collection.follow_topology(.geom_name, .target_collection)
-		.parent_model.add_collection(col)
+		_local col << _self.construct_topology_collection()
+		.parent_model.add_holder(.parent_model.new_holder(col,
+								  .name))
 	_else
-		.holder.collection.update(.geom_name, .target_collection)
+		.holder.name << .name
+		.holder.collection.update(.source_geom_name, .target_collection)
 		.parent_model.update_holder(.holder)
 	_endif 
 	_self.close() 
@@ -197,15 +139,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.cancel() 
-	_self.close() 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.geometry_changed(geom_field)
-	.geom_name << geom_field.name
-	.items[:topology_choice].text_items << _self.topology_items(geom_field)
+_private _method topology_dialog.construct_topology_collection()
+	_return .source_holder.collection.follow_topology(.source_geom_name, .target_collection)
 _endmethod
 $
 
@@ -237,7 +172,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.collections_for_topology(geom_field) 
-	_local sw_col << .record_holder.collection.expose()
+	_local sw_col << .source_holder.collection.expose()
 	_local ds << sw_col.dataset
 	_if geom_field.mapped?
 	_then
@@ -267,39 +202,11 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.geom_field_items
-	_return _self.geom_field_items_for(.record_holder.collection) 
-_endmethod
-
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.geom_field_items_for(col)
-	_local sw_col << col.expose()
-	_local fds << rope.new()
-	_for i_fd  _over sw_col.descriptor.geometry_fields()
-	_loop
-		_if i_fd.name _is :meatball
-		_then
-			_continue
-		_endif
-		fds.add({ i_fd, i_fd.external_name }) 
-	_endloop
-	fds << fds.as_sorted_collection(_proc(a, b) 
-						_return a[2] _cf b[2]
-					_endproc) 
-	fds << rope.new_from(fds)
-	_return fds
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.collection_description
-	_if .record_holder.is_record_collection?
-	_then
-		_return .record_holder.collection.expose().external_name
-	_else
-		_return _self.message(:geometry_collection)
-	_endif 
+_private _method topology_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? 
+	.items[:source_geometry_choice] .enabled? << .readonly?.not
+	.items[:name].enabled? << .readonly?.not
+	.items[:topology_choice].enabled? << .readonly?.not
 _endmethod
 $

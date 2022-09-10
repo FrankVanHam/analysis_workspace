@@ -49,12 +49,13 @@ _private _method predicate_filter_collection.init(dsm, source_col, pred)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method predicate_filter_collection.activate_editor_in(dialog, holder)
-	_return dialog.edit_predicate_filter_dialog(holder,
-						    .source_collection, .pred)
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.init_copy()
+	.source_collection.add_use(_self)
+	>> _super.init_copy()
 _endmethod
 $
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method predicate_filter_collection.update(pred)
@@ -62,13 +63,20 @@ _method predicate_filter_collection.update(pred)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_collection.activate_editor_in(dialog, holder)
+	_return dialog.edit_predicate_filter_dialog(holder,
+						    .source_collection, .pred)
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={analysis})
 _method predicate_filter_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:pred})
+	keys.add_all_last({:source_collection, :pred})
 	_local s << internal_text_output_stream.new()
 	.pred.store_on(s)
-	values.add_all_last({s.string})
+	values.add_all_last({.source_collection, s.string})
 	_return keys, values
 _endmethod
 $
@@ -153,6 +161,12 @@ _method predicate_filter_collection.filter_stream_for_actual_collection(actual_c
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.filter_stream(stream)
+	
+	_return rwan:predicate_filter_read_stream.new(stream, .pred)
+_endmethod
+$
 
 #
 #_pragma(classify_level=basic, topic={analysis, collections})

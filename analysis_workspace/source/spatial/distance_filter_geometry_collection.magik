@@ -18,34 +18,36 @@
 _package rwan
 $
 
-#remex(:spatial_filter_geometry_collection)
+#remex(:distance_filter_geometry_collection)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Collection that performs a spatial operator on a geometry
 ## collection.
-def_slotted_exemplar(:spatial_filter_geometry_collection,
+def_slotted_exemplar(:distance_filter_geometry_collection,
 	{
 		{:source_collection, _unset},
-		{:operator,          _unset},
+		{:distance,          _unset},
+		{:inverse?,          _unset},
 		{:filter_collection, _unset},
 		{:filter_geom_name,  _unset}
 	}, :base_spatial_collection)
 $
 
-message_handler.new(:spatial_filter_geometry_collection).add_use(:base_spatial_collection)
+message_handler.new(:distance_filter_geometry_collection).add_use(:base_spatial_collection)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.new(dsm, source_col, operator, filter_col, filter_geom_name)
-	_return _clone.init(dsm, source_col, operator, filter_col, filter_geom_name)
+_method distance_filter_geometry_collection.new(dsm, source_col, distance, inverse?, filter_col, filter_geom_name)
+	_return _clone.init(dsm, source_col, distance, inverse?, filter_col, filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method spatial_filter_geometry_collection.init(dsm, source_col, operator, filter_col, filter_geom_name)
+_private _method distance_filter_geometry_collection.init(dsm, source_col, distance, inverse?, filter_col, filter_geom_name)
 	.source_collection << source_col
-	.operator << operator
+	.distance << distance
+	.inverse? << inverse?
 	.filter_collection << filter_col
 	.filter_geom_name << filter_geom_name
 
@@ -59,19 +61,19 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.init_copy()
+_method distance_filter_geometry_collection.init_copy()
 	.source_collection.add_use(_self)
 	.filter_collection.add_use(_self)
-	_return _super.init_copy()
+	>> _super.init_copy()
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.update(operator, filter_collection, filter_geom_name)
+_method distance_filter_geometry_collection.update(distance, inverse?, filter_collection, filter_geom_name)
 	.filter_collection.remove_use(_self)
 	
-	.operator << operator
+	.distance << distance
+	.inverse? << inverse?
 	.filter_collection << filter_collection
 	.filter_geom_name << filter_geom_name
 
@@ -83,28 +85,30 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.activate_editor_in(dialog, holder)
-	_return dialog.edit_spatial_filter_dialog(holder,
-						  .source_collection, :geometry,
-						  .operator,
+_method distance_filter_geometry_collection.activate_editor_in(dialog, holder)
+	_return dialog.edit_distance_filter_dialog(holder,
+						  .source_collection,
+						  :geometry, .distance, .inverse?,
 						  .filter_collection, .filter_geom_name)
 _endmethod
 $
 
+
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_geometry_collection.serial_slots()
+_method distance_filter_geometry_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:source_collection, :operator, :filter_collection, :filter_geom_name})
-	values.add_all_last({.source_collection, .operator, .filter_collection, .filter_geom_name})
+	keys.add_all_last({:source_collection, :distance, :inverse, :filter_collection, :filter_geom_name})
+	values.add_all_last({.source_collection, .distance, .inverse?, .filter_collection, .filter_geom_name})
 	_return keys, values
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_geometry_collection.init_from_serial(dsm, nrefs, source_col, operator, filter_collection, filter_geom_name)
+_private _method distance_filter_geometry_collection.init_from_serial(dsm, nrefs, source_col, distance, inverse?, filter_collection, filter_geom_name)
     _super.init_from_serial(dsm, nrefs)
     .source_collection << source_col
-    .operator << operator
+    .distance << distance
+    .inverse? << inverse?
     .filter_collection << filter_collection
     .filter_geom_name << filter_geom_name
     _return _self 
@@ -112,17 +116,18 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.equals?(other)
+_method distance_filter_geometry_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.nrefs, .source_collection, .operator, .filter_collection, .filter_geom_name)
+		other.equals_in_details?(.nrefs, .source_collection, .distance, .inverse?, .filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_geometry_collection.equals_in_details?(nrefs, source_col, operator, filter_collection, filter_geom_name)
+_method distance_filter_geometry_collection.equals_in_details?(nrefs, source_col, distance, inverse?, filter_collection, filter_geom_name)
 	_return _super.equals_in_details?(nrefs) _andif
 		.source_collection.equals?(source_col) _andif
-		.operator = operator _andif
+		.distance = distance _andif
+		.inverse? = inverse? _andif
 		.filter_collection.equals?(filter_collection) _andif
 		.filter_geom_name = filter_geom_name
 _endmethod
@@ -131,7 +136,7 @@ $
 ###################################################################################################################
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.editable?
+_method distance_filter_geometry_collection.editable?
 	_return _true 
 _endmethod
 $
@@ -139,26 +144,26 @@ $
 
 
 #_pragma(classify_level=basic, topic={analysis})
-#_method spatial_filter_geometry_collection.geometry_refs
+#_method distance_filter_geometry_collection.geometry_refs
 #	_return .source_collection.geometry_refs
 #_endmethod
 #$
 #
 #_pragma(classify_level=basic, topic={analysis})
-#_method spatial_filter_geometry_collection.expose()
+#_method distance_filter_geometry_collection.expose()
 #	_return .source_collection.expose()
 #_endmethod
 #$
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_geometry_collection.size_is_fast?
+_method distance_filter_geometry_collection.size_is_fast?
 	## no, size is generally not fast as it is spatially filtered.
 	_return _false 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_geometry_collection.read_stream(_optional filter)
+_method distance_filter_geometry_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. Otherwise set myself as the filter of my
 	## source_collection
@@ -174,7 +179,7 @@ _endmethod
 $
 
 #_pragma(classify_level=restricted, topic={analysis})
-#_method spatial_filter_geometry_collection.filter_stream_for_actual_collection(actual_collection)
+#_method distance_filter_geometry_collection.filter_stream_for_actual_collection(actual_collection)
 #	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
 #
 #	# limit the source by the filter bounds to only look in that
@@ -189,7 +194,7 @@ $
 #$
 #
 #_pragma(classify_level=restricted, topic={analysis})
-#_private _method spatial_filter_geometry_collection.source_rwo_stream(actual_collection, bounds)
+#_private _method distance_filter_geometry_collection.source_rwo_stream(actual_collection, bounds)
 #	_local source_gs << _self.source_geometry_set(actual_collection, bounds)
 #	_return gs_rwo_set.new(actual_collection.dataset,
 #			       property_list.new_with(
@@ -198,7 +203,7 @@ $
 #$
 #
 #_pragma(classify_level=restricted, topic={analysis})
-#_private _method spatial_filter_geometry_collection.source_geometry_set(actual_collection, bounds)
+#_private _method distance_filter_geometry_collection.source_geometry_set(actual_collection, bounds)
 #	# if the operator is restricting to the filter, then set the
 #	# bounds.
 #	_local world << actual_collection.record_exemplar.rwan_world_for(.source_geom_name)
@@ -206,23 +211,32 @@ $
 #_endmethod
 #$
 #
+
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_geometry_collection.filter_stream(stream)
+_private _method distance_filter_geometry_collection.world_distance
+	_local world << .source_collection.an_element().world
+	_local distance << .distance.value_in(world.unit)
+	_return distance 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method distance_filter_geometry_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return spatial_filter_geometry_read_stream.new(stream, .operator, filter_gs)
+	_return distance_filter_geometry_read_stream.new(stream, _self.world_distance, .inverse?, filter_gs)
 _endmethod
 $
 #
 #
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_method spatial_filter_geometry_collection.size
+#_method distance_filter_geometry_collection.size
 #	_local geom << _self.need_geometry(.arg)
 #	_return _self.source_collection.size_filtered_by_geometry(.source_geom_name, .operator, geom)
 #_endmethod
 #$
 #
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_method spatial_filter_geometry_collection.includes?(rec)
+#_method distance_filter_geometry_collection.includes?(rec)
 #	_local geom << rec.geometry(.source_geom_name)
 #	_if geom _is _unset
 #	_then
@@ -236,7 +250,7 @@ $
 #
 #
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_iter _method spatial_filter_geometry_collection.fast_elements()
+#_iter _method distance_filter_geometry_collection.fast_elements()
 #	_local geom << _self.need_geometry(.arg)
 #	_for i_rec _over _self.source_collection.fast_elements_filtered_by_geometry(.source_geom_name, .operator, geom)
 #	_loop
@@ -246,7 +260,7 @@ $
 #$
 #
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_method spatial_filter_geometry_collection.convert_to_geometry()
+#_method distance_filter_geometry_collection.convert_to_geometry()
 #	_local geom << _self.need_geometry(.arg)
 #	_return _self.source_collection.convert_to_geometry_filtered_by_geometry(.source_geom_name, .operator, geom)
 #_endmethod
@@ -254,14 +268,14 @@ $
 #
 #
 #_pragma(classify_level=restricted, topic={analysis})
-#_private _method spatial_filter_geometry_collection.need_geometry(arg)
+#_private _method distance_filter_geometry_collection.need_geometry(arg)
 #	_return arg.convert_to_geometry()
 #_endmethod
 #$
 #
 #
 #_pragma(classify_level=basic, topic={analysis})
-#_method spatial_filter_geometry_collection.description(translator)
+#_method distance_filter_geometry_collection.description(translator)
 #	_local base_name << translator.name_for_collection(_self.source_collection)
 #	_local target_name << translator.name_for_collection(.arg)
 #	_return _self.message(:description, base_name, .source_geom_name,
@@ -271,19 +285,19 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method spatial_filter_geometry_collection.display_tree_in(owner)
-	_return owner.display_tree_for_spatial_filter_geometry_collection(
-			_self, .source_collection, .operator,
+_method distance_filter_geometry_collection.display_tree_in(owner)
+	_return owner.display_tree_for_distance_filter_geometry_collection(
+			_self, .source_collection, .distance, .inverse?,
 			.filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method spatial_filter_geometry_collection.discard()
+_method distance_filter_geometry_collection.discard()
 	.source_collection.remove_use(_self)
 	.filter_collection.remove_use(_self)
 
-	.source_collection << .operator << .filter_collection << .filter_geom_name << _unset 
+	.source_collection << .distance << .inverse? << .filter_collection << .filter_geom_name << _unset 
 	_super.discard()
 _endmethod
 $

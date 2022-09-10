@@ -20,3 +20,4 @@ sw_collection_test_case
 distance_filter_col_test_case
 geometry_col_test_case
 predicate_filter_col_test_case
+topology_col_test_case

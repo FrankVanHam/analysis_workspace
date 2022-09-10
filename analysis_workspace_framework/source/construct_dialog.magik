@@ -150,7 +150,9 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.copy()
 	_local cp << _self.selected_holder.copy()
 	cp.name << _self.message(:copy_holder, _unset, cp.name)
+	cp.collection.dp
 	_self.add_holder(cp)
+	.owner.publish_workspace()
 _endmethod
 $
 
@@ -563,23 +565,21 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_topology_dialog()
-	_return _self.activate_follow_topology_editor(_unset, _self.selected_top_holder)
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_topology_dialog(holder, base_col, geom_name, target_col)
-	_local base_holder << _self.workspace.holder_for(base_col)
-	_return _self.activate_follow_topology_editor(holder, base_holder, geom_name, target_col)
+	_local dia << topology_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_holder)
+	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.activate_follow_topology_editor(holder, base_holder,
-								  _optional geom_name, target_col)
-	dia << topology_dialog.new_dialog(_self)
-	dia.set_holder(holder, base_holder, _self.dataset_manager, geom_name, target_col)
+_method construct_dialog.edit_follow_topology_dialog(holder, source_col, source_geom_name, target_col)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	
+	_local dia << topology_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, source_geom_name,
+		       target_col)
 	dia.activate()
 	_return dia
 _endmethod
@@ -694,14 +694,7 @@ _method construct_dialog.edit_spatial_filter_dialog(holder, source_col, source_g
 						    filter_col, filter_geom_name)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local filter_holder << _self.workspace.holder_for(filter_col)
-	_return _self.do_activate_spatial_filter_dialog(holder, source_holder, source_geom_name,
-							operator, filter_holder, filter_geom_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.do_activate_spatial_filter_dialog(holder, source_holder, source_geom_name,
-								    operator, filter_holder, filter_geom_name)
+	
 	_local dia << spatial_filter_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
 		       holder, source_holder, source_geom_name,
@@ -727,15 +720,8 @@ _method construct_dialog.edit_distance_filter_dialog(holder, source_col, source_
 						    filter_col, filter_geom_name)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local filter_holder << _self.workspace.holder_for(filter_col)
-	_return _self.do_create_distance_filter_dialog(holder, source_holder, source_geom_name,
-							distance, inverse?, filter_holder, filter_geom_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.do_create_distance_filter_dialog(holder, source_holder, source_geom_name,
-								    distance, inverse?, filter_holder, filter_geom_name)
-	dia << distance_filter_dialog.new_dialog(_self)
+	
+	_local dia << distance_filter_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
 		       holder, source_holder, source_geom_name,
 		       distance, inverse?, filter_holder, filter_geom_name)
@@ -763,7 +749,7 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _private _method construct_dialog.do_create_predicate_filter_dialog(holder, record_holder, _optional predicate)
 	_local dia << predicate_filter_dialog.new_dialog(_self)
-	dia.set_holder(holder, record_holder, _self.dataset_manager, predicate)
+	dia.set_holder(_self.workspace, holder, record_holder, predicate)
 	dia.activate()
 	_return dia
 _endmethod
@@ -921,6 +907,7 @@ _method construct_dialog.manage_actions()
 			 _then >> holders.an_element()
 			 _else >> _unset
 			 _endif 
+	_local any_sel? << holder _isnt _unset
 	_local any_top_sel? << holder _isnt _unset _andif holder.nrefs=0
 	_local record? << holder _isnt _unset _andif holder.is_record_collection?
 	_local open? << _self.open?
@@ -935,7 +922,7 @@ _method construct_dialog.manage_actions()
 	.owner.action(:distance_filter).enabled? << open? _andif any_top_sel?
 	.owner.action(:predicate_filter).enabled? << open? _andif any_top_sel? _andif record?
 
-	.owner.action(:follow_topology).enabled? << open?
+	.owner.action(:follow_topology).enabled? << open? _andif record?
 	.owner.action(:follow_trace).enabled? << open?
 	.owner.action(:follow_join).enabled? << open?
 	.owner.action(:follow_method).enabled? << open?
@@ -959,6 +946,6 @@ _method construct_dialog.manage_actions()
 	.owner.action(:delete).enabled? << open? _andif any_top_sel?
 	.owner.action(:move_up).enabled? << open?  _andif any_top_sel?   _andif _self.can_move_up?
 	.owner.action(:move_down).enabled? << open?  _andif any_top_sel? _andif _self.can_move_down?
-	.owner.action(:copy).enabled? << open?  _andif any_top_sel?
+	.owner.action(:copy).enabled? << open? _andif any_sel?
 _endmethod
 $

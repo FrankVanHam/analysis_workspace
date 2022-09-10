@@ -63,6 +63,29 @@ _abstract _method base_record_collection.read_stream()
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method base_record_collection.goto_bounds
+	_if _self.expose().descriptor.has_geometry_fields?.not
+	_then
+		_return _unset
+	_endif 
+	_local bounds << _unset
+	_for i_rec _over _self.fast_elements()
+	_loop
+		_try 
+			sub_bounds << i_rec.goto_bounds
+		_when error
+		_endtry
+		_if sub_bounds _isnt _unset
+		_then 
+			bounds << sub_bounds.union(bounds)
+		_endif 
+	_endloop
+	_return bounds
+_endmethod
+$
+
+
 
 #
 #_pragma(classify_level=basic, topic={analysis})
@@ -139,11 +162,11 @@ $
 #_endmethod
 #$
 #
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_record_collection.follow_topology(geom_name, target_col)
-#	_return sw:get_global_value(@rwan:topology_collection).new(.dsm, _self, geom_name, target_col)
-#_endmethod
-#$
+_pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.follow_topology(geom_name, target_col)
+	_return sw:get_global_value(@rwan:topology_collection).new(.dsm, _self, geom_name, target_col)
+_endmethod
+$
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_record_collection.follow_trace(geom_name, target_col, stop_predicates, max_length)
@@ -408,5 +431,3 @@ _method base_record_collection.filter_by_distance(geom_name, distance, inverse?,
 					       filter_collection, filter_geometry)
 _endmethod
 $
-
-

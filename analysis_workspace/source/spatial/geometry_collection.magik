@@ -31,6 +31,9 @@ def_slotted_exemplar(:geometry_collection,
 	}, :base_spatial_collection)
 $
 
+message_handler.new(:geometry_collection).add_use(:base_spatial_collection)
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.new(dsm, geometry)
 	_if _not geometry.is_kind_of?(geometry_set_mixin)
@@ -53,23 +56,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method geometry_collection.geom_category
-	_local geom << .geometry.an_element()
-	_if geom _isnt _unset
-	_then
-		_return geom.geom_category
-	_endif 
-_endmethod
-$
-
-
-_pragma(classify_level=basic, topic={analysis})
 _private _method geometry_collection.init_copy()
 	_if .id _isnt _unset
 	_then 
 		.dsm.increase_ref_count(.id)
 	_endif 
-	_return _self
+	_return _super.init_copy()
 _endmethod
 $
 

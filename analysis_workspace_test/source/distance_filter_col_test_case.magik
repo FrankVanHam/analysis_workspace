@@ -138,5 +138,6 @@ _method distance_filter_col_test_case.test_geometry_set()
 	_local fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, pcol, :geometry)
 	_local gs << fcol.geometry_set(:coverage)
 	_self.assert_equals(1, gs.size, "1 geometry")
+	_self.assert_not_unset(fcol.goto_bounds)
 _endmethod
 $

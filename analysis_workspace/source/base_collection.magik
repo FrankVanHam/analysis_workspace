@@ -54,6 +54,14 @@ _private _method base_collection.init(dsm)
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={analysis})
+_private _method base_collection.init_copy()
+	.nrefs << 0
+	_return _self
+_endmethod
+$
+
+
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_collection.base_collections
 #	_return .base_collections
@@ -296,13 +304,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_abstract _method base_collection.size
-	## Provide the bounds of the collection
-	
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method base_collection.geometry_set(geom_name)
 	## Return a geometry set for the geometry geom_name.
 	show(_self)
@@ -367,12 +368,6 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method base_collection.copy()
 	_return _clone.init_copy()
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method base_collection.init_copy()
-	_return _self
 _endmethod
 $
 

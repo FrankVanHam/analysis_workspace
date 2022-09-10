@@ -78,7 +78,6 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.build_source_filter_and_operation_selection(container)
-	##
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
 	_self.build_source_selection_rc(rc)
 	_self.build_filter_selection_rc(rc)

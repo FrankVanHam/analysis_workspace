@@ -274,5 +274,6 @@ _method spatial_analysis_col_test_case.test_geometry_set()
 	_local fcol << acol.filter_by_geometry(:coverage, :containing, acol, :coverage)
 	_local gs << fcol.geometry_set(:coverage)
 	_self.assert_equals(1, gs.size, "One element")
+	_self.assert_not_unset(fcol.goto_bounds)
 _endmethod
 $

@@ -1,0 +1,126 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:topology_read_stream)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+def_slotted_exemplar(:topology_read_stream,
+	##
+	{
+		{:source_stream,     _unset},
+		{:source_geom_name,  _unset},
+		{:target_collection, _unset},
+		{:target_stream,     _unset}
+	}, :input_stream_with_unget_mixin)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method topology_read_stream.new(source_stream, source_geom_name, target_col)
+	_return _clone.init(source_stream, source_geom_name, target_col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method topology_read_stream.init(source_stream, source_geom_name, target_col)
+	.source_stream    << source_stream
+	.source_geom_name << source_geom_name
+	.target_collection << target_col
+	.target_stream << _unset
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method topology_read_stream.get()
+	_loop
+		_if .target_stream _isnt _unset
+		_then
+			_local rec << .target_stream.get()
+			_if rec _isnt _unset
+			_then
+				_return rec
+			_else
+				.target_stream << _unset 
+			_endif
+		_else
+			.target_stream << _self.new_target_stream()
+			_if .target_stream _is _unset
+			_then
+				_return _unset
+			_endif 
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method topology_read_stream.new_target_stream()
+	# Returns unset if exhausted
+	_loop 
+		_local source << .source_stream.get()
+		_if source _is _unset
+		_then
+			# exhausted
+			_return _unset
+		_else
+			_local geom << source.geometry(.source_geom_name)
+			_if geom _isnt _unset
+			_then
+				_local connected << _self.all_connected(geom)
+				_if connected.empty?.not
+				_then
+					_return connected.read_stream()
+				_endif 
+			_endif 
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method topology_read_stream.all_connected(geom)
+	_local rwos << rwo_set.new()
+	_for i_geom _over geom.all_connected_geometry().fast_elements()
+	_loop
+		_if i_geom.rwo_type _is .target_collection.name
+		_then
+			_local rwo << i_geom.rwo
+			_if rwo _isnt _unset
+			_then 
+				rwos.add(rwo)
+			_endif 
+		_endif
+	_endloop
+	_return rwos
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method topology_read_stream.size_is_fast?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method topology_read_stream.close()
+	
+_endmethod
+$

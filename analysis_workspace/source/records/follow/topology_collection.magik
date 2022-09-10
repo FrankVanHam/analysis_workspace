@@ -27,43 +27,42 @@ _pragma(classify_level=basic, topic={analysis})
 ##
 def_slotted_exemplar(:topology_collection,
 	{
-		{:geom_name, _unset}
+		{:source_geom_name, _unset}
 	}, :base_follow_collection)
 $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method topology_collection.new(dsm, base_col, geom_name, target_col)
-	_return _clone.init(dsm, base_col, geom_name, target_col)
+_method topology_collection.new(dsm, source_col, source_geom_name, target_col)
+	_return _clone.init(dsm, source_col, source_geom_name, target_col)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method topology_collection.init(dsm, base_col, geom_name, target_col)
-	.geom_name << geom_name
-	_return _super.init(dsm, base_col, target_col)
+_private _method topology_collection.init(dsm, source_col, source_geom_name, target_col)
+	.source_geom_name << source_geom_name
+	
+	# protect agains nonsense
+	source_col.assert_geom_name(.source_geom_name)
+	_return _super.init(dsm, source_col, target_col)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method topology_collection.editable?
-	_return _true 
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_collection.update(source_geom_name, target_col)
+	.source_geom_name << source_geom_name
+	
+	# protect agains nonsense
+	.source_collection.assert_geom_name(.source_geom_name)
+	_return _super.update(target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method topology_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_follow_topology_dialog(holder,
-						   _self.base_collection,
-						   .geom_name, _self.target_collection)
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method topology_collection.update(geom_name, target_col)
-	.target_ds_name << target_col.dataset.original_dataset_name
-	.target_table_name << target_col.name
-	.geom_name << geom_name
+						   .source_collection,
+						   .source_geom_name, _self.target_collection)
 _endmethod
 $
 
@@ -71,15 +70,17 @@ _pragma(classify_level=restricted, topic={analysis})
 _method topology_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:geom_name})
-	values.add_all_last({.geom_name})
+	values.add_all_last({.source_geom_name})
 	_return keys, values	
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method topology_collection.init_from_serial(dsm, base_cols, target_ds_name, target_table_name, geom_name)
-    _super.init_from_serial(dsm, base_cols, target_ds_name, target_table_name)
-    .geom_name << geom_name
+_method topology_collection.init_from_serial(dsm, nrefs, source_col,
+					     target_ds_name, target_table_name, source_geom_name)
+	_super.init_from_serial(dsm, nrefs, source_col,
+				target_ds_name, target_table_name)
+    .source_geom_name << source_geom_name
     _return _self 
 _endmethod
 $
@@ -87,73 +88,107 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method topology_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.base_collections, .target_ds_name, .target_table_name, .geom_name)
+		other.equals_in_details?(.nrefs, .source_collection, .source_geom_name,
+					 .target_ds_name, .target_table_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method topology_collection.equals_in_details?(base_cols, target_ds_name, target_table_name, geom_name)
-	_return _super.equals_in_details?(base_cols, target_ds_name, target_table_name) _andif 
-		.geom_name = geom_name
+_method topology_collection.equals_in_details?(nrefs, source_col, source_geom_name,
+					       target_ds_name, target_table_name)
+	_return _super.equals_in_details?(nrefs, source_col,
+					  target_ds_name, target_table_name) _andif 
+		.source_geom_name = source_geom_name
 _endmethod
 $
+
+###################################################################################################################
 
 _pragma(classify_level=basic, topic={analysis})
-_iter _method topology_collection.fast_elements()
-	_local done << large_record_register.new(100)
-	_for i_rec _over _self.base_collection.fast_elements()
-	_loop
-		_for i_rwo _over _self.process_all_connected(i_rec, done)
-		_loop
-			_loopbody(i_rwo)
-		_endloop
-	_endloop
+_method topology_collection.editable?
+	_return _true 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _iter _method topology_collection.process_all_connected(rec, done)
-	_dynamic !root_query!
-	_local geom << rec.geometry(.geom_name)
-	_if geom _is _unset _then _return _endif 
-	
-	rwo_type << _self.base_collection.expose().name
-	_for i_con _over _self.all_connected(geom)
-	_loop
-		_local rwo << i_con.rwo
-		_if rwo _isnt _unset _andif
-		    _not done.includes?(rwo)
-		_then
-			_if !root_query! _isnt _unset
-			_then
-				!root_query![rwo_type] << rec
-			_endif 
-			_loopbody(rwo)
-			done.add(rwo)
-		_endif 
-	_endloop
+_method topology_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. 
+	#
+	_local source_str << .source_collection.read_stream()
+	_local str << rwan:topology_read_stream.new(source_str, .source_geom_name, _self.expose())
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream(str)
+	_else 
+		_return str
+	_endif 
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_private _iter _method topology_collection.all_connected(geom)
-	_for i_con _over geom.all_connected_geometry().fast_elements()
-	_loop
-		_if i_con.rwo_type _is .target_table_name
-		_then
-			_loopbody(i_con)
-		_endif
-	_endloop 
+
+
+#_pragma(classify_level=basic, topic={analysis})
+#_iter _method topology_collection.fast_elements()
+#	_local done << large_record_register.new(100)
+#	_for i_rec _over _self.base_collection.fast_elements()
+#	_loop
+#		_for i_rwo _over _self.process_all_connected(i_rec, done)
+#		_loop
+#			_loopbody(i_rwo)
+#		_endloop
+#	_endloop
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _iter _method topology_collection.process_all_connected(rec, done)
+#	_dynamic !root_query!
+#	_local geom << rec.geometry(.source_geom_name)
+#	_if geom _is _unset _then _return _endif 
+#	
+#	rwo_type << _self.base_collection.expose().name
+#	_for i_con _over _self.all_connected(geom)
+#	_loop
+#		_local rwo << i_con.rwo
+#		_if rwo _isnt _unset _andif
+#		    _not done.includes?(rwo)
+#		_then
+#			_if !root_query! _isnt _unset
+#			_then
+#				!root_query![rwo_type] << rec
+#			_endif 
+#			_loopbody(rwo)
+#			done.add(rwo)
+#		_endif 
+#	_endloop
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _iter _method topology_collection.all_connected(geom)
+#	_for i_con _over geom.all_connected_geometry().fast_elements()
+#	_loop
+#		_if i_con.rwo_type _is .target_table_name
+#		_then
+#			_loopbody(i_con)
+#		_endif
+#	_endloop 
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method topology_collection.description(translator)
+#	_local base_name   << translator.name_for_collection(_self.base_collection)
+#	_local target_name << _self.target_collection.external_name
+#	_local geom_name << _self.base_collection.expose().field(.source_geom_name).external_name
+#	
+#	_return _self.message(:description, target_name, geom_name, base_name)
+#_endmethod
+#$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method topology_collection.display_tree_in(owner)
+	_return owner.display_tree_for_topology_collection(_self, .source_collection, _self.target_collection, .source_geom_name)
 _endmethod
 $
-
-_pragma(classify_level=basic, topic={analysis})
-_method topology_collection.description(translator)
-	_local base_name   << translator.name_for_collection(_self.base_collection)
-	_local target_name << _self.target_collection.external_name
-	_local geom_name << _self.base_collection.expose().field(.geom_name).external_name
-	
-	_return _self.message(:description, target_name, geom_name, base_name)
-_endmethod
-$
-

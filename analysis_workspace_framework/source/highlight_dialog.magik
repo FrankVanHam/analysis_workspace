@@ -50,6 +50,7 @@ _private _method highlight_dialog.activate_colour_editor()
 					   :draw_style, :buttons,
 					   :disable_items, {:no_colour, :update})
 	colour_editor.activate_relative_to(_unset, .top_frame, 50, 50)
+	>> colour_editor
 _endmethod
 $
 

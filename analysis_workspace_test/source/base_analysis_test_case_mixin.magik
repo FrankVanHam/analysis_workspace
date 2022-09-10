@@ -27,7 +27,7 @@ _method base_analysis_test_case_mixin.area_collection(dsm, oords)
 	_local sectors << sector_rope.new_with(
 				  sector.new_with_xy(_scatter oords))
 	sectors.close()
-	_local an_area << pseudo_area.new(sectors)
+	_local an_area << pseudo_area.new_for_world(sectors, _self.gv.world)
 	_return rwan:geometry_collection.new(dsm, geometry_set.new_with(an_area))
 _endmethod
 $
@@ -40,7 +40,7 @@ _method base_analysis_test_case_mixin.areas_collection(dsm, coord_sets)
 		_local sectors << sector_rope.new_with(
 					  sector.new_with_xy(_scatter i_oords))
 		sectors.close()
-		_local an_area << pseudo_area.new(sectors)
+		_local an_area << pseudo_area.new_for_world(sectors, _self.gv.world)
 		gs.add(an_area)
 	_endloop 
 	_return rwan:geometry_collection.new(dsm, gs)
@@ -54,7 +54,7 @@ _method base_analysis_test_case_mixin.points_collection(dsm, coord_sets)
 	_loop 
 		_local sectors << sector_rope.new_with(
 					  sector.new_with_xy(_scatter i_oords))
-		_local a_point << pseudo_point.new(sectors)
+		_local a_point << pseudo_point.new_for_world(sectors, _self.gv.world)
 		gs.add(a_point)
 	_endloop 
 	_return rwan:geometry_collection.new(dsm, gs)
@@ -68,7 +68,7 @@ _method base_analysis_test_case_mixin.lines_collection(dsm, coord_sets)
 	_loop 
 		_local sectors << sector_rope.new_with(
 					  sector.new_with_xy(_scatter i_oords))
-		_local a_chain << pseudo_chain.new(sectors)
+		_local a_chain << pseudo_chain.new_for_world(sectors, _self.gv.world)
 		gs.add(a_chain)
 	_endloop 
 	_return rwan:geometry_collection.new(dsm, gs)
