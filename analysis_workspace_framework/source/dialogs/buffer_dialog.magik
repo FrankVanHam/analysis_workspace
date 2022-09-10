@@ -77,7 +77,8 @@ _private _method buffer_dialog.build_buffer_options(container)
 	.items[:col] << sw_label_item.new(rc, .holder.name, :col_alignment, :fill)
 	
 	sw_label_item.new(rc, _self.message(:geometry))
-	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {}, :col_alignment, :fill)
+	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {}, 
+							    :editable?, _false, :col_alignment, :fill)
 	
 	sw_label_item.new(rc, _self.message(:distance))
 	.items[:distance] << ti << managed_value_text_item.new(rc, _unset, :value, 10, :display_length, 10, :col_alignment, :fill)

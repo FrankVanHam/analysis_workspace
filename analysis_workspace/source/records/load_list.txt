@@ -1,15 +1,14 @@
 base_record_collection
-collection_filter
 predicate_filter_collection
 spatial_filter_collection
 distance_filter_collection
 #distance_area_filter_collection
 #
 #base_source_collection
-#record_set
+record_set_collection
 sw_collection
 #sw_view_collection
 #materialized_collection
 #binary_op/
-#follow/
+follow/
 #binary_op/

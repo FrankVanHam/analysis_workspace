@@ -97,3 +97,24 @@ _method topology_col_test_case.test_geometry_set()
 	_self.assert_not_unset(h_col.goto_bounds)
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method topology_col_test_case.test_no_tripples()
+	## have a hotel touching three roads. The topology collection
+	## should return only 1 hotel.
+	#
+	_self.create_road("line", {0, 0, 5000, 0})
+	_self.create_road("line", {0, 0, 0, 5000})
+	_self.create_road("line", {0, 0, 0, -5000})
+	_self.create_hotel("h1", {0, 0})
+	
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local acol << _self.area_collection(dsm, {-6000, -6000, 6000, -6000, 6000, 6000, -6000, 6000, -6000, -6000})
+	_local three_road_col << road_col.filter_by_geometry(:centre_line, :within, acol, :geometry)
+	_self.assert_equals(3, three_road_col.size, "3 roads")
+
+	_local tcol << three_road_col.follow_topology(:centre_line, _self.hotel_collection)
+	_self.assert_equals(1, tcol.size, "only one hotel should be returned")
+_endmethod
+$

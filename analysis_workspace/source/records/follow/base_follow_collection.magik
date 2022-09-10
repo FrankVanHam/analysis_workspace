@@ -95,7 +95,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_follow_collection.target_collection
+_private _method base_follow_collection.actual_collection
 	_return gis_program_manager.databases[.target_ds_name].collections[.target_table_name]
 _endmethod
 $
@@ -121,7 +121,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method base_follow_collection.expose()
-	_return _self.target_collection
+	_return _self.actual_collection
 _endmethod
 $
 
@@ -134,20 +134,9 @@ _method base_follow_collection.discard()
 _endmethod
 $
 
-
-
 _pragma(classify_level=basic, topic={analysis})
 _method base_follow_collection.geometry_refs
-	_local refs << rope.new()
-	_for i_fd _over _self.target_collection.descriptor.geometry_fields()
-	_loop
-		_if i_fd.name _is :meatball _then _continue _endif 
-		refs.add(geom_ref.new(i_fd.name,
-				      i_fd.external_name,
-				      i_fd.geom_category,
-				      i_fd.has_topology?))
-	_endloop
-	_return refs
+	_return _self.geometry_refs_for(_self.expose())
 _endmethod
 $
 

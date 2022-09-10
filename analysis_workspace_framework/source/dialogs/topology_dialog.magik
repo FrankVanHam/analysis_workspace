@@ -79,6 +79,7 @@ _private _method topology_dialog.build_topology_selection(container)
 	.items[:topology_choice] << sw_text_item.new(rc,
 						     :text_items, {},
 						     :model, _self,
+						     :editable?, _false,
 						     :change_selector, :|target_changed()|,
 						     :col_alignment, :fill)
 _endmethod
@@ -88,6 +89,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _method topology_dialog.on_activation() 
 	_self.initialise_source_geometry_choice()
 	_self.initialise_target_choice()
+	_self.initialise_name()
 	_return _super.on_activation()
 _endmethod
 $
@@ -205,7 +207,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.manage_actions()
 	_local has_name? << .name.default("") <> ""
 	.items[:ok].enabled? << .readonly?.not _andif has_name? 
-	.items[:source_geometry_choice] .enabled? << .readonly?.not
+	.items[:source_geometry_choice].enabled? << .readonly?.not
 	.items[:name].enabled? << .readonly?.not
 	.items[:topology_choice].enabled? << .readonly?.not
 _endmethod

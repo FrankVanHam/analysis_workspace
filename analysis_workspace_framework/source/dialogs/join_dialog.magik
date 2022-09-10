@@ -82,6 +82,7 @@ _private _method join_dialog.build_join_selection(container)
 	
 	sw_label_item.new(rc, _self.message(:join))
 	.items[:join_choice] << sw_text_item.new(rc, _unset, :text_items, {},
+							    :editable?, _false,
 						     :model, _self,
 						     :change_selector, :|join_field_name_changed()|,
 						     :col_alignment, :fill)

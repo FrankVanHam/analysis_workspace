@@ -313,6 +313,22 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_collection.geometry_refs_for(actual_collection)
+	_local refs << rope.new()
+	_for i_fd _over actual_collection.descriptor.geometry_fields()
+	_loop
+		_if i_fd.name _is :meatball _then _continue _endif 
+		refs.add(geom_ref.new(i_fd.name,
+				      i_fd.external_name,
+				      i_fd.geom_category,
+				      i_fd.has_topology?))
+	_endloop
+	_return refs
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.size_is_fast?
 	_return _false 
 _endmethod

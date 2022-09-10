@@ -18,30 +18,39 @@
 _package rwan
 $
 
-#remex(:topology_read_stream)
+#remex(:trace_read_stream)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-def_slotted_exemplar(:topology_read_stream,
+def_slotted_exemplar(:trace_read_stream,
 	{
 		{:register,          _unset},
 		{:source_stream,     _unset},
 		{:source_geom_name,  _unset},
+		{:stop_predicates,   _unset},
+		{:max_length,        _unset},
 		{:target_collection, _unset},
 		{:target_stream,     _unset}
 	}, :input_stream_with_unget_mixin)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method topology_read_stream.new(source_stream, source_geom_name, target_col)
-	_return _clone.init(source_stream, source_geom_name, target_col)
+_method trace_read_stream.new(source_stream, source_geom_name,
+			      stop_predicates, max_length,
+			      target_col)
+	_return _clone.init(source_stream, source_geom_name, 
+			    stop_predicates, max_length,
+			    target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method topology_read_stream.init(source_stream, source_geom_name, target_col)
+_private _method trace_read_stream.init(source_stream, source_geom_name, 
+					stop_predicates, max_length, target_col)
 	.source_stream    << source_stream
 	.source_geom_name << source_geom_name
+	.stop_predicates << stop_predicates
+	.max_length << max_length
 	.target_collection << target_col
 	.target_stream << _unset
 
@@ -51,7 +60,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method topology_read_stream.get()
+_method trace_read_stream.get()
 	_loop
 		_local rec << _self.int!get()
 		_if rec _is _unset _then _return _unset _endif
@@ -66,7 +75,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method topology_read_stream.int!get()
+_private _method trace_read_stream.int!get()
 	_loop
 		_if .target_stream _isnt _unset
 		_then
@@ -89,7 +98,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method topology_read_stream.new_target_stream()
+_private _method trace_read_stream.new_target_stream()
 	# Returns unset if exhausted
 	_loop 
 		_local source << .source_stream.get()
@@ -101,10 +110,10 @@ _private _method topology_read_stream.new_target_stream()
 			_local geom << source.geometry(.source_geom_name)
 			_if geom _isnt _unset
 			_then
-				_local connected << _self.all_connected(geom)
-				_if connected.empty?.not
+				_local traced << _self.all_traced(geom)
+				_if traced.empty?.not
 				_then
-					_return connected.read_stream()
+					_return traced.read_stream()
 				_endif 
 			_endif 
 		_endif
@@ -113,31 +122,35 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method topology_read_stream.all_connected(geom)
+_private _method trace_read_stream.all_traced(geom)
+	_local start_rwo << geom.rwo
 	_local rwos << rwo_set.new()
-	_for i_geom _over geom.all_connected_geometry().fast_elements()
+	_local nf << network_follower.new(50)
+	_for i_node _over geom.all_nodes()
 	_loop
-		_if i_geom.rwo_type _is .target_collection.name
-		_then
-			_local rwo << i_geom.rwo
-			_if rwo _isnt _unset
-			_then 
-				rwos.add(rwo)
-			_endif 
-		_endif
-	_endloop
+		nf.trace_out(i_node, :stop_predicates, .stop_predicates, :max_cost, .max_length)
+		_local travelled << nf.visited_rwos
+		_for i_rec _over travelled.fast_elements()
+		_loop
+			_if (i_rec.rwo_type _is .target_collection.name) _andif
+			    (i_rec <> start_rwo)
+			_then
+				rwos.add(i_rec)
+			_endif
+		_endloop
+	_endloop 
 	_return rwos
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method topology_read_stream.size_is_fast?
+_method trace_read_stream.size_is_fast?
 	_return _false 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method topology_read_stream.close()
+_method trace_read_stream.close()
 	.register.discard()
 _endmethod
 $

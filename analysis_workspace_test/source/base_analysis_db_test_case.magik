@@ -50,10 +50,10 @@ _private _method base_analysis_db_test_case.create_road(name, oords)
 			     sector_rope.new_with(
 				     sector.new_with_xy(_scatter oords)),
 			     col.dataset.world)
-	record_transaction.new_insert(col,
-				      property_list.new_with(
-					      :name, name,
-					      :centre_line, ch)).run()
+	_return record_transaction.new_insert(col,
+					      property_list.new_with(
+						      :name, name,
+						      :centre_line, ch)).run()
 _endmethod
 $
 
@@ -64,10 +64,10 @@ _private _method base_analysis_db_test_case.create_park(name, oords)
 			     sector_rope.new_with(
 				     sector.new_with_xy(_scatter oords)),
 			     col.dataset.world)
-	record_transaction.new_insert(col,
-				      property_list.new_with(
-					      :name, name,
-					      :coverage, ch)).run()
+	_return record_transaction.new_insert(col,
+					      property_list.new_with(
+						      :name, name,
+						      :coverage, ch)).run()
 _endmethod
 $
 
@@ -78,10 +78,24 @@ _private _method base_analysis_db_test_case.create_hotel(name, oords)
 			      sector_rope.new_with(
 				      sector.new_with_xy(_scatter oords)),
 			      col.dataset.world)
-	 record_transaction.new_insert(col,
-				       property_list.new_with(
-					       :name, name,
-					       :location, ch)).run()
+	 _return record_transaction.new_insert(col,
+					       property_list.new_with(
+						       :name, name,
+						       :location, ch)).run()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_db_test_case.create_road_works(name, oords)
+	 _local col << _self.road_works_collection
+	 _local ch << pseudo_point.new_for_world(
+			      sector_rope.new_with(
+				      sector.new_with_xy(_scatter oords)),
+			      col.dataset.world)
+	 _return record_transaction.new_insert(col,
+					       property_list.new_with(
+						       :code_name, name,
+						       :location, ch)).run()
 _endmethod
 $
 

@@ -87,6 +87,7 @@ _private _method method_dialog.build_method_selection(container)
 	
 	sw_label_item.new(rc, _self.message(:method))
 	.items[:method_choice] << sw_text_item.new(rc, _unset, :text_items, {},
+							    :editable?, _false,
 						       :model, _self,
 						       :change_selector, :|method_changed()|,
 						       :col_alignment, :fill)

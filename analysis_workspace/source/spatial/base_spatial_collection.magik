@@ -30,7 +30,6 @@ def_slotted_exemplar(:base_spatial_collection,
 	:base_collection)
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.geometry_refs
 	>> {(geom_ref.new(:geometry,

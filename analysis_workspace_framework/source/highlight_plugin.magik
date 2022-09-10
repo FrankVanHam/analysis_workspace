@@ -124,7 +124,7 @@ _method highlight_plugin.map_damage_notify(graphics_context, map_view)
 		_for i_col, i_colour _over _self.highlight_collections()
 		_loop
 			_local hset << _self.highlight_set(i_col, i_colour, map_view.current_view_bounds)
-			map_view.draw_geometry_on(graphics_context, hset, _unset ,
+			map_view.draw_geometry_on(graphics_context, hset, _unset,
 						  _unset, _true )
 		_endloop
 	_endif 

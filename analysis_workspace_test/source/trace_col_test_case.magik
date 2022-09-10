@@ -1,0 +1,161 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:trace_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test topology collections.
+##
+def_slotted_exemplar(:trace_col_test_case,
+	{},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_nref_check()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	
+	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local filter_col << road_col.follow_trace(:centre_line, _self.hotel_collection,
+						   property_list.new(), length_value.new(10,:m))
+	_self.assert_equals(1, road_col.nrefs, "source collection is used once")
+
+	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
+	_local filter_col1 << filter_col.filter_by_distance(:location,
+							    length_value(10,:m), _false, area_col, :geometry)
+	_self.assert_equals(1, road_col.nrefs, "source collection is used once")
+	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
+	
+	filter_col1.discard()
+	_self.assert_equals(1, road_col.nrefs, "source collection is used once again")
+	_self.assert_equals(0, area_col.nrefs, "area collection is not used any more")
+
+	road_col.discard()
+	_self.assert_equals(0, road_col.nrefs, "road collection is free")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_exposure()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	# road analytic collection
+	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local filter_col << road_col.follow_trace(:centre_line, _self.hotel_collection,
+						   property_list.new(), length_value.new(10,:m))
+	_self.assert_equals(_self.hotel_collection, filter_col.expose(), "The filter collection returns Hotels")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method trace_col_test_case.create_basic_setup()
+	_self.create_road("line", {0, 0, 50000, 0})
+	_self.create_road("line", {0, 0, 0, 50000})
+	_self.create_road("line", {0, 0, 0, -50000})
+
+	_local start << _self.create_hotel("start", {0, 0})
+	_local start2 << _self.create_hotel("h1", {40000, 0})
+	_self.create_hotel("h2", {0, 40000})
+	_self.create_road_works("stop1", {30000, 0})
+	_self.create_road_works("stop2", {0, 30000})
+	
+	_return start, start2
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_simple_trace()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local start << _self.create_basic_setup()
+
+	_local start_col << rwan:record_set_collection.new(dsm, {start})
+	_local h_col << start_col.follow_trace(:location, _self.hotel_collection,
+					       property_list.new(), length_value.new(50,:m))
+	_self.assert_equals(2, h_col.size, "2 hotels")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_no_doubles()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (start, start2) << _self.create_basic_setup()
+
+	_local start_col << rwan:record_set_collection.new(dsm, {start, start2})
+	_local h_col << start_col.follow_trace(:location, _self.hotel_collection,
+					       property_list.new(), length_value.new(50,:m))
+	_self.assert_equals(3, h_col.size, "3 hotels in all")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_trace_with_max_length()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local start << _self.create_basic_setup()
+
+	_local start_col << rwan:record_set_collection.new(dsm, {start})
+	_local h_col << start_col.follow_trace(:location, _self.hotel_collection,
+					       property_list.new(), length_value.new(29,:m))
+	_self.assert_equals(0, h_col.size, "0 hotels because the trace stops")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_trace_with_any_stop_predicate()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local start << _self.create_basic_setup()
+
+	_local start_col << rwan:record_set_collection.new(dsm, {start})
+	_local h_col << start_col.follow_trace(:location, _self.hotel_collection,
+					       property_list.new_with(
+						       :road_works, {_unset}),
+						       length_value.new(50,:m))
+	_self.assert_equals(0, h_col.size, "0 hotels because it stops at the road works")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_trace_with_specific_stop_predicate()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local start << _self.create_basic_setup()
+
+	_local start_col << rwan:record_set_collection.new(dsm, {start})
+	_local h_col << start_col.follow_trace(:location, _self.hotel_collection,
+					       property_list.new_with(
+						       :road_works, {predicate.eq(:code_name, "stop1")}),
+						       length_value.new(50,:m))
+	_self.assert_equals(1, h_col.size, "1 hotel because it stops at one road works")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method trace_col_test_case.test_geometry_set()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local start << _self.create_basic_setup()
+
+	_local start_col << rwan:record_set_collection.new(dsm, {start})
+	_local h_col << start_col.follow_trace(:location, _self.hotel_collection,
+					       property_list.new(), length_value.new(50,:m))
+	
+	_local gs << h_col.geometry_set(:location)
+	_self.assert_equals(2, gs.size, "2 points")
+	_self.assert_not_unset(h_col.goto_bounds)
+_endmethod
+$

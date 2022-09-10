@@ -111,7 +111,8 @@ _private _method spatial_dialog.build_geometry_selection(container)
 	sw_label_item.new(rc, _self.message(:source_collection))
 	sw_label_item.new(rc, .holder.name)
 	sw_label_item.new(rc, _self.message(:geometry))
-	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {}, :col_alignment, :fill)
+	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {}, 
+							    :editable?, _false, :col_alignment, :fill)
 _endmethod
 $
 

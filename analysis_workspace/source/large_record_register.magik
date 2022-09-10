@@ -108,6 +108,7 @@ _method large_record_register.discard()
 		_self.scrapbook_view.drop_scrapbook_bag(_self.scrapbook_bag_name)
 		.scrapbook_bag << _unset 
 	_endif 
+	_self.have_post_mortem(_false)
 _endmethod
 $
 
@@ -126,7 +127,6 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method large_record_register.post_mortem()
 	_self.discard()
-	_self.have_post_mortem(_false)
 _endmethod
 $
 

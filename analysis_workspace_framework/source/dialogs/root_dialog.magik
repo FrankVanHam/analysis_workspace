@@ -81,6 +81,7 @@ _private _method root_dialog.build_root_selection(container)
 	
 	sw_label_item.new(rc, _self.message(:root))
 	_local choice << sw_text_item.new(rc, _unset, :text_items, {},
+							    :editable?, _false,
 					      :model, _self,
 					      :change_selector, :|root_changed()|,
 					      :col_alignment, :fill)

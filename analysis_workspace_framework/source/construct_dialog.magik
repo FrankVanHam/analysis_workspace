@@ -231,21 +231,19 @@ _method construct_dialog.add_geom_selection()
 	_local sel_by_type << hash_table.new()
 	_for i_geom _over sel.fast_elements()
 	_loop
-		sel_by_type.at_or_new_if_absent(i_geom.geom_category, rope).add(i_geom)
+		_local rwo << i_geom.rwo
+		_if rwo _isnt _unset
+		_then 
+			sel_by_type.at_or_new_if_absent(rwo.source.name, rwo_set).add(rwo)
+		_endif 
 	_endloop
 	_local holders << rope.new()
 	_local dsm << _self.dataset_manager
-	_for gcat, set _over sel_by_type.fast_keys_and_elements()
+	_for type, set _over sel_by_type.fast_keys_and_elements()
 	_loop
-		_if gcat _is :area
-		_then
-			gs << _self.union_areas(set)
-			col << rwan:area_collection.new(dsm, gs)
-		_else
-			gs << geometry_set.new_from(set)
-			col  << rwan:geometry_collection.new(dsm, gs)
-		_endif
-		holders.add(_self.new_holder(col))
+		col << rwan:record_set_collection.new(dsm, set)
+		msg << _self.message(:record_selection, _unset, set.size, set.an_element().external_name)
+		holders.add(_self.new_holder(col, msg))
 	_endloop
 	_self.add_holders(holders)
 _endmethod
@@ -309,7 +307,7 @@ _method construct_dialog.do_add_collection_selection()
 	_for i_col _over cols.fast_elements()
 	_loop
 		_local col << rwan:sw_collection.new(dsm, i_col)
-		holders.add(_self.new_holder(col))
+		holders.add(_self.new_holder(col, i_col.external_name.copy()))
 	_endloop
 	_self.add_holders(holders)
 _endmethod
@@ -587,23 +585,20 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_trace_dialog()
-	_return _self.activate_follow_trace_editor(_unset, _self.selected_top_holder)
+	_local dia << trace_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_holder)
+	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_trace_dialog(holder, base_col, geom_name, stop_predicates, max_length, target_col)
-	_local base_holder << _self.workspace.holder_for(base_col)
-	_return _self.activate_follow_trace_editor(holder, base_holder,
-						   geom_name, stop_predicates, max_length, target_col)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.activate_follow_trace_editor(holder, base_holder,
-								  _optional geom_name, stop_predicates, max_length, target_col)
-	dia << trace_dialog.new_dialog(_self)
-	dia.set_holder(holder, base_holder, _self.dataset_manager, geom_name, stop_predicates, max_length, target_col)
+_method construct_dialog.edit_follow_trace_dialog(holder, source_col, source_geom_name, stop_predicates, max_length, target_col)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	_local dia << trace_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, source_geom_name,
+		       stop_predicates, max_length, target_col)
 	dia.activate()
 	_return dia
 _endmethod
@@ -923,7 +918,7 @@ _method construct_dialog.manage_actions()
 	.owner.action(:predicate_filter).enabled? << open? _andif any_top_sel? _andif record?
 
 	.owner.action(:follow_topology).enabled? << open? _andif record?
-	.owner.action(:follow_trace).enabled? << open?
+	.owner.action(:follow_trace).enabled? << open? _andif record?
 	.owner.action(:follow_join).enabled? << open?
 	.owner.action(:follow_method).enabled? << open?
 	.owner.action(:follow_root).enabled? << open?
