@@ -173,26 +173,16 @@ _private _method highlight_plugin.highlight_gs(org_col, window_bounds)
 	## 
 	## Construct a geometry set that is used to highlight the set.
 
-	_local col << org_col.copy()
 	_local bound_col << geometry_collection.new(_unset, geometry_set.new_with(pseudo_area.new(window_bounds)))
 	_local gss << rope.new()
 	_for i_ref _over col.geometry_refs.fast_elements()
 	_loop
 		geom_col << col.filter_by_geometry(i_ref.name, :interacting_with, bound_col, :geometry)
-#		# todo, remove the test. The filter_by_geometry() must work on all.
-#		_if col.is_record_collection?
-#		_then 
-#			geom_col << col.filter_by_geometry(i_ref.name, :interacting_with, bound_col, :area)
-#		_else
-#			geom_col << col
-#		_endif 
-			
 		gss.add(geom_col.geometry_set(i_ref.name))
 	_endloop
 	_return composite_geometry_set.new(gss)
 _endmethod
 $
-
 
 _pragma(classify_level=restricted)
 _method highlight_plugin.terminate()
