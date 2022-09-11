@@ -54,13 +54,15 @@ _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.set_holder(workspace,
 				holder, source_holder, source_geom_name,
 				target_col, stop_preds, max_length)
+	_if max_length _is _unset _then condition.raise(:error) _endif
+	_if stop_preds _is _unset _then condition.raise(:error) _endif
 	.workspace << workspace
 	.holder << holder
 	.source_holder << source_holder
 	.source_geom_name << source_geom_name
 	.name << holder.name
 	.max_length    << max_length
-	.stop_predicates << stop_preds.default(property_list.new())
+	.stop_predicates << stop_preds
 	.target_collection << target_col
 _endmethod
 $
@@ -192,7 +194,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.edit_predicate()
-	_local pred << .stop_predicates[.selected_stop_collection]
+	_local pred << .stop_predicates[.selected_stop_collection.name][1]
 	_local possible_collections << {.selected_stop_collection}
 	_local ed << trace_stop_dialog.new_dialog(_self, possible_collections, pred, .parent_model.ace)
 	ed.activate_relative_to(_self.message(:predicate_dialog_title), _self.top_frame)
@@ -201,10 +203,13 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.stop_predicates_trees
+	_local ds << .source_holder.collection.expose().dataset
 	_local list << rope.new()
-	_for i_col, i_pred _over .stop_predicates.fast_keys_and_elements()
+	_for i_col_name, i_preds _over .stop_predicates.fast_keys_and_elements()
 	_loop
-		list.add(_self.display_tree_for(i_pred, i_col))
+		pred << i_preds[1]
+		col << ds.collection(i_col_name)
+		list.add(_self.display_tree_for(pred, col))
 	_endloop
 	_return list
 _endmethod
@@ -248,14 +253,14 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.update_predicate(pred, col)
-	.stop_predicates[col] << pred
+	.stop_predicates[col.name] << {pred}
 	_self.refresh_list()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method trace_dialog.remove_predicate()
-	.stop_predicates.remove_key(.selected_stop_collection)
+	.stop_predicates.remove_key(.selected_stop_collection.name)
 	_self.refresh_list()
 	_self.manage_actions()	
 _endmethod
@@ -306,7 +311,7 @@ _method trace_dialog.ok()
 	_else
 		.holder.name << .name
 		.holder.collection.update(.source_geom_name, .target_collection,
-					  _self.trace_stop_predicates,
+					  .stop_predicates,
 					  _self.max_length)
 		.parent_model.update_holder(.holder)
 	_endif 
@@ -317,14 +322,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.construct_trace_collection()
 	_return .source_holder.collection.follow_trace(.source_geom_name, .target_collection,
-						       _self.trace_stop_predicates, _self.max_length)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_method trace_dialog.trace_stop_predicates
-	_return .stop_predicates
+						       .stop_predicates, _self.max_length)
 _endmethod
 $
 
