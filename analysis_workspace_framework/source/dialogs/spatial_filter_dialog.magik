@@ -138,25 +138,10 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_dialog.ok()
-	_if .holder _is _unset
-	_then 
-		_local new_col << _self.construct_spatial_predicate()
-		.parent_model.add_holder(.parent_model.new_holder(new_col,
-								  .name))
-	_else
-		.holder.name << .name
-		.holder.collection.update(.source_geom_name, .operator, .filter_holder.collection, .filter_geom_name)
-		.parent_model.update_holder(.holder)
-	_endif 
-	_self.close()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_dialog.construct_spatial_predicate()
-	_return .source_holder.collection.filter_by_geometry(.source_geom_name, .operator,
-							     .filter_holder.collection, .filter_geom_name)
+_private _method spatial_filter_dialog.construct_holder()
+	_local col << .source_holder.collection.filter_by_geometry(.source_geom_name, .operator,
+								   .filter_holder.collection, .filter_geom_name)
+	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 

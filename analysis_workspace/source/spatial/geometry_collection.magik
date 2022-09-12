@@ -81,8 +81,8 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method geometry_collection.init_from_serial(dsm, base_cols, id)
-	_super.init_from_serial(dsm, base_cols)
+_private _method geometry_collection.init_from_serial(dsm, id)
+	_super.init_from_serial(dsm)
 	.id << id
 	.geometry << .dsm.geometry_set(.id)
 	_return _self 
@@ -92,13 +92,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.nrefs, .geometry)
+		other.equals_in_details?(.geometry)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method geometry_collection.equals_in_details?(nrefs, geometry)
-	_return _super.equals_in_details?(nrefs) _andif 
+_method geometry_collection.equals_in_details?(geometry)
+	_return _super.equals_in_details?() _andif 
 		_self.geometry_sets_equal?(.geometry, geometry)
 _endmethod
 $

@@ -62,8 +62,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_set_collection.init_from_serial(dsm, base_cols, urn_rope)
-    _super.init_from_serial(dsm, base_cols)
+_private _method record_set_collection.init_from_serial(dsm, urn_rope)
+    _super.init_from_serial(dsm)
     .base_set << rwo_set.new(urn_rope.size)
     _for i_urn _over urn_rope.fast_elements()
     _loop

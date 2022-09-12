@@ -85,8 +85,6 @@ _method base_record_collection.goto_bounds
 _endmethod
 $
 
-
-
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_record_collection.buffer(geom_name, distance, _optional corner_style, end_style)

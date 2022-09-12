@@ -151,7 +151,6 @@ _method workspace.top_holders(selection)
 _endmethod
 $
 
-
 #########################################################
 
 _pragma(classify_level=basic, topic={analysis})
@@ -166,6 +165,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method workspace.add_holders(holders)
+	
 	.holders.add_all_last(holders)
 	.top_holders.add_all_last(holders)
 	_for i_holder _over holders.fast_elements()

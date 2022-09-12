@@ -137,23 +137,6 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_dialog.ok()
-	_local pred << _self.ensure_predicate()
-	_if .holder _is _unset
-	_then
-		_local new_col << _self.construct_predicate(pred)
-		.parent_model.add_holder(.parent_model.new_holder(new_col,
-								  .name))
-	_else
-		.holder.name << .name
-		.holder.collection.update(pred)
-		.parent_model.update_holder(.holder)
-	_endif 
-	_self.close()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_dialog.ensure_predicate()
 	_local pred << .predicate_component.predicate()
 	_if pred _is _unset
@@ -166,8 +149,10 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_dialog.construct_predicate(pred)
-	_return .source_holder.collection.filter_by_predicate(pred)
+_private _method predicate_filter_dialog.construct_holder()
+	_local pred << _self.ensure_predicate()
+	_local col << .source_holder.collection.filter_by_predicate(pred)
+	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 

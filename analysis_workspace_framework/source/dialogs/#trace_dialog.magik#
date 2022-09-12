@@ -305,7 +305,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method trace_dialog.construct_holder()
 	_local col << .source_holder.collection.follow_trace(.source_geom_name, .target_collection,
 							     .stop_predicates, _self.max_length)
-	.parent_model.new_holder(col, .name)
+	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 

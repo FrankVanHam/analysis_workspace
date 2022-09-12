@@ -44,8 +44,9 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.update_holder(holder)
+_method construct_dialog.update_holder(old_holder, new_holder)
 	_self.workspace.set_dirty()
+	workspace.update(old_holder, new_holder)
 	.owner.publish_workspace()
 _endmethod
 $
@@ -119,18 +120,6 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method construct_dialog.can_delete?(to_del)
-	 _local workspace << _self.workspace
-	 _for i_holder _over to_del.fast_elements()
-	_loop 
-		_local usage_count << i_holder.nrefs
-		_if usage_count > 1
-		_then
-			_self.show_alert(_self.message(:cannot_delete, _unset,
-						       i_holder.name,
-						       usage_count-1))
-			_return _false 
-		_endif
-	_endloop
 	_return _self.question_alert( :yes, :no,
 				      :sure_to_delete, to_del.size)
 _endmethod
@@ -903,7 +892,7 @@ _method construct_dialog.manage_actions()
 			 _else >> _unset
 			 _endif 
 	_local any_sel? << holder _isnt _unset
-	_local any_top_sel? << holder _isnt _unset _andif holder.nrefs=0
+	_local any_top_sel? << holder _isnt _unset
 	_local record? << holder _isnt _unset _andif holder.is_record_collection?
 	_local open? << _self.open?
 	.owner.action(:add_collections).enabled? << open?

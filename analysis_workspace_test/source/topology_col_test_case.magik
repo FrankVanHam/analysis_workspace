@@ -30,29 +30,6 @@ def_slotted_exemplar(:topology_col_test_case,
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method topology_col_test_case.test_nref_check()
-	_local dsm << rwan:analysis_dataset_manager.new(:test)
-	
-	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
-	_local filter_col << road_col.follow_topology(:centre_line, _self.hotel_collection)
-	_self.assert_equals(1, road_col.nrefs, "source collection is used once")
-
-	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
-	_local filter_col1 << filter_col.filter_by_distance(:location,
-							    length_value(10,:m), _false, area_col, :geometry)
-	_self.assert_equals(1, road_col.nrefs, "source collection is used once")
-	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
-	
-	filter_col1.discard()
-	_self.assert_equals(1, road_col.nrefs, "source collection is used once again")
-	_self.assert_equals(0, area_col.nrefs, "area collection is not used any more")
-
-	road_col.discard()
-	_self.assert_equals(0, road_col.nrefs, "road collection is free")
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method topology_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 

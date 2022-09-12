@@ -93,13 +93,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method base_plugin.selected_top_holders
-	_local cur << _self.workspace
-	_if cur _isnt _unset
-	_then 
-		_return cur.top_holders(.selection)
-	_else
-		_return {}
-	_endif 
+	_return _self.workspace.top_holders(.selection)
 _endmethod
 $
 

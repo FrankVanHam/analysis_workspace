@@ -47,17 +47,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method join_collection.update(join_field_name)
-	_local sw_col << _self.base_collection.expose()
-	_local target_col << sw_col.field(join_field_name).result_table(sw_col.dataset)
-	
-	.target_ds_name << target_col.dataset.original_dataset_name
-	.target_table_name << target_col.name
-	.methd << join_field_name
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method join_collection.description(translator)
 	_local base_name << translator.name_for_collection(_self.base_collection)
 	_return _self.message(:description, _self.target_collection.external_name, .methd, base_name)

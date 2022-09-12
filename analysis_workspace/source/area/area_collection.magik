@@ -86,8 +86,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method area_collection.init_from_serial(dsm, nrefs, id)
-	_super.init_from_serial(dsm, nrefs)
+_private _method area_collection.init_from_serial(dsm, id)
+	_super.init_from_serial(dsm)
 	.id << id
 	
 	.area << .dsm.area(.id)
@@ -98,13 +98,13 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method area_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.nrefs, .area)
+		other.equals_in_details?(.area)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method area_collection.equals_in_details?(nrefs, area)
-	_return _super.equals_in_details?(nrefs) _andif
+_method area_collection.equals_in_details?(area)
+	_return _super.equals_in_details?() _andif
 		.area.equal_to?(area)
 _endmethod
 $

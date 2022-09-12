@@ -33,33 +33,6 @@ def_slotted_exemplar(:spatial_analysis_col_test_case,
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_nref_check()
-	_local dsm << rwan:analysis_dataset_manager.new(:test)
-
-	# road analytic collection and area 
-	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
-	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
-
-	_local filter_col << acol.filter_by_geometry(:centre_line, :within, area_col, :geometry)
-	_self.assert_equals(1, acol.nrefs, "source collection is used once")
-	_self.assert_equals(1, area_col.nrefs, "area collection is used once")
-
-	_local filter_col1 << acol.filter_by_geometry(:centre_line, :within, area_col, :geometry)
-	_self.assert_equals(2, acol.nrefs, "source collection is used twice")
-	_self.assert_equals(2, area_col.nrefs, "area collection is used twice")
-	
-	filter_col1.discard()
-	_self.assert_equals(1, acol.nrefs, "source collection is used once again")
-	_self.assert_equals(1, area_col.nrefs, "area collection is used once again")
-
-	_local area_col1 << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
-	filter_col.update(:centre_line, :within, area_col1, :geometry)
-	_self.assert_equals(0, area_col.nrefs, "area collection is free")
-	_self.assert_equals(1, area_col1.nrefs, "area collection 1 is used once")
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method spatial_analysis_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 

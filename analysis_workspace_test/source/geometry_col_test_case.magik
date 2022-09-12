@@ -29,22 +29,6 @@ def_slotted_exemplar(:geometry_col_test_case,
 	:base_analysis_db_test_case)
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method geometry_col_test_case.test_nref_check()
-	_local dsm << rwan:analysis_dataset_manager.new(:test)
-	
-	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
-	_local filter_col << _self.area_collection(dsm, {50,50,150,50,150,150,50,150,50,50})
-	_local acol << area_col.filter_by_geometry(:geometry, :interacting_with, filter_col, :geometry)
-	
-	_self.assert_equals(1, area_col.nrefs, "source collection is used once")
-	_self.assert_equals(1, filter_col.nrefs, "source collection is used once")
-	
-	acol.discard()
-	_self.assert_equals(0, area_col.nrefs, "source collection is not used once")
-	_self.assert_equals(0, filter_col.nrefs, "source collection is not used once")
-_endmethod
-$
 
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_col_test_case.test_geometry_set_geometry_filter()

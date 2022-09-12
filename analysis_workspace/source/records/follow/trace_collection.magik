@@ -76,24 +76,11 @@ _private _method trace_collection.assert_stop_predicates(stop_preds)
 _endmethod
 $
 
-
-_pragma(classify_level=restricted, topic={analysis})
-_method trace_collection.update(source_geom_name, target_col, stop_preds, max_length)
-	.source_geom_name << source_geom_name
-	
-	# protect agains nonsense
-	.source_collection.assert_geom_name(.source_geom_name)
-	.stop_predicates << stop_preds
-	.max_length      << max_length
-	_return _super.update(target_col)
-_endmethod
-$
-
 _pragma(classify_level=basic, topic={analysis})
 _method trace_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_follow_trace_dialog(holder,
 						.source_collection,
-						.source_geom_name, _self.target_collection,
+						.source_geom_name, _self.expose(),
 						.stop_predicates, .max_length)
 _endmethod
 $
@@ -108,10 +95,10 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_collection.init_from_serial(dsm, nrefs, source_col,
+_method trace_collection.init_from_serial(dsm, source_col,
 					  target_ds_name, target_table_name, source_geom_name,
 					  stop_preds_string, max_length)
-    _super.init_from_serial(dsm, nrefs, source_col,
+    _super.init_from_serial(dsm, source_col,
 			    target_ds_name, target_table_name)
     .source_geom_name << source_geom_name
     .stop_predicates  << stop_preds_string.evaluate()
@@ -131,17 +118,17 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method trace_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.nrefs, .source_collection, .source_geom_name,
+		other.equals_in_details?(.source_collection, .source_geom_name,
 					 .target_ds_name, .target_table_name,
 					 .stop_predicates, .max_length)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method trace_collection.equals_in_details?(nrefs, source_col, source_geom_name,
+_method trace_collection.equals_in_details?(source_col, source_geom_name,
 					    target_ds_name, target_table_name,
 					    stop_preds, max_length)
-	_return _super.equals_in_details?(nrefs, source_col,
+	_return _super.equals_in_details?(source_col,
 					  target_ds_name, target_table_name) _andif 
 		.source_geom_name = source_geom_name _andif
 		.max_length = max_length _andif
@@ -279,7 +266,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method trace_collection.display_tree_in(owner)
-	_return owner.display_tree_for_topology_collection(_self, .source_collection,
-							   _self.target_collection, .source_geom_name)
+	_return owner.display_tree_for_trace_collection(_self, .source_collection,
+							_self.expose(), .source_geom_name)
 _endmethod
 $

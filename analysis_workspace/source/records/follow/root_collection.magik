@@ -54,12 +54,6 @@ _method root_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method root_collection.update(target_col)
-	.target_ds_name << target_col.dataset.original_dataset_name
-	.target_table_name << target_col.name
-_endmethod
-$
 
 _pragma(classify_level=basic, topic={analysis})
 _iter _method root_collection.fast_elements()

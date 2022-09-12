@@ -30,25 +30,6 @@ def_slotted_exemplar(:predicate_filter_col_test_case,
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method predicate_filter_col_test_case.test_nref_check()
-	_local dsm << rwan:analysis_dataset_manager.new(:test)
-	
-	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
-	_local filter_col << acol.filter_by_predicate(predicate.eq(:name, "Frank"))
-	_self.assert_equals(1, acol.nrefs, "source collection is used once")
-	
-	_local filter_col1 << acol.filter_by_predicate(predicate.eq(:road_type, "B-Road"))
-	_self.assert_equals(2, acol.nrefs, "source collection is used twice")
-	
-	filter_col1.discard()
-	_self.assert_equals(1, acol.nrefs, "source collection is used once again")
-	
-	filter_col.discard()
-	_self.assert_equals(0, acol.nrefs, "area collection is free")
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method predicate_filter_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)

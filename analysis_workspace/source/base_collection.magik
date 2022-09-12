@@ -31,8 +31,7 @@ _pragma(classify_level=basic, topic={analysis})
 ##
 def_slotted_exemplar(:base_collection,
 	{
-		{:dsm,    _unset},
-		{:nrefs,  _unset}
+		{:dsm,    _unset}
 	})
 $
 
@@ -49,14 +48,12 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_collection.init(dsm)
 	.dsm << dsm
-	.nrefs << 0
 	_return _self 
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method base_collection.init_copy()
-	.nrefs << 0
 	_return _self
 _endmethod
 $
@@ -87,25 +84,6 @@ _method base_collection.editable?
 	_return _false 
 _endmethod
 $
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.nrefs
-	>> .nrefs
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.add_use(col)
-	.nrefs +<< 1
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.remove_use(col)
-	.nrefs -<< 1
-_endmethod
-$
-
 
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_collection.viewable?
@@ -225,8 +203,8 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.serial_slots()
-    _local keys   << rope.new_with(:oop, :nrefs)
-    _local values << rope.new_with(_self.as_oop, .nrefs)
+    _local keys   << rope.new_with(:oop)
+    _local values << rope.new_with(_self.as_oop)
     _return keys, values
 _endmethod
 $
@@ -248,9 +226,8 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method base_collection.init_from_serial(dsm, nrefs)
+_private _method base_collection.init_from_serial(dsm)
 	.dsm << dsm
-	.nrefs << nrefs
 	_return _self 
 _endmethod
 $
@@ -258,13 +235,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.equals?(other)
 	_if _not _self.is_class_of?(other) _then _return _false _endif
-	_return _self.equals_in_details?(.nrefs)
+	_return _self.equals_in_details?()
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_collection.equals_in_details?(nrefs)
-	_return .nrefs = nrefs
+_method base_collection.equals_in_details?()
+	_return _true
 _endmethod
 $
 
@@ -311,6 +288,12 @@ _method base_collection.geometry_set(geom_name)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.ref_collections
+	## return the collections I depend on
+	_return {}
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.geometry_refs_for(actual_collection)
@@ -361,7 +344,6 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.discard()
 	.dsm << _unset
-	.nrefs << 0
 #	_if .source_collection _isnt _unset
 #	_then
 #		.source_collection.discard()

@@ -155,6 +155,12 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.ref_collections
+	_return .collection.ref_collections
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.display_tree_in(builder)
 	_return .collection.display_tree_in(builder)
 _endmethod
@@ -163,12 +169,6 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.activate_editor_in(editor)
 	_return .collection.activate_editor_in(editor, _self)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method collection_holder.nrefs
-	_return .collection.nrefs
 _endmethod
 $
 

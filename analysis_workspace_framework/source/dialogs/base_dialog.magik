@@ -269,6 +269,19 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method base_dialog.ok()
+	_local new_holder << _self.construct_holder()
+	_if .holder _is _unset
+	_then 
+		.parent_model.add_holder(new_holder)
+	_else
+		.parent_model.update_holder(.holder, new_holder)
+	_endif 
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _method base_dialog.cancel()
 	_self.close()
 _endmethod

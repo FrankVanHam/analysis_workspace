@@ -52,34 +52,13 @@ _private _method spatial_filter_collection.init(dsm, source_col, source_geom_nam
 	.source_collection.assert_geom_name(.source_geom_name)
 	.filter_collection.assert_geom_name(.filter_geom_name)
 
-	.source_collection.add_use(_self)
-	.filter_collection.add_use(_self)
 	_return _super.init(dsm)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.init_copy()
-	.source_collection.add_use(_self)
-	.filter_collection.add_use(_self)
 	_return _super.init_copy()
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.update(source_geom_name, operator, filter_collection, filter_geom_name)
-	.filter_collection.remove_use(_self)
-	
-	.source_geom_name << source_geom_name
-	.operator << operator
-	.filter_collection << filter_collection
-	.filter_geom_name << filter_geom_name
-
-	# protect agains nonsense
-	.source_collection.assert_geom_name(.source_geom_name)
-	.filter_collection.assert_geom_name(.filter_geom_name)
-
-	.filter_collection.add_use(_self)
 _endmethod
 $
 
@@ -102,9 +81,9 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_collection.init_from_serial(dsm, nrefs, source_col, source_geom_name,
+_private _method spatial_filter_collection.init_from_serial(dsm, source_col, source_geom_name,
 							    operator, filter_collection, filter_geom_name)
-    _super.init_from_serial(dsm, nrefs)
+    _super.init_from_serial(dsm)
     .source_collection << source_col
     .source_geom_name << source_geom_name
     .operator << operator
@@ -117,13 +96,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.nrefs, .source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name)
+		other.equals_in_details?(.source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.equals_in_details?(nrefs, source_col, source_geom_name, operator, filter_collection, filter_geom_name)
-	_return _super.equals_in_details?(nrefs) _andif
+_method spatial_filter_collection.equals_in_details?(source_col, source_geom_name, operator, filter_collection, filter_geom_name)
+	_return _super.equals_in_details?() _andif
 		.source_collection.equals?(source_col) _andif
 		.source_geom_name = source_geom_name _andif
 		.operator = operator _andif
@@ -149,6 +128,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.expose()
 	_return .source_collection.expose()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_collection.ref_collections
+	## return the collections I depend on
+	_return {.source_collection, .filter_collection}
 _endmethod
 $
 
@@ -282,9 +268,6 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method spatial_filter_collection.discard()
-	.source_collection.remove_use(_self)
-	.filter_collection.remove_use(_self)
-
 	.source_collection << .source_geom_name << .operator << .filter_collection << .filter_geom_name << _unset 
 	_super.discard()
 _endmethod

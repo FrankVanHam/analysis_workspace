@@ -43,7 +43,7 @@ _private _method predicate_filter_collection.init(dsm, source_col, pred)
 	.source_collection << source_col
 	.pred << pred
 	
-	.source_collection.add_use(_self)
+
 	
 	_return _super.init(dsm)  
 _endmethod
@@ -51,15 +51,8 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method predicate_filter_collection.init_copy()
-	.source_collection.add_use(_self)
+
 	>> _super.init_copy()
-_endmethod
-$
-
-
-_pragma(classify_level=basic, topic={analysis})
-_method predicate_filter_collection.update(pred)
-	.pred << pred
 _endmethod
 $
 
@@ -82,8 +75,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_collection.init_from_serial(dsm, nrefs, source_col, pred_string)
-    _super.init_from_serial(dsm, nrefs)
+_private _method predicate_filter_collection.init_from_serial(dsm, source_col, pred_string)
+    _super.init_from_serial(dsm)
     .source_collection << source_col
     .pred << pred_string.evaluate()
     _return _self 
@@ -99,13 +92,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method predicate_filter_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.nrefs, .source_collection, .pred)
+		other.equals_in_details?(.source_collection, .pred)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_collection.equals_in_details?(nrefs, source_col, pred)
-	_return _super.equals_in_details?(nrefs) _andif
+_method predicate_filter_collection.equals_in_details?(source_col, pred)
+	_return _super.equals_in_details?() _andif
 		.source_collection.equals?(source_col) _andif
 		.pred.is_equivalent_to?(pred)
 _endmethod
@@ -131,6 +124,12 @@ _method predicate_filter_collection.expose()
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method predicate_filter_collection.ref_collections
+	## return the collections I depend on
+	_return {.source_collection}
+_endmethod
+$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method predicate_filter_collection.size_is_fast?
@@ -250,8 +249,6 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method predicate_filter_collection.discard()
-	.source_collection.remove_use(_self)
-
 	.source_collection << _unset 
 	_super.discard()
 _endmethod

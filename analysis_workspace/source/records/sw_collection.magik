@@ -74,8 +74,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method sw_collection.init_from_serial(dsm, nrefs, actual_ds_name, actual_table_name)
-	_super.init_from_serial(dsm, nrefs)
+_private _method sw_collection.init_from_serial(dsm, actual_ds_name, actual_table_name)
+	_super.init_from_serial(dsm)
 	.actual_ds_name << actual_ds_name
 	.actual_table_name << actual_table_name
 	_return _self 
@@ -85,13 +85,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method sw_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.nrefs, .actual_ds_name, .actual_table_name)
+		other.equals_in_details?(.actual_ds_name, .actual_table_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method sw_collection.equals_in_details?(nrefs, actual_ds_name, actual_table_name)
-	_return _super.equals_in_details?(nrefs) _andif
+_method sw_collection.equals_in_details?(actual_ds_name, actual_table_name)
+	_return _super.equals_in_details?() _andif
 		.actual_ds_name = actual_ds_name _andif
 		.actual_table_name = actual_table_name
 _endmethod

@@ -124,25 +124,11 @@ _private _method topology_dialog.set_current_target_collection(items)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method topology_dialog.ok()
-	_if .holder _is _unset
-	_then
-		_local col << _self.construct_topology_collection()
-		.parent_model.add_holder(.parent_model.new_holder(col,
-								  .name))
-	_else
-		.holder.name << .name
-		.holder.collection.update(.source_geom_name, .target_collection)
-		.parent_model.update_holder(.holder)
-	_endif 
-	_self.close() 
-_endmethod
-$
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method topology_dialog.construct_topology_collection()
-	_return .source_holder.collection.follow_topology(.source_geom_name, .target_collection)
+_private _method topology_dialog.construct_holder()
+	_local col << .source_holder.collection.follow_topology(.source_geom_name, .target_collection)
+	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 

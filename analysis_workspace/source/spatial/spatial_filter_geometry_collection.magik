@@ -52,33 +52,15 @@ _private _method spatial_filter_geometry_collection.init(dsm, source_col, operat
 	# protect agains nonsense
 	.filter_collection.assert_geom_name(.filter_geom_name)
 
-	.source_collection.add_use(_self)
-	.filter_collection.add_use(_self)
+
 	_return _super.init(dsm)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_geometry_collection.init_copy()
-	.source_collection.add_use(_self)
-	.filter_collection.add_use(_self)
+
 	_return _super.init_copy()
-_endmethod
-$
-
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.update(operator, filter_collection, filter_geom_name)
-	.filter_collection.remove_use(_self)
-	
-	.operator << operator
-	.filter_collection << filter_collection
-	.filter_geom_name << filter_geom_name
-
-	# protect against nonsense
-	.filter_collection.assert_geom_name(.filter_geom_name)
-
-	.filter_collection.add_use(_self)
 _endmethod
 $
 
@@ -101,8 +83,8 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_geometry_collection.init_from_serial(dsm, nrefs, source_col, operator, filter_collection, filter_geom_name)
-    _super.init_from_serial(dsm, nrefs)
+_private _method spatial_filter_geometry_collection.init_from_serial(dsm, source_col, operator, filter_collection, filter_geom_name)
+    _super.init_from_serial(dsm)
     .source_collection << source_col
     .operator << operator
     .filter_collection << filter_collection
@@ -114,13 +96,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_geometry_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.nrefs, .source_collection, .operator, .filter_collection, .filter_geom_name)
+		other.equals_in_details?(.source_collection, .operator, .filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_geometry_collection.equals_in_details?(nrefs, source_col, operator, filter_collection, filter_geom_name)
-	_return _super.equals_in_details?(nrefs) _andif
+_method spatial_filter_geometry_collection.equals_in_details?(source_col, operator, filter_collection, filter_geom_name)
+	_return _super.equals_in_details?() _andif
 		.source_collection.equals?(source_col) _andif
 		.operator = operator _andif
 		.filter_collection.equals?(filter_collection) _andif
@@ -280,9 +262,6 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method spatial_filter_geometry_collection.discard()
-	.source_collection.remove_use(_self)
-	.filter_collection.remove_use(_self)
-
 	.source_collection << .operator << .filter_collection << .filter_geom_name << _unset 
 	_super.discard()
 _endmethod

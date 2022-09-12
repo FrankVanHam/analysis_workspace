@@ -50,22 +50,15 @@ _private _method base_follow_collection.init(dsm, source_col, target_col)
 	.target_ds_name << target_col.dataset.original_dataset_name
 	.target_table_name << target_col.name
 	
-	.source_collection.add_use(_self)
+
 	_return _super.init(dsm) 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_follow_collection.init_copy()
-	.source_collection.add_use(_self)
-	_return _super.init_copy()
-_endmethod
-$
 
-_pragma(classify_level=basic, topic={analysis})
-_method base_follow_collection.update(target_col)
-	.target_ds_name << target_col.dataset.original_dataset_name
-	.target_table_name << target_col.name
+	_return _super.init_copy()
 _endmethod
 $
 
@@ -84,9 +77,9 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method base_follow_collection.init_from_serial(dsm, nrefs, source_col,
+_method base_follow_collection.init_from_serial(dsm, source_col,
 						target_ds_name, target_table_name)
-    _super.init_from_serial(dsm, nrefs)
+    _super.init_from_serial(dsm)
     .source_collection << source_col
     .target_ds_name << target_ds_name
     .target_table_name << target_table_name
@@ -103,14 +96,14 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method base_follow_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.nrefs, .source_collection,
+		other.equals_in_details?(.source_collection,
 					 .target_ds_name, .target_table_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method base_follow_collection.equals_in_details?(nrefs, source_col, target_ds_name, target_table_name)
-	_return _super.equals_in_details?(nrefs) _andif
+_method base_follow_collection.equals_in_details?(source_col, target_ds_name, target_table_name)
+	_return _super.equals_in_details?() _andif
 		.source_collection.equals?(source_col) _andif
 		.target_ds_name = target_ds_name _andif
 		.target_table_name = target_table_name
@@ -127,8 +120,6 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method base_follow_collection.discard()
-	.source_collection.remove_use(_self)
-
 	.source_collection << .target_ds_name << .target_table_name << _unset
 	_super.discard()
 _endmethod
@@ -140,3 +131,8 @@ _method base_follow_collection.geometry_refs
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_follow_collection.ref_collections
+	>> {.source_collection}
+_endmethod
+$
