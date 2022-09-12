@@ -24,14 +24,11 @@ $
 _pragma(classify_level=basic, topic={analysis, collections})
 def_slotted_exemplar(:trace_read_stream,
 	{
-		{:register,          _unset},
-		{:source_stream,     _unset},
 		{:source_geom_name,  _unset},
 		{:stop_predicates,   _unset},
 		{:max_length,        _unset},
-		{:target_collection, _unset},
-		{:target_stream,     _unset}
-	}, :input_stream_with_unget_mixin)
+		{:target_collection, _unset}
+	}, :follow_base_trace_read_stream)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
@@ -47,53 +44,12 @@ $
 _pragma(classify_level=basic, topic={analysis, collections})
 _private _method trace_read_stream.init(source_stream, source_geom_name, 
 					stop_predicates, max_length, target_col)
-	.source_stream    << source_stream
 	.source_geom_name << source_geom_name
 	.stop_predicates << stop_predicates
 	.max_length << max_length
 	.target_collection << target_col
-	.target_stream << _unset
-
-	.register << large_record_register.new(1000)
-	_return _self 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
-_method trace_read_stream.get()
-	_loop
-		_local rec << _self.int!get()
-		_if rec _is _unset _then _return _unset _endif
-
-		_if .register.includes?(rec).not
-		_then
-			.register.add(rec)
-			_return rec
-		_endif 
-	_endloop 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
-_private _method trace_read_stream.int!get()
-	_loop
-		_if .target_stream _isnt _unset
-		_then
-			_local rec << .target_stream.get()
-			_if rec _isnt _unset
-			_then
-				_return rec
-			_else
-				.target_stream << _unset 
-			_endif
-		_else
-			.target_stream << _self.new_target_stream()
-			_if .target_stream _is _unset
-			_then
-				_return _unset
-			_endif 
-		_endif
-	_endloop 
+	
+	_return _super.init( source_stream)
 _endmethod
 $
 
@@ -140,17 +96,5 @@ _private _method trace_read_stream.all_traced(geom)
 		_endloop
 	_endloop 
 	_return rwos
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
-_method trace_read_stream.size_is_fast?
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
-_method trace_read_stream.close()
-	.register.discard()
 _endmethod
 $

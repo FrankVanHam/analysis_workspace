@@ -58,6 +58,23 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_db_test_case.create_pub(name, oords)
+	_local col << _self.pub_rest_collection
+	_local ch << pseudo_point.new_for_world(
+			     sector_rope.new_with(
+				     sector.new_with_xy(_scatter oords)),
+			     col.dataset.world)
+	_return record_transaction.new_insert(col,
+					      property_list.new_with(
+						      :name, name,
+						      :street, "Kapelweg",
+						      :cuisine, "Pub Grub",
+						      :type, "Pub",
+						      :location, ch)).run()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _private _method base_analysis_db_test_case.create_park(name, oords)
 	 _local col << _self.park_collection
 	_local ch << pseudo_area.new_for_world(

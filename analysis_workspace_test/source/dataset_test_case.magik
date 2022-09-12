@@ -151,6 +151,7 @@ _method dataset_test_case.test_follow_topology_analysis()
 	_self.basic_storage_test(acol)
 _endmethod
 $
+
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_follow_trace_analysis()
 	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)

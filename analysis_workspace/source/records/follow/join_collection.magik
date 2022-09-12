@@ -27,29 +27,99 @@ _pragma(classify_level=basic, topic={analysis})
 ## collection
 ##
 def_slotted_exemplar(:join_collection,
-	{},
-	:method_collection)
+	{
+		{:join_field_name, _unset}
+	},
+	:base_follow_collection)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method join_collection.new(dsm, base_col, join_field_name)
-	_local sw_col << base_col.expose()
+_method join_collection.new(dsm, source_col, join_field_name)
+	_return _clone.init(dsm, source_col, join_field_name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method join_collection.init(dsm, source_col, join_field_name)
+	.join_field_name << join_field_name
+	
+	_local sw_col << source_col.expose()
 	_local target_col << sw_col.field(join_field_name).result_table(sw_col.dataset)
-	_return _clone.init(dsm, base_col, target_col, join_field_name, _unset)
+	_return _super.init(dsm, source_col, target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method join_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_follow_join_dialog(holder,
-					       _self.base_collection, .methd)
+					       .source_collection, .join_field_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method join_collection.serial_slots()
+	_local (keys, values) << _super.serial_slots()
+	keys.add_all_last({:join_field_name})
+	values.add_all_last({.join_field_name})
+	_return keys, values
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method join_collection.init_from_serial(dsm, source_col,
+					 target_ds_name, target_table_name, join_field_name)
+    _super.init_from_serial(dsm, source_col, target_ds_name, target_table_name)
+    .join_field_name << join_field_name
+    _return _self 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method join_collection.description(translator)
-	_local base_name << translator.name_for_collection(_self.base_collection)
-	_return _self.message(:description, _self.target_collection.external_name, .methd, base_name)
+_method join_collection.equals?(other)
+	_return _self.is_class_of?(other) _andif 
+		other.equals_in_details?(.source_collection,
+					 .target_ds_name, .target_table_name,
+					 .join_field_name)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method join_collection.equals_in_details?(source_col, target_ds_name, target_table_name, join_field_name)
+	_return _super.equals_in_details?(source_col, target_ds_name, target_table_name) _andif
+		.join_field_name = join_field_name
+_endmethod
+$
+
+
+###################################################################################################################
+
+_pragma(classify_level=restricted, topic={analysis})
+_method join_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. 
+	#
+	_local source_str << .source_collection.read_stream()
+	_local str << rwan:follow_join_read_stream.new(source_str, .join_field_name)
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream(str)
+	_else 
+		_return str
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method join_collection.discard()
+	.join_field_name << _unset
+	_super.discard()
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
+_method join_collection.display_tree_in(owner)
+	_return owner.display_tree_for_join_analysis(_self, .source_collection,
+						     _self.expose(), .join_field_name)
+_endmethod
+$

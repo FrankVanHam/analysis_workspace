@@ -26,46 +26,46 @@
 :add_scrapbook_tooltip		Add the contents of the scrapbook to the workspace
 
 :spatial_filter			Spatial
-:spatial_filter_tooltip		Filter the record collection on a spatial relation (eg inside) with a geometry
+:spatial_filter_tooltip		Filter on a spatial relation (eg inside) with a geometry
 
 :distance_filter		Distance
-:distance_filter_tooltip	Filter the records that are either with or outside a distance from a geometry
+:distance_filter_tooltip	Filter the records that are either within or outside a distance from a geometry
 
 :predicate_filter		Predicate
-:predicate_filter_tooltip	Filter a record collection based on a (complex) predicate
+:predicate_filter_tooltip	Filter based on a (complex) predicate
 
 :follow_topology		Topology
-:follow_topology_tooltip	Create a new record collection that is topological connected to the selected record collection
+:follow_topology_tooltip	Create a new record collection that is topological connected
 
 :follow_trace			Trace
-:follow_trace_tooltip		Create a new record collection that is the result of a trace-out of selected record collection
+:follow_trace_tooltip		Create a new record collection that is the result of a trace-out
 
 :follow_join			Join
-:follow_join_tooltip		Create a new record collection that is joined to the the selected record collection
+:follow_join_tooltip		Follow a join to other objects
 
 :follow_method			Custom Function
-:follow_method_tooltip		Create a new record collection based on custom software written for the selected record collection
+:follow_method_tooltip		Use custom-software for the current selection to find interesting objects.
 
 :follow_root			Root records
-:follow_root_tooltip		Create a new record collection based on one the root collections in the selected compound collection
+:follow_root_tooltip		Create a new record collection based on one the roots of the selection
 
 :create_spatial			Create Spatial collection
 :create_spatial_tooltip		Create a spatial collection for one of the geometries of the selected record collection
 
 :create_buffer			Create Buffer
-:create_buffer_tooltip		Create an area collection in the shape of a buffer around the selected collection
+:create_buffer_tooltip		Create a buffer around the selection
 
 :intersection			Intersection
-:intersection_tooltip		Create a new collection that is the intersection of the two selected collections
+:intersection_tooltip		Create an intersection based on areas
 
 :union				Union
-:union_tooltip			Create a new collection that is the union of the two selected collections
+:union_tooltip			Create a union of areas
 
 :subtraction			Subtraction
-:subtraction_tooltip		Create a new collection that is the subtraction of the two selected collections
+:subtraction_tooltip		Create a subtraction of areas
 
 :xor				Xor
-:xor_tooltip			Create a new collection that is the eXclusive OR of the two selected collections
+:xor_tooltip			Create an eXclusive OR based on areas
 
 :view				Join 2 tables
 :view_by_join			Join 2 tables by join

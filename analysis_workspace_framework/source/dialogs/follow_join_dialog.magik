@@ -18,7 +18,7 @@
 _package rwan
 $
 
-#remex(:join_dialog)
+#remex(:follow_join_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
@@ -26,36 +26,44 @@ _pragma(classify_level=restricted, topic={analysis})
 ## Dialog to select a join from a base collection to follow to
 ## a new collection.
 ##
-def_slotted_exemplar(:join_dialog,
+def_slotted_exemplar(:follow_join_dialog,
 	{
-		{:items,           _unset},
-		{:holder,          _unset},
-		{:record_holder,   _unset},
 		{:join_field_name, _unset}
 	},
-	:model)
+	:base_dialog)
 $
 
-message_handler.new(:join_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:follow_join_dialog).add_uses(:model, :base_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.set_holder(holder, record_holder, dsm, join_field_name)
+_method follow_join_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_join_dialog.set_holder(workspace,
+				      holder, source_holder,
+				      join_field_name)
+	.workspace << workspace
 	.holder << holder
-	.record_holder << record_holder
+	.source_holder << source_holder
+	.name << holder.name
 	.join_field_name << join_field_name
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.activate_in(container)
+_method follow_join_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
-	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:col_alignment, :fill,
 				:row_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_join_selection(rc)
+	_self.build_name(rc)
 	panel_separator.new(rc, :col_alignment, :fill) 
 	_self.build_buttons(rc)
 	_return rc
@@ -63,63 +71,48 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method join_dialog.build_top_label(container)
-	sw_text_window.new(container, 5, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method join_dialog.build_join_selection(container)
+_private _method follow_join_dialog.build_join_selection(container)
 	## 
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	sw_label_item.new(rc, _self.message(:source_collection))
-	sw_label_item.new(rc, .record_holder.name, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:source_holder))
+	sw_text_item.new(rc,
+			 :value, .source_holder.name,
+			 :enabled?, _false,
+			 :col_alignment, :fill)
 	
 	sw_label_item.new(rc, _self.message(:join))
-	.items[:join_choice] << sw_text_item.new(rc, _unset, :text_items, {},
-							    :editable?, _false,
-						     :model, _self,
-						     :change_selector, :|join_field_name_changed()|,
-						     :col_alignment, :fill)
+	.items[:join_choice] << sw_text_item.new(rc, :text_items, {},
+						 :editable?, _false,
+						 :model, _self,
+						 :change_selector, :|join_field_name_changed()|,
+						 :col_alignment, :fill)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method join_dialog.build_buttons(container)
-	## 
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
-				:row_alignment, :fill,
-				:col_alignment, :right)
-	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
+_method follow_join_dialog.on_activation()
+	_self.initialise_join()
+	_self.initialise_name()
+	_super.on_activation()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.on_activation()
+_private _method follow_join_dialog.initialise_join()
 	_local items << _self.join_items
 	.items[:join_choice].text_items << items
-	_self.set_current_join(items)
+	_self.set_current_join(items) 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.join_field_name_changed(value)
+_method follow_join_dialog.join_field_name_changed(value)
 	.join_field_name << value
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method join_dialog.set_current_join(items)
+_private _method follow_join_dialog.set_current_join(items)
 	_local value << _unset
 	_if items.size > 0
 	_then
@@ -143,29 +136,17 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.ok()
-	_if .holder _is _unset
-	_then 
-		_local new_col << .record_holder.collection.follow_join(.join_field_name)
-		.parent_model.add_collection(new_col)
-	_else
-		.holder.collection.update(.join_field_name)
-		.parent_model.update_holder(.holder)
-	_endif 
-	_self.close()
+_method follow_join_dialog.construct_holder()
+	_local col << .source_holder.collection.follow_join(.join_field_name)
+	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.cancel()
-	_self.close()
-_endmethod
-$
 
 _pragma(classify_level=restricted, topic={analysis})
-_method join_dialog.join_items
+_method follow_join_dialog.join_items
 	_local items << rope.new()
-	_local sw_col << .record_holder.collection.expose()
+	_local sw_col << .source_holder.collection.expose()
 	_if sw_col.join_fields.empty?
 	_then
 		items.add( {_unset, _self.message(:no_join)} )
@@ -188,5 +169,13 @@ _method join_dialog.join_items
 		items << rope.new_from(items)
 	_endif
 	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method follow_join_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif (.join_field_name _isnt _unset)
+	.items[:name].enabled? << .readonly?.not
 _endmethod
 $

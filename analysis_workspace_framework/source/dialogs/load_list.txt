@@ -4,7 +4,7 @@ object_control_dialog
 predicate_filter_dialog
 record_subtraction_dialog
 
-join_dialog
+follow_join_dialog
 method_dialog
 root_dialog
 topology_dialog

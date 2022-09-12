@@ -1,0 +1,101 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:follow_join_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test distance filters.
+##
+def_slotted_exemplar(:follow_join_col_test_case,
+	{},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_col_test_case.test_exposure()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	
+	_local road_col << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local j_col << road_col.follow_join(:min_roads)
+	
+	_self.assert_equals( _self.min_road_collection, j_col.expose(), "the core collection has moved to roads")
+	
+	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
+	_local filter_col << j_col.filter_by_distance(:centre_line, length_value(10,:m), _false, area_col, :geometry)
+	
+	_self.assert_equals( _self.min_road_collection, filter_col.expose(), "the core (2) collection is still the road collection")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_col_test_case.test_basics()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	_local r1 << _self.create_road("access1", {0,0,10000,0})
+	_local r2 << _self.create_road("access2", {0,0,0,10000})
+	_local r3 << _self.create_road("access3", {0,0,0,-10000})
+
+	_local pub << _self.create_pub("The Drunk", {0,0})
+	pub.min_roads.add(r1)
+	pub.min_roads.add(r2)
+	
+	_local road_col << rwan:record_set_collection.new(dsm, {pub})
+	_local j_col << road_col.follow_join(:min_roads)
+
+	_self.assert_equals( 2, j_col.size, "There should be 2 access roads")
+
+	_local pub2 << _self.create_pub("The Drunk2", {5000,0})
+	pub2.min_roads.add(r1)
+	pub2.min_roads.add(r3)
+	
+	road_col << rwan:record_set_collection.new(dsm, {pub, pub2})
+	j_col << road_col.follow_join(:min_roads)
+	_self.assert_equals( 3, j_col.size, "There should be 3 access roads, one is double and should be filtered")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_col_test_case.test_geometry_set()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local r1 << _self.create_road("access1", {0,0,10000,0})
+	_local r2 << _self.create_road("access2", {0,0,0,10000})
+	_local r3 << _self.create_road("access3", {0,0,0,-10000})
+
+	_local pub << _self.create_pub("The Drunk", {0,0})
+	pub.min_roads.add(r1)
+	pub.min_roads.add(r2)
+	_local pub2 << _self.create_pub("The Drunk2", {5000,0})
+	pub2.min_roads.add(r1)
+	pub2.min_roads.add(r3)
+
+	_local road_col << rwan:record_set_collection.new(dsm, {pub, pub2})
+	_local j_col << road_col.follow_join(:min_roads)
+	_local a_col << _self.area_collection(dsm, {-10, -10010, 10010, -10010, 10010, 10010, -10, 10010,
+						    -10, -10010})
+	
+	_local fcol << j_col.filter_by_geometry(:centre_line, :within, a_col, :geometry)
+	_local gs << fcol.geometry_set(:centre_line)
+	
+	_self.assert_equals(3, gs.size, "3 lines")
+	_self.assert_not_unset(fcol.goto_bounds)
+_endmethod
+$
