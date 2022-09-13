@@ -178,6 +178,12 @@ _method base_record_collection.follow_join(join_field_name)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.follow_method(methd)
+	_return rwan:method_collection.new(.dsm, _self, methd)
+_endmethod
+$
+
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_record_collection.filter_by_predicate(pred)
 #	_return sw:get_global_value(@rwan:predicate_filter_collection).new(.dsm, _self, pred)

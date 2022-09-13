@@ -18,7 +18,7 @@
 _package rwan
 $
 
-#remex(:method_dialog)
+#remex(:follow_method_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
@@ -28,33 +28,39 @@ _pragma(classify_level=restricted, topic={analysis})
 ## method named :rwan_methods on the exemplar to make this
 ## work. 
 ##
-def_slotted_exemplar(:method_dialog,
+def_slotted_exemplar(:follow_method_dialog,
 	{
-		{:items,         _unset},
-		{:method_items,  _unset},
-		{:holder,        _unset},
-		{:record_holder, _unset},
-		
 		{:target_table,  _unset},
-		{:methd,         _unset},
-		{:args,          _unset}
+		{:methd,         _unset}
 	},
-	:model)
+	:base_dialog)
 $
 
-message_handler.new(:method_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:follow_method_dialog).add_uses(:model, :base_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_dialog.set_holder(holder, record_holder, dsm, methd)
+_method follow_method_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_method_dialog.set_holder(workspace,
+				      holder, source_holder,
+				      methd)
+	.workspace << workspace
 	.holder << holder
-	.record_holder << record_holder
+	.source_holder << source_holder
+	.name << holder.name
 	.methd << methd
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_dialog.activate_in(container)
+_method follow_method_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
 	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
@@ -62,55 +68,43 @@ _method method_dialog.activate_in(container)
 				:col_alignment, :fill)
 	_self.build_top_label(rc)
 	_self.build_method_selection(rc)
+	_self.build_name(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
 	_self.build_buttons(rc)
 	_return rc
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
-_private _method method_dialog.build_top_label(container)
-	sw_text_window.new(container, 7, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method method_dialog.build_method_selection(container)
+_private _method follow_method_dialog.build_method_selection(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	sw_label_item.new(rc, _self.message(:source))
-	sw_label_item.new(rc, .record_holder.name, :col_alignment, :fill)
+	
+	sw_label_item.new(rc, _self.message(:source_holder))
+	sw_text_item.new(rc,
+			 :value, .source_holder.name,
+			 :enabled?, _false,
+			 :col_alignment, :fill)
 	
 	sw_label_item.new(rc, _self.message(:method))
-	.items[:method_choice] << sw_text_item.new(rc, _unset, :text_items, {},
-							    :editable?, _false,
-						       :model, _self,
-						       :change_selector, :|method_changed()|,
-						       :col_alignment, :fill)
+	.items[:method_choice] << sw_text_item.new(rc, :text_items, {},
+						   :editable?, _false,
+						   :model, _self,
+						   :change_selector, :|method_changed()|,
+						   :col_alignment, :fill)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_method_dialog.on_activation()
+	_self.initialise_method()
+	_self.initialise_name()
+	_super.on_activation()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method method_dialog.build_buttons(container)
-	## 
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
-				:row_alignment, :fill,
-				:col_alignment, :right)
-	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method method_dialog.on_activation()
+_private _method follow_method_dialog.initialise_method()
 	_local items << _self.method_items
 	.items[:method_choice].text_items << items
 	_self.set_current_method(items)
@@ -118,13 +112,13 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_dialog.method_changed(vec)
-	(.target_table, .methd, .args) << (_scatter vec)
+_method follow_method_dialog.method_changed(methd)
+	.methd << methd
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method method_dialog.set_current_method(items)
+_private _method follow_method_dialog.set_current_method(items)
 	_local value << _unset
 	_if items.size > 0
 	_then
@@ -148,42 +142,37 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_dialog.ok()
-	_if .holder _is _unset
-	_then 
-		new_col << .record_holder.collection.follow_method(.target_table, .methd, .args)
-		.parent_model.add_collection(new_col)
-	_else
-		.holder.collection.update(.target_table, .methd, .args)
-		.parent_model.update_holder(.holder)
-	_endif 
-	_self.close()
+_method follow_method_dialog.construct_holder()
+	_local col << .source_holder.collection.follow_method(.methd)
+	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_dialog.cancel()
-	_self.close()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method method_dialog.method_items
+_method follow_method_dialog.method_items
 	_local items << rope.new()
-	_local sw_col << .record_holder.collection.expose()
+	_local sw_col << .source_holder.collection.expose()
 	_local methods << sw_col.record_exemplar.rwan_methods
 	_if methods.empty?
 	_then
 		items.add( {_unset, _self.message(:no_method)} )
 	_else
-		_for i_vec _over methods.fast_elements()
+		_for i_methd, i_vec _over methods.fast_keys_and_elements()
 		_loop
 			(methd, args, external_name, target) << (_scatter i_vec)
-			items.add({{target, methd, args}, external_name})
+			items.add({i_methd, external_name})
 		_endloop
 		items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
 		items << rope.new_from(items)
 	_endif
 	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method follow_method_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif (.methd _isnt _unset)
+	.items[:name].enabled? << .readonly?.not _andif (.methd _isnt _unset)
 _endmethod
 $

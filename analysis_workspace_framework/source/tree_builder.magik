@@ -283,13 +283,9 @@ _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_method_analysis(col, base_col, target_col, methd)
 	_local tree << _self.display_tree(col)
 	_local image << _self.sw_collection_image(target_col)
-	tree.styled_string << _self.styled_string(:image, image)
-	
-	_local sw_col << base_col.expose()
-	_local operation_tree << display_tree.new(_unset)
-	operation_tree.styled_string << {:image, {:method, _self.module_name}, methd.write_string}
-	tree.add_child(operation_tree)
-	
+	tree.styled_string << _self.styled_string(:image, {:method, _self.module_name},
+						  :image, image)
+		
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
 	_return tree	

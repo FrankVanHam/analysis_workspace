@@ -28,146 +28,105 @@ _pragma(classify_level=basic, topic={analysis})
 ##
 def_slotted_exemplar(:method_collection,
 	{
-		{:methd, _unset},
-		{:args, _unset}
+		{:methd, _unset}
 	}, :base_follow_collection)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method method_collection.new(dsm, base_col, target_col, methd, _optional args)
-	_return _clone.init(dsm, base_col, target_col, methd, args)
+_method method_collection.new(dsm, source_col, methd)
+	_return _clone.init(dsm, source_col, methd)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method method_collection.init(dsm, base_col, target_col, methd, args)
+_private _method method_collection.init(dsm, source_col, methd)
 	.methd << methd
-	.args << args.default({})
-	_return _super.init( dsm, base_col, target_col ) 
+
+	_local (x, x, x, target) << _self.method_data(source_col, methd)
+	
+	_return _super.init(dsm, source_col, target)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method method_collection.editable?
-	_return _true 
+_private _method method_collection.method_data(source_col, methd)
+	_local vec << source_col.expose().record_exemplar.rwan_methods[methd]
+	_return _scatter vec
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method method_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_follow_method_dialog(holder,
-						 _self.base_collection, .methd, .args)
+						 .source_collection, .methd)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method method_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:method, :args})
-	values.add_all_last({.methd, .args})
-	_return keys, values	
+	keys.add_all_last({:methd})
+	values.add_all_last({.methd})
+	_return keys, values
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.init_from_serial(dsm, base_cols, target_ds_name, target_table_name, methd, args)
-    _super.init_from_serial(dsm, base_cols, target_ds_name, target_table_name)
+_method method_collection.init_from_serial(dsm, source_col,
+					 target_ds_name, target_table_name, methd)
+    _super.init_from_serial(dsm, source_col, target_ds_name, target_table_name)
     .methd << methd
-    .args << args
     _return _self 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method method_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.base_collections, .target_ds_name, .target_table_name, .methd, .args)
+	_return _self.is_class_of?(other) _andif 
+		other.equals_in_details?(.source_collection,
+					 .target_ds_name, .target_table_name,
+					 .methd)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.equals_in_details?(base_cols, target_ds_name, target_table_name, methd, args)
-	_return _super.equals_in_details?(base_cols, target_ds_name, target_table_name) _andif 
-		.methd = methd _andif
-		_self.equal_args?(args)
+_method method_collection.equals_in_details?(source_col, target_ds_name, target_table_name, methd)
+	_return _super.equals_in_details?(source_col, target_ds_name, target_table_name) _andif
+		.methd = methd
+_endmethod
+$
+
+
+###################################################################################################################
+
+_pragma(classify_level=restricted, topic={analysis})
+_method method_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. 
+	#
+	_local (methd, args, external_name, target) << _self.method_data(.source_collection, .methd)
+	_local source_str << .source_collection.read_stream()
+	_local str << rwan:follow_method_read_stream.new(source_str, methd, args)
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream(str)
+	_else 
+		_return str
+	_endif 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method method_collection.equal_args?(args)
-	## 
-	_if .args.size <> args.size _then _return _false _endif
-	_for i_index, i_value _over .args.fast_keys_and_elements()
-	_loop
-		_if args[i_index].equals?(i_value).not
-		_then
-			_return _false
-		_endif
-	_endloop
-	_return _true 
+_method method_collection.discard()
+	.methd << _unset
+	_super.discard()
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis, collections})
-_iter _method method_collection.fast_elements()
-	_dynamic !root_query!
-	_local rwo_type << _self.base_collection.expose().name
-	_local done << large_record_register.new(100)
-	_for i_rec _over _self.base_collection.fast_elements()
-	_loop
-		_local answers << _self.safe_list(i_rec)
-		_if answers.empty?.not
-		_then
-			_if !root_query! _isnt _unset
-			_then
-				!root_query![rwo_type] << i_rec
-			_endif 
-			_for i_answer _over answers.fast_elements()
-			_loop
-				_if _not done.includes?(i_answer)
-				_then 
-					_loopbody(i_answer)
-					done.add(i_answer)
-				_endif 
-			_endloop
-		_endif 
-	_endloop
+
+_pragma(classify_level=advanced, topic={analysis})
+_method method_collection.display_tree_in(owner)
+	_return owner.display_tree_for_method_analysis(_self, .source_collection,
+						       _self.expose(), .methd)
 _endmethod
 $
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method method_collection.safe_list(rec)
-	_local list? << _maybe 
-	_local list << {}
-	_try
-		list_or_rec << rec.perform(.methd, _scatter .args)
-		_if list? _is _maybe
-		_then
-			list? << list_or_rec.responds_to?(:|fast_elements()|)
-		_endif 
-		_if list? _is _true
-		_then
-			list << list_or_rec
-		_else
-			_if list_or_rec _isnt _unset
-			_then 
-				list << {list_or_rec}
-			_else
-				list << {}
-			_endif 
-		_endif		
-
-	_when error
-		write("error in ", _self, " safe_iter ", rec)
-	_endtry
-	_return list
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method method_collection.description(translator)
-	_local base_name << translator.name_for_collection(_self.base_collection)
-	_return _self.message(:description, _self.target_collection.external_name, .methd, base_name)
-_endmethod
-$
-

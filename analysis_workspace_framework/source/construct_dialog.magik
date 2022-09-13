@@ -46,7 +46,7 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.update_holder(old_holder, new_holder)
 	_self.workspace.set_dirty()
-	workspace.update(old_holder, new_holder)
+	_self.workspace.update_holder(old_holder, new_holder)
 	.owner.publish_workspace()
 _endmethod
 $
@@ -637,24 +637,21 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_method_dialog()
-	_return _self.do_activate_follow_method_dialog(_unset, _self.selected_top_holder)
+	_local dia << follow_method_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_holder)
+	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.edit_follow_method_dialog(holder,
-						   base_col, methd, args)
+						   source_col, methd)
 	
-	_local base_holder << _self.workspace.holder_for(base_col)
-	_return _self.do_activate_follow_method_dialog(holder, base_holder, methd, args)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.do_activate_follow_method_dialog(holder, record_holder, _optional methd, args)
-	_local dia << method_dialog.new_dialog(_self)
-	dia.set_holder(holder, record_holder, _self.dataset_manager,
-		       methd, args)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	_local dia << follow_method_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, methd)
 	dia.activate()
 	_return dia
 _endmethod

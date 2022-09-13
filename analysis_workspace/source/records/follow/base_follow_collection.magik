@@ -112,6 +112,12 @@ $
 ###################################################################################################################
 
 _pragma(classify_level=restricted, topic={analysis})
+_method base_follow_collection.editable?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _method base_follow_collection.expose()
 	_return _self.actual_collection
 _endmethod

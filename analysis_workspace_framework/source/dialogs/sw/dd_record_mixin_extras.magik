@@ -24,14 +24,17 @@ _method dd_record_mixin.rwan_methods
 	## Backstop method for the Analysis framework to
 	## supply custom build navigation methods.
 	##
-	## Return a vector of vectors with:
+	## Return a property_list of vectors with:
 	## { methd, args, external_name, target}
 	## methd:         is the method name to invoke. Note that the method
-	##                should return records from one and the same collection.
-	## args:          are the arguments of the method
+	##                should return a collection of records from one and the same collection.
+	## args:          are the arguments of the method. Supply {} if
+	##                no arguments are required.
 	## external_name: descriptive string to tell the user what this does.
 	## target:        the target collection of the objects what will be
 	##                returned from the method.
-	_return {}
+	##
+	## the keys should be distinctive symbols
+	_return property_list.new()
 _endmethod
 $

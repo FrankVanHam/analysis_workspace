@@ -22,11 +22,11 @@ $
 _pragma(classify_level=advanced, topic={roos,analytics})
 _method min_road.rwan_methods
 	_local col << _self.dataset.collection(:hotel)
-	_return {
-			{:|a_hotel()|, _unset, "1 hotel", col},
-			{:|nr_hotels()|, {5}, "5 hotels", col},
-			{:|nr_hotels()|, {10}, "10 hotels", col}
-		}
+	_return property_list.new_with(
+			:a_hotel, {:|a_hotel()|, {}, "1 hotel", col},
+			:hotel_5, {:|nr_hotels()|, {5}, "5 hotels", col},
+			:hotel_10, {:|nr_hotels()|, {10}, "10 hotels", col}
+		)
 _endmethod
 $
 
@@ -34,7 +34,7 @@ $
 _pragma(classify_level=advanced, topic={roos,analytics})
 _method min_road.a_hotel()
 	_local col << _self.dataset.collection(:hotel)
-	_return col.an_element()
+	_return {col.an_element()}
 _endmethod
 $
 
