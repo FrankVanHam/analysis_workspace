@@ -1,0 +1,180 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:follow_root_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog to create root_collection that will yield one of the
+## base collections that make up the compound current collection.
+##
+def_slotted_exemplar(:follow_root_dialog,
+	{
+		{:target_holder, _unset}
+	},
+	:base_dialog)
+$
+
+message_handler.new(:follow_root_dialog).add_uses(:model, :base_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_root_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_root_dialog.set_holder(workspace,
+				      holder, source_holder,
+				      target_col)
+	.workspace << workspace
+	.holder << holder
+	.source_holder << source_holder
+	.name << holder.name
+	.target_holder << target_col
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_root_dialog.activate_in(container)
+	container.top_frame.modality << :primary_modal
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:col_alignment, :fill,
+				:row_alignment, :fill)
+	_self.build_top_label(rc)
+	_self.build_root_selection(rc)
+	_self.build_name(rc)
+	panel_separator.new(rc, :col_alignment, :fill)
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method follow_root_dialog.build_root_selection(container)
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:source_holder))
+	sw_text_item.new(rc,
+			 :value, .source_holder.name,
+			 :enabled?, _false,
+			 :col_alignment, :fill)
+	
+	sw_label_item.new(rc, _self.message(:root))
+	_local choice << sw_text_item.new(rc, :text_items, {},
+					  :editable?, _false,
+					  :model, _self,
+					  :change_selector, :|root_changed()|,
+					  :col_alignment, :fill)
+	.items[:root_choice] << choice
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_root_dialog.on_activation()
+	_self.initialise_target_choice()
+	_self.initialise_name()
+	_super.on_activation()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method follow_root_dialog.initialise_target_choice()
+	_local items << _self.root_items
+	.items[:root_choice].text_items << items
+	_self.set_current_target_holder(items)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method follow_root_dialog.set_current_target_holder(items)
+	_local value << _unset
+	_if items.size > 0
+	_then
+		value << items[1][1]
+	_endif
+	_if .target_holder _isnt _unset
+	_then
+		_for i_vec _over items.fast_elements()
+		_loop
+			_if i_vec[1] _is .target_holder
+			_then
+				value << i_vec[1]
+			_endif
+		_endloop
+	_endif
+	.items[:root_choice].rwan_value_with_notify << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_root_dialog.root_changed(value)
+	.target_holder << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_root_dialog.construct_holder()
+	_local col << .source_holder.collection.follow_root(.target_holder.collection)
+	_return .parent_model.new_holder(col, .name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_root_dialog.root_items
+	_local items << rope.new()
+	
+	_local current_sw_col << .source_holder.collection.expose()
+
+	_local q << queue.new_with(.source_holder)
+	_loop
+		_if q.empty? _then _leave _endif
+
+		_local col << q.next()
+		_for i_ref _over col.ref_collections.fast_elements()
+		_loop
+			q.add(i_ref)
+		_endloop
+		
+		_if current_sw_col _is col _then _continue _endif
+
+		_local holder << .parent_model.holder_for(col)
+		_if holder _isnt _unset
+		_then 
+			items.add({holder, holder.name})
+		_endif 
+	_endloop
+	_if items.empty?
+	_then
+		items.add({_unset, _self.message(:no_root)})
+	_endif 
+	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method follow_root_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif (.target_holder _isnt _unset)
+	.items[:name].enabled? << .readonly?.not
+_endmethod
+$

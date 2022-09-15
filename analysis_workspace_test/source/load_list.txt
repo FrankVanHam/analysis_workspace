@@ -22,3 +22,6 @@ geometry_col_test_case
 predicate_filter_col_test_case
 topology_col_test_case
 trace_col_test_case
+follow_join_col_test_case
+follow_method_col_test_case
+follow_root_col_test_case

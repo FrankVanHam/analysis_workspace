@@ -36,8 +36,6 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.set_up()
-	## 
-	##
 	_local source_path << smallworld_product.get_resource_file("analysis.ds",
 								  "data",
 								  rwan:analysis_dataset_manager.module_name)
@@ -50,22 +48,20 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.tear_down()
-	## 
-	##
 	.ds.discard()
 	system.unlink( .file_name, _true, _true)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_sw_collection()
+_method dataset_test_case.test_sw_col()
 	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
 	_return _self.basic_storage_test(rcol)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_geometry_collection()
+_method dataset_test_case.test_geometry_col()
 	_local area << _self.area_surrounding_parkers_piece(.ds)
 	_local gs << geometry_set.new_with(area)
 	_local gcol << rwan:geometry_collection.new(.ds, gs)
@@ -74,16 +70,15 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_area_collection()
+_method dataset_test_case.test_area_col()
 	_local area << _self.area_surrounding_parkers_piece(.ds)
 	_local area_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(area))
 	_self.basic_storage_test(area_col)
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_spatial_analysis_collection()
+_method dataset_test_case.test_filter_by_geometry_col()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local area << _self.area_surrounding_parkers_piece(.ds)
 	_local area_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(area))
@@ -94,7 +89,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_distance_analysis_collection()
+_method dataset_test_case.test_filter_by_distance_col()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local area << _self.area_surrounding_parkers_piece(.ds)
 	_local area_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(area))
@@ -104,9 +99,8 @@ _method dataset_test_case.test_distance_analysis_collection()
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_predicate_filter()
+_method dataset_test_case.test_filter_by_predicate_col()
 	_local col << _self.min_road_collection
 	_local rcol << rwan:sw_collection.new(.ds, col)
 	_local rcol1 << rcol.filter_by_predicate(predicate.eq(:road_type, "A-Road"))
@@ -122,12 +116,21 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_root_analysis()
+_method dataset_test_case.test_follow_root_col()
 	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
 	_local acol << pcol.follow_join(:min_roads)
-	_local pcol1 << acol.root(_self.pub_rest_collection)
+	_local pcol1 << acol.follow_root(pcol)
 	
 	_self.basic_storage_test(pcol1)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_follow_method_col()
+	_local road_col << rwan:sw_collection.new(.ds, _self.min_road_collection)
+	_local m_col << road_col.follow_method(:hotel_10)
+	
+	_self.basic_storage_test(m_col)
 _endmethod
 $
 
@@ -145,7 +148,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_follow_topology_analysis()
+_method dataset_test_case.test_follow_topology_col()
 	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
 	_local acol << pcol.follow_topology(:location, _self.min_road_collection)
 	_self.basic_storage_test(acol)
@@ -153,7 +156,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_follow_trace_analysis()
+_method dataset_test_case.test_follow_trace_col()
 	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
 	_local acol << pcol.follow_trace(:location, _self.min_road_collection, property_list.new(), length_value(10,:m))
 	_self.basic_storage_test(acol)
@@ -161,7 +164,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_follow_join_analysis()
+_method dataset_test_case.test_follow_join_col()
 	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
 	_local acol << pcol.follow_join(:min_roads)
 	_self.basic_storage_test(acol)
@@ -180,7 +183,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_spatial_collection()
+_method dataset_test_case.test_spatial_col()
 	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
 	_local rgeom << rcol.spatial_collection(:centre_line)
 	_self.basic_storage_test(rgeom)

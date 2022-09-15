@@ -30,21 +30,20 @@ def_slotted_exemplar(:follow_join_read_stream,
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method follow_join_read_stream.new(source_stream, join_field_name)
-	_return _clone.init(source_stream, join_field_name)
+_method follow_join_read_stream.new(source_col, join_field_name)
+	_return _clone.init(source_col, join_field_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method follow_join_read_stream.init(source_stream, join_field_name)
+_private _method follow_join_read_stream.init(source_col, join_field_name)
 	.join_field_name << join_field_name
-	_return _super.init(source_stream)
+	_return _super.init(source_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
 _private _method follow_join_read_stream.new_target_stream()
-	# Returns unset if exhausted
 	_loop 
 		_local source << .source_stream.get()
 		_if source _is _unset
@@ -55,6 +54,8 @@ _private _method follow_join_read_stream.new_target_stream()
 			_local joins << _self.joined_records(source)
 			_if joins.empty?.not
 			_then
+				_self.add_root(source)
+				
 				_return joins.read_stream() 
 			_endif 
 		_endif

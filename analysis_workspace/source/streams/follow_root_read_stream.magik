@@ -18,60 +18,48 @@
 _package rwan
 $
 
-#remex(:follow_method_read_stream)
+#remex(:follow_root_read_stream)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-def_slotted_exemplar(:follow_method_read_stream,
+def_slotted_exemplar(:follow_root_read_stream,
 	{
-		{:methd,  _unset},
-		{:args,   _unset}
+		{:target_collection,  _unset}
 	}, :follow_base_trace_read_stream)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method follow_method_read_stream.new(source_col, methd, args)
-	_return _clone.init(source_col, methd, args)
+_method follow_root_read_stream.new(source_col, target_col)
+	_return _clone.init(source_col, target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method follow_method_read_stream.init(source_col, methd, args)
-	.methd << methd
-	.args << args
+_private _method follow_root_read_stream.init(source_col, target_col)
+	.target_collection << target_col
 	_return _super.init(source_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method follow_method_read_stream.new_target_stream()
-	_loop 
+_private _method follow_root_read_stream.new_target_stream()
+	_dynamic !root_query!
+	_if !root_query! _is _unset _then !root_query! << property_list.new() _endif 
+	_loop
+		!root_query![.target_collection] << _unset
+		
 		_local source << .source_stream.get()
 		_if source _is _unset
 		_then
 			# exhausted
 			_return _unset
 		_else
-			_local joins << _self.followed_records(source)
-			_if joins.empty?.not
+			_local root << !root_query![.target_collection]
+			_if root _isnt _unset
 			_then
-				_self.add_root(source)
-				
-				_return joins.read_stream() 
+				_return rwo_set.new_with(root).read_stream()
 			_endif 
 		_endif
 	_endloop 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
-_private _method follow_method_read_stream.followed_records(source)
-	_local values
-	_try
-		values << source.perform(.methd, _scatter .args)
-	_when error
-		values << {}
-	_endtry 
-	_return values
 _endmethod
 $

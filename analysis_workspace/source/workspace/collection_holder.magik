@@ -112,6 +112,14 @@ _private _method collection_holder.init_from_serial(collection, name, colour)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method collection_holder.update_from(other)
+	.name << other.name
+	.collection << other.collection
+_endmethod
+$
+
+
 #_pragma(classify_level=basic, topic={analysis})
 #_method collection_holder.is_spatial?
 #	_return .collection.is_spatial?

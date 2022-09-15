@@ -135,12 +135,6 @@ $
 #$
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_dialog.holder_for(col)
-	_return _self.workspace.holder_for(col)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
 _method tree_dialog.note_workspace_change(renew?)
 	_if renew?
 	_then

@@ -111,8 +111,8 @@ _method construct_dialog.delete()
 	
 	_for i_holder _over to_del.fast_elements()
 	_loop
-		i_holder.discard()
 		workspace.remove_holder(i_holder)
+		i_holder.discard()
 	_endloop
 	.owner.publish_workspace()
 _endmethod
@@ -592,24 +592,22 @@ _method construct_dialog.edit_follow_trace_dialog(holder, source_col, source_geo
 	_return dia
 _endmethod
 $
+
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.create_follow_root_dialog()
-	
+	_local dia << follow_root_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_holder)
+	dia.activate()
+	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_root_dialog(holder, base_col, target_col)
-	_local base_holder << _self.workspace.holder_for(base_col)
-	_return _self.activate_follow_root_dialog(holder, base_holder, target_col)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.activate_follow_root_dialog(holder, record_holder,
-							      _optional target_col)
-	dia << root_dialog.new_dialog(_self)
-	dia.set_holder(holder, record_holder, _self.dataset_manager, target_col)
+_method construct_dialog.edit_follow_root_dialog(holder, source_col, target_col)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	_local dia << follow_root_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, target_col)
 	dia.activate()
 	_return dia
 _endmethod
@@ -903,8 +901,8 @@ _method construct_dialog.manage_actions()
 	.owner.action(:follow_topology).enabled? << open? _andif record?
 	.owner.action(:follow_trace).enabled? << open? _andif record?
 	.owner.action(:follow_join).enabled? << open? _andif record?
-	.owner.action(:follow_method).enabled? << open?
-	.owner.action(:follow_root).enabled? << open?
+	.owner.action(:follow_method).enabled? << open? _andif record?
+	.owner.action(:follow_root).enabled? << open? _andif record?
 
 	.owner.action(:create_spatial).enabled? << open?
 	.owner.action(:create_buffer).enabled? << open?

@@ -6,7 +6,7 @@ record_subtraction_dialog
 
 follow_join_dialog
 follow_method_dialog
-root_dialog
+follow_root_dialog
 topology_dialog
 trace_stop_dialog
 trace_dialog

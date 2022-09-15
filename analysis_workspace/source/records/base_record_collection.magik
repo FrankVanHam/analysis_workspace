@@ -179,6 +179,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.follow_root(target_col)
+	_return rwan:root_collection.new(.dsm, _self, target_col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_method(methd)
 	_return rwan:method_collection.new(.dsm, _self, methd)
 _endmethod

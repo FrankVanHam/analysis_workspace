@@ -269,8 +269,10 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_root_collection(col, base_col, target_col)
 	_local tree << _self.display_tree(col)
-	_local image << _self.sw_collection_image(target_col)
-	tree.styled_string << _self.styled_string(:image, image)
+	
+	_local image << _self.sw_collection_image(target_col.expose())
+	tree.styled_string << _self.styled_string(:image, {:root, _self.module_name},
+						  :image, image)
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)

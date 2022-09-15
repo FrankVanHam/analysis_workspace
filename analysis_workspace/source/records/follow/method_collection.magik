@@ -73,8 +73,8 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method method_collection.init_from_serial(dsm, source_col,
-					 target_ds_name, target_table_name, methd)
-    _super.init_from_serial(dsm, source_col, target_ds_name, target_table_name)
+					   methd)
+    _super.init_from_serial(dsm, source_col)
     .methd << methd
     _return _self 
 _endmethod
@@ -84,14 +84,13 @@ _pragma(classify_level=basic, topic={analysis})
 _method method_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.source_collection,
-					 .target_ds_name, .target_table_name,
 					 .methd)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.equals_in_details?(source_col, target_ds_name, target_table_name, methd)
-	_return _super.equals_in_details?(source_col, target_ds_name, target_table_name) _andif
+_method method_collection.equals_in_details?(source_col, methd)
+	_return _super.equals_in_details?(source_col) _andif
 		.methd = methd
 _endmethod
 $
@@ -105,8 +104,7 @@ _method method_collection.read_stream(_optional filter)
 	## filter my results. 
 	#
 	_local (methd, args, external_name, target) << _self.method_data(.source_collection, .methd)
-	_local source_str << .source_collection.read_stream()
-	_local str << rwan:follow_method_read_stream.new(source_str, methd, args)
+	_local str << rwan:follow_method_read_stream.new(.source_collection, methd, args)
 	_if filter _isnt _unset
 	_then
 		_return filter.filter_stream(str)

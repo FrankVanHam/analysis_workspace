@@ -30,23 +30,22 @@ def_slotted_exemplar(:topology_read_stream,
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method topology_read_stream.new(source_stream, source_geom_name, target_col)
-	_return _clone.init(source_stream, source_geom_name, target_col)
+_method topology_read_stream.new(source_col, source_geom_name, target_col)
+	_return _clone.init(source_col, source_geom_name, target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method topology_read_stream.init(source_stream, source_geom_name, target_col)
+_private _method topology_read_stream.init(source_col, source_geom_name, target_col)
 	.source_geom_name << source_geom_name
 	.target_collection << target_col
 	
-	_return _super.init(source_stream)
+	_return _super.init(source_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
 _private _method topology_read_stream.new_target_stream()
-	# Returns unset if exhausted
 	_loop 
 		_local source << .source_stream.get()
 		_if source _is _unset
@@ -60,6 +59,8 @@ _private _method topology_read_stream.new_target_stream()
 				_local connected << _self.all_connected(geom)
 				_if connected.empty?.not
 				_then
+					_self.add_root(source)
+					
 					_return connected.read_stream()
 				_endif 
 			_endif 

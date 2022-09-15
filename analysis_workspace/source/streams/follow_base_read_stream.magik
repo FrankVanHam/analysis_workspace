@@ -25,22 +25,24 @@ _pragma(classify_level=basic, topic={analysis, collections})
 def_slotted_exemplar(:follow_base_trace_read_stream,
 	{
 		{:register,          _unset},
+		{:source_collection, _unset},
 		{:source_stream,     _unset},
 		{:target_stream,     _unset}
 	}, :input_stream_with_unget_mixin)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method follow_base_trace_read_stream.new(source_stream)
-	_return _clone.init(source_stream)
+_method follow_base_trace_read_stream.new(source_col)
+	_return _clone.init(source_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method follow_base_trace_read_stream.init(source_stream)
-	.source_stream    << source_stream
+_private _method follow_base_trace_read_stream.init(source_col)
+	.source_collection << source_col
+	.source_stream    << source_col.read_stream()
 	.target_stream << _unset
-
+	
 	.register << large_record_register.new(1000)
 	_return _self 
 _endmethod
@@ -83,6 +85,17 @@ _private _method follow_base_trace_read_stream.int!get()
 	_endloop 
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method follow_base_trace_read_stream.add_root(source)
+	_dynamic !root_query!
+	_if !root_query! _isnt _unset
+	_then 
+		!root_query![.source_collection] << source
+	_endif 
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis, collections})
 _abstract _method follow_base_trace_read_stream.new_target_stream()

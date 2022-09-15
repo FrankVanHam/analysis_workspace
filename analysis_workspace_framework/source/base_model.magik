@@ -89,6 +89,13 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method base_model.holder_for(col)
+	_return _self.workspace.holder_for(col)
+_endmethod
+$
+
+
+_pragma(classify_level=advanced, topic={analysis})
 _method base_model.selected_top_holder
 	_return _self.selected_top_holders.an_element()
 _endmethod

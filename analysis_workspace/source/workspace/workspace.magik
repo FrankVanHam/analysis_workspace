@@ -187,11 +187,8 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method workspace.update_holder(old_holder, new_holder)
-	.holders.remove(old_holder)
-	.holders.add(new_holder)
-	
-	_local idx << .top_holders.index_of(old_holder)
-	.top_holders[idx] << new_holder
+
+	old_holder.update_from(new_holder)
 	
 	_self.add_refs(old_holder)
 	_self.remove_refs(new_holder)
