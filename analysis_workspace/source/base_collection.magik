@@ -106,6 +106,19 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_collection.geometry_ref(name)
+	_for i_ref _over _self.geometry_refs.fast_elements()
+	_loop
+		_if i_ref.name _is name
+		_then
+			_return i_ref
+		_endif
+	_endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.expose()
 	## Expose the base smallworld collection. Could be unset 
 	## 

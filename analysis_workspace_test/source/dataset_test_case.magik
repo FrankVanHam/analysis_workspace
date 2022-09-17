@@ -192,8 +192,8 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_buffer()
-	_local geom1 << rwan:area_collection.new(.ds, _self.park_collection.at(9492).coverage)
-	_local subt << geom1.buffer(length_value.new(12,:m), :square, :truncate)
+	_local hotel_col << rwan:sw_collection.new(.ds, _self.hotel_collection)
+	_local subt << hotel_col.buffer(:location, length_value.new(12,:m), :square, :truncate)
 	
 	_self.basic_storage_test(subt)	
 _endmethod

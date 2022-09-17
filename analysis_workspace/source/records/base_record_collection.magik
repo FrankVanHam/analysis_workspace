@@ -46,7 +46,7 @@ _method base_record_collection.geometry_set(geom_name)
 	_local gs << geometry_set.new()
 	_for i_rec _over _self.fast_elements()
 	_loop
-		_local geom << i_rec.geometry(geom_name)
+		_local geom << _self.geometry_for(i_rec, geom_name)
 		_if geom _isnt _unset
 		_then
 			gs.add(geom)
@@ -62,6 +62,13 @@ _abstract _method base_record_collection.read_stream()
 	## Provide a stream on the content of self.
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={demo})
+_method base_record_collection.geometry_for(rec, geom_name)
+	_return rec.geometry(geom_name)
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _method base_record_collection.goto_bounds

@@ -132,6 +132,12 @@ _method spatial_filter_collection.expose()
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_collection.geometry_for(rec, geom_name)
+	_return .source_collection.geometry_for(rec, geom_name)
+_endmethod
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.ref_collections
 	## return the collections I depend on
@@ -173,14 +179,14 @@ _method spatial_filter_collection.filter_stream_for_actual_collection(actual_col
 			 _else >> _unset 
 			 _endif 
 	_local source_stream << _self.source_rwo_stream(actual_collection, bounds)
-	_return rwan:spatial_filter_record_read_stream.new(source_stream, .source_geom_name, .operator, filter_gs)
+	_return rwan:spatial_filter_record_read_stream.new(.source_collection, source_stream, .source_geom_name, .operator, filter_gs)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return rwan:spatial_filter_record_read_stream.new(stream, .source_geom_name, .operator, filter_gs)
+	_return rwan:spatial_filter_record_read_stream.new(.source_collection, stream, .source_geom_name, .operator, filter_gs)
 _endmethod
 $
 

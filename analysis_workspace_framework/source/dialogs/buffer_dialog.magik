@@ -96,30 +96,16 @@ _private _method buffer_dialog.build_buffer_options(container)
 	sw_label_item.new(rc, _self.message(:corner_style))
 	_local act << sw_action.new(:corner_style,
 				    :dialog_control, :image_choice_item,
-				    :change_selector, :|corner_style_changed()|,
+				    :value_change_message, :|corner_style_changed()|,
 				    :items, _self.corner_style_items)
 	.items[:corner_style] << act.place_control_on(rc, :dialog, :col_alignment, :left)
 	
 	sw_label_item.new(rc, _self.message(:end_style))
 	act << sw_action.new(:corner_style,
 			     :dialog_control, :image_choice_item,
-			     :change_selector, :|end_style_changed()|,
+			     :value_change_message, :|end_style_changed()|,
 			     :items, _self.end_style_items)
 	.items[:end_style] << act.place_control_on(rc, :dialog, :col_alignment, :left)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_dialog.build_buttons(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
-				:row_alignment, :fill,
-				:col_alignment, :right)
-	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
 _endmethod
 $
 
@@ -160,7 +146,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method buffer_dialog.construct_holder()
-	_local col << .holder.collection.buffer(.source_geom_name, .distance, .corner_style, .end_style)
+	_local col << .source_holder.collection.buffer(.source_geom_name, .distance, .corner_style, .end_style)
 	_return .parent_model.new_holder(col, .name)
 _endmethod
 $

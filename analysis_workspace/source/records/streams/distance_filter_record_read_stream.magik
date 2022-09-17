@@ -25,19 +25,21 @@ _pragma(classify_level=basic, topic={analysis, collections})
 def_slotted_exemplar(:distance_filter_record_read_stream,
 	## stream that filters the sourcestream on spatial predicate.
 	{
+		{:source_collection, _unset},
 		{:source_geom_name, _unset}
 	}, :distance_filter_base_read_stream)
 $
 	
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method distance_filter_record_read_stream.new(source_stream, source_geom_name, distance, inverse?, filter_gs)
-	_return _clone.init(source_stream, source_geom_name, distance, inverse?, filter_gs)
+_method distance_filter_record_read_stream.new(source_col, source_stream, source_geom_name, distance, inverse?, filter_gs)
+	_return _clone.init(source_col, source_stream, source_geom_name, distance, inverse?, filter_gs)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method distance_filter_record_read_stream.init(source_stream, source_geom_name, distance, inverse?, filter_gs)
+_private _method distance_filter_record_read_stream.init(source_col, source_stream, source_geom_name, distance, inverse?, filter_gs)
+	.source_collection << source_col
 	.source_geom_name << source_geom_name
 	_return _super.init(source_stream, distance, inverse?, filter_gs)
 _endmethod
@@ -49,7 +51,7 @@ _method distance_filter_record_read_stream.get()
 		_local rec << .source_stream.get()
 		_if rec _is _unset _then _return _unset _endif #exhausted
 
-		_local geom << rec.geometry(.source_geom_name)
+		_local geom << .source_collection.geometry_for(rec, .source_geom_name)
 		_if geom _isnt _unset
 		_then 	
 			_local match? << _self.match?(geom)

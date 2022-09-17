@@ -31,7 +31,8 @@ def_slotted_exemplar(:buffer_collection,
 		{:source_geom_name,  _unset},
 		{:distance, _unset},
 		{:corner_style, _unset},
-		{:end_style,_unset}
+		{:end_style,_unset},
+		{:world_distance, _unset}
 	}, :base_record_collection)
 $
 
@@ -50,6 +51,8 @@ _private _method buffer_collection.init(dsm, source_col, source_geom_name, dista
 	.distance << distance
 	.corner_style << corner_style
 	.end_style << end_style
+	
+	_self.set_world_distance()
 	_return _super.init(dsm)
 _endmethod
 $
@@ -59,7 +62,7 @@ _method buffer_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_buffer_dialog(holder,
 					  .source_collection,
 					  .source_geom_name,
-					  .corner_style, .end_style)
+					  .distance, .corner_style, .end_style)
 _endmethod
 $
 
@@ -83,6 +86,8 @@ _method buffer_collection.init_from_serial(dsm, source_col, source_geom_name,
     .distance << distance
     .corner_style << corner_style
     .end_style << end_style
+    
+    _self.set_world_distance()
     _return _self 
 _endmethod
 $
@@ -109,6 +114,13 @@ $
 
 ###################################################################################################################
 
+
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_collection.editable?
+	_return _true
+_endmethod
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method buffer_collection.geometry_refs
 	>> {(geom_ref.new(:area,
@@ -121,6 +133,19 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method buffer_collection.expose()
 	_return .source_collection.expose()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_collection.geometry_for(rec, geom_name)
+	_local source_geom << .source_collection.geometry_for(rec, .source_geom_name)
+	_if source_geom _isnt _unset
+	_then 
+		_local area << source_geom.buffer(.world_distance, .corner_style, .end_style)
+		_return pseudo_area.new_for_world(area, source_geom.world)
+	_else
+		_return _unset 
+	_endif 
 _endmethod
 $
 
@@ -146,10 +171,9 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_collection.world_distance
+_private _method buffer_collection.set_world_distance()
 	_local world << .source_collection.expose().record_exemplar.rwan_world_for(.source_geom_name)
-	_local distance << .distance.value_in(world.unit)
-	_return distance 
+	.world_distance << .distance.value_in(world.unit)
 _endmethod
 $
 
@@ -168,7 +192,6 @@ _method buffer_collection.read_stream(_optional filter)
 	_endif 
 _endmethod
 $
-
 
 #
 #_pragma(classify_level=basic, topic={analysis})

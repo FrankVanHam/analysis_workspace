@@ -177,7 +177,7 @@ _private _method highlight_plugin.highlight_gs(col, window_bounds)
 	_local gss << rope.new()
 	_for i_ref _over col.geometry_refs.fast_elements()
 	_loop
-		geom_col << col.copy().filter_by_geometry(i_ref.name, :interacting_with, bound_col, :geometry)
+		geom_col << col.filter_by_geometry(i_ref.name, :interacting_with, bound_col, :geometry)
 		gss.add(geom_col.geometry_set(i_ref.name))
 	_endloop
 	_return composite_geometry_set.new(gss)

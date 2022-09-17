@@ -124,6 +124,12 @@ _method predicate_filter_collection.expose()
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method predicate_filter_collection.geometry_for(rec, geom_name)
+	_return .source_collection.geometry_for(rec, geom_name)
+_endmethod
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method predicate_filter_collection.ref_collections
 	## return the collections I depend on
