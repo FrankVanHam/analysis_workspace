@@ -78,7 +78,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_abstract _method topology_collection.actual_collection
+_abstract _method base_follow_collection.actual_collection
 		 
 _endmethod
 $

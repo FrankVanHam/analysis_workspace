@@ -110,17 +110,7 @@ $
 #_endmethod
 #$
 #
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_record_collection.follow_join(join_name)
-#	_return sw:get_global_value(@rwan:join_collection).new(.dsm, _self, join_name)
-#_endmethod
-#$
 #
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_record_collection.follow_method(target_table, method_name, args)
-#	_return sw:get_global_value(@rwan:method_collection).new(.dsm, _self, target_table, method_name, args)
-#_endmethod
-#$
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_record_collection.union(other)
@@ -134,11 +124,6 @@ $
 #_endmethod
 #$
 #
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_record_collection.root(table)
-#	_return sw:get_global_value(@rwan:root_collection).new(.dsm, _self,table)
-#_endmethod
-#$
 #
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_record_collection.intersection(other)
@@ -162,31 +147,31 @@ $
 #
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_topology(geom_name, target_col)
-	_return rwan:topology_collection.new(.dsm, _self, geom_name, target_col)
+	_return rwan:follow_topology_collection.new(.dsm, _self, geom_name, target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_trace(geom_name, target_col, stop_predicates, max_length)
-	_return rwan:trace_collection.new(.dsm, _self, geom_name, target_col, stop_predicates, max_length)
+	_return rwan:follow_trace_collection.new(.dsm, _self, geom_name, target_col, stop_predicates, max_length)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_join(join_field_name)
-	_return rwan:join_collection.new(.dsm, _self, join_field_name)
+	_return rwan:follow_join_collection.new(.dsm, _self, join_field_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_root(target_col)
-	_return rwan:root_collection.new(.dsm, _self, target_col)
+	_return rwan:follow_root_collection.new(.dsm, _self, target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.follow_method(methd)
-	_return rwan:method_collection.new(.dsm, _self, methd)
+	_return rwan:follow_method_collection.new(.dsm, _self, methd)
 _endmethod
 $
 
@@ -423,8 +408,6 @@ $
 #
 ##
 
-
-
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_predicate(predicate)
 	_return predicate_filter_collection.new(.dsm,
@@ -433,17 +416,24 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.filter_by_geometry(geom_name, operator, filter_collection, filter_geometry)
+_method base_record_collection.buffer(source_geom_name, distance, corner_style, end_style)
+	_return buffer_collection.new(.dsm, _self, source_geom_name,
+				      distance, corner_style, end_style)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.filter_by_geometry(source_geom_name, operator, filter_collection, filter_geometry)
 	_return spatial_filter_collection.new(.dsm,
-					      _self, geom_name, operator,
+					      _self, source_geom_name, operator,
 					      filter_collection, filter_geometry)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.filter_by_distance(geom_name, distance, inverse?, filter_collection, filter_geometry)
+_method base_record_collection.filter_by_distance(source_geom_name, distance, inverse?, filter_collection, filter_geometry)
 	_return distance_filter_collection.new(.dsm,
-					       _self, geom_name, distance, inverse?,
+					       _self, source_geom_name, distance, inverse?,
 					       filter_collection, filter_geometry)
 _endmethod
 $

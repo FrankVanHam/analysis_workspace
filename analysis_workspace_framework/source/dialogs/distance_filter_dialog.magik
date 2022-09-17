@@ -44,6 +44,7 @@ _method distance_filter_dialog.set_source_holder(workspace, source_holder)
 	.distance << length_value.new(10,:m)
 _endmethod
 $
+
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_dialog.set_holder(workspace,
 					 holder, source_holder, source_geom_name,
@@ -82,11 +83,12 @@ _private _method distance_filter_dialog.build_distance_options(container)
 	_self.build_filter_selection_rc(rc)
 	
 	sw_label_item.new(rc, _self.message(:distance))
-	.items[:distance] << ti << managed_value_text_item.new(rc, _unset,
-							       :model, _self,
-							       :change_selector, :|distance_changed()|,
-							       :display_length, 10, :col_alignment, :fill)
-	ti.manager << unit_value_manager.new(unit_manager.unit(:m))
+	_local a_manager << unit_value_manager.new(unit_manager.unit(:m))
+	.items[:distance] << sw_managed_text_item.new(rc,  
+						      :model, _self,
+						      :manager, a_manager,
+						      :incremental_change_selector, :|distance_changed()|,
+						      :col_alignment, :fill)
 	
 	sw_label_item.new(rc, _self.message(:inverse?))
 	.items[:inverse?] << toggle_item.new(rc, _unset,

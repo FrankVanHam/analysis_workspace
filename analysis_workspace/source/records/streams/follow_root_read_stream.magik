@@ -42,23 +42,26 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method follow_root_read_stream.new_target_stream()
+_private _method follow_root_read_stream.int!get()
 	_dynamic !root_query!
-	_if !root_query! _is _unset _then !root_query! << property_list.new() _endif 
+	_if !root_query! _is _unset
+	_then
+		!root_query! << property_list.new()
+	_endif 
 	_loop
-		!root_query![.target_collection] << _unset
-		
 		_local source << .source_stream.get()
+		
+		_local root << !root_query![.target_collection]
+		_if root _isnt _unset
+		_then
+			_return root
+		_endif
 		_if source _is _unset
 		_then
 			# exhausted
 			_return _unset
 		_else
-			_local root << !root_query![.target_collection]
-			_if root _isnt _unset
-			_then
-				_return rwo_set.new_with(root).read_stream()
-			_endif 
+			
 		_endif
 	_endloop 
 _endmethod

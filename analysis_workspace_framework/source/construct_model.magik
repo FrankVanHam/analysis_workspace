@@ -18,33 +18,33 @@
 _package rwan
 $
 
-#remex(:construct_dialog)
+#remex(:construct_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 ## Dialog that will add and create analysis collections.
-def_slotted_exemplar(:construct_dialog,
+def_slotted_exemplar(:construct_model,
 	{},
 	:base_model)
 $
 
-message_handler.new(:construct_dialog).add_uses(:base_model)
+message_handler.new(:construct_model).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.owner
+_method construct_model.owner
 	_return .owner	
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.run_in_background(meth, descr)
+_method construct_model.run_in_background(meth, descr)
 	.owner.run_in_background(_self, meth, {}, descr)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.update_holder(old_holder, new_holder)
+_method construct_model.update_holder(old_holder, new_holder)
 	_self.workspace.set_dirty()
 	_self.workspace.update_holder(old_holder, new_holder)
 	.owner.publish_workspace()
@@ -52,13 +52,13 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_holder(holder)
+_method construct_model.add_holder(holder)
 	_self.add_holders({holder})
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_holders(holders)
+_method construct_model.add_holders(holders)
 	_local workspace << _self.workspace
 	workspace.add_holders(holders)
 	.owner.publish_workspace()
@@ -67,7 +67,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.new_holder(col, _optional a_msg)
+_method construct_model.new_holder(col, _optional a_msg)
 	_local clr << colour.called(:red)
 	_local msg << _if a_msg _isnt _unset
 		      _then >> a_msg
@@ -80,26 +80,26 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.name_for_collection(col)
+_method construct_model.name_for_collection(col)
 	_return col.description(_self.workspace)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit()
+_method construct_model.edit()
 	_return _self.selected_holder.activate_editor_in(_self)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.view()
+_method construct_model.view()
 	_local editor << _self.edit()
 	editor.set_readonly()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.delete()
+_method construct_model.delete()
 	## delete the collections, but only the top level collections
 	## to avoid creating inconsistencies.
 	_local workspace << _self.workspace
@@ -119,7 +119,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.can_delete?(to_del)
+_private _method construct_model.can_delete?(to_del)
 	_return _self.question_alert( :yes, :no,
 				      :sure_to_delete, to_del.size)
 _endmethod
@@ -127,7 +127,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_collections_from_dialog()
+_method construct_model.add_collections_from_dialog()
 	_local dia << object_control_dialog.new_dialog(_self)
 	dia.set_dataset(.owner.dataset, _self.dataset_manager)
 	dia.activate_relative_to(_unset, .top_frame, 50, 50 )
@@ -136,7 +136,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.copy()
+_method construct_model.copy()
 	_local cp << _self.selected_holder.copy()
 	cp.name << _self.message(:copy_holder, _unset, cp.name)
 	cp.collection.dp
@@ -146,7 +146,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.move_up()
+_method construct_model.move_up()
 	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
@@ -158,7 +158,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.can_move_up?
+_method construct_model.can_move_up?
 	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
@@ -173,7 +173,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.move_down()
+_method construct_model.move_down()
 	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
@@ -185,7 +185,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.can_move_down?
+_method construct_model.can_move_down?
 	_local workspace << _self.workspace
 	_local holders << _self.selected_top_holders
 	_for i_holder _over holders.fast_elements()
@@ -200,7 +200,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_trail()
+_method construct_model.add_trail()
 	_local dsm << _self.dataset_manager
 	_local pseudo << _self.trail
 	col << rwan:geometry_collection.new(dsm, geometry_set.new_with(pseudo))
@@ -215,7 +215,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_geom_selection()
+_method construct_model.add_geom_selection()
 	_local sel << .owner.map_selection
 	_local sel_by_type << hash_table.new()
 	_for i_geom _over sel.fast_elements()
@@ -239,7 +239,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.union_areas(areas)
+_private _method construct_model.union_areas(areas)
 	_local un
 	_local world
 	_for i_area _over areas.fast_elements()
@@ -258,7 +258,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.safe_union(un, an_area)
+_private _method construct_model.safe_union(un, an_area)
 	_try
 		_handling error _with _proc(c)
 					      c.report_contents_on(!output!)
@@ -276,13 +276,13 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_collection_selection()
+_method construct_model.add_collection_selection()
 	_self.run_in_background(:|do_add_collection_selection()|, _self.message(:adding_selection_from_explorer))
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.do_add_collection_selection()
+_method construct_model.do_add_collection_selection()
 	_local dsm << _self.dataset_manager
 	_local sel << .owner.map_selection
 	_local cols << set.new()
@@ -303,13 +303,13 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_explorer_content()
+_method construct_model.add_explorer_content()
 	_self.run_in_background(:|do_add_explorer_content()|, _self.message(:adding_from_explorer))
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.do_add_explorer_content()
+_method construct_model.do_add_explorer_content()
 	# Add the explorer content, derived from the explorer
 	# selection.
 	#
@@ -339,7 +339,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_explorer_selection()
+_method construct_model.add_explorer_selection()
 	_local dsm << _self.dataset_manager
 	_local data << .owner.explorer_selection
 	_if data _is _unset
@@ -361,7 +361,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.add_scrapbook()
+_method construct_model.add_scrapbook()
 	_local sel << .owner.scrapbook_results
 	_if sel _is _unset
 	_then
@@ -373,7 +373,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.do_add_scrapbook()
+_method construct_model.do_add_scrapbook()
 	_local dsm << _self.dataset_manager
 	_local sel << .owner.scrapbook_results
 	_local sel_by_table_name << hash_table.new()
@@ -398,7 +398,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.trail
+_method construct_model.trail
 	_local geom << .owner.map_trail.as_pseudo_geometry
 	_if geom _is _unset
 	_then
@@ -410,7 +410,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_intersection()
+_method construct_model.create_intersection()
 	_local holders << _self.selected_top_holders
 	_local holder1 << holders[1]
 	_local holder2 << holders[2]
@@ -420,7 +420,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_union()
+_method construct_model.create_union()
 	_local holders << _self.selected_top_holders
 	_local holder1 << holders[1]
 	_local holder2 << holders[2]
@@ -431,7 +431,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_xor()
+_method construct_model.create_xor()
 	_local holders << _self.selected_top_holders
 	_local holder1 << holders[1]
 	_local holder2 << holders[2]
@@ -442,7 +442,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_subtraction()
+_method construct_model.create_subtraction()
 	_local holders << _self.selected_top_holders
 	_local holder1 << holders[1]
 	_local holder2 << holders[2]
@@ -454,7 +454,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_spatial_subtraction()
+_method construct_model.create_spatial_subtraction()
 	_local (holder1,holder2) << _self.selected_spatial_and_spatial()
 	_self.ensure_set_operation_makes_sense(holder1, holder2)
 	_local dia << spatial_subtraction_dialog.new_dialog(_self)
@@ -465,7 +465,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.ensure_set_operation_makes_sense(holder1, holder2)
+_private _method construct_model.ensure_set_operation_makes_sense(holder1, holder2)
 	_if holder1.collection.is_record_collection? _andif
 	    holder2.collection.is_record_collection?
 	_then
@@ -478,7 +478,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.materialize_spatial()
+_method construct_model.materialize_spatial()
 	_local holder << _self.selected_top_holder
 	_local dia << spatial_materialize_dialog.new_dialog(_self)
 	dia.set_holder(holder, _self.dataset_manager)
@@ -488,7 +488,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.materialize()
+_method construct_model.materialize()
 	_local holder << _self.selected_top_holder
 	_local dia << record_materialize_dialog.new_dialog(_self)
 	dia.set_holder(holder, _self.dataset_manager)
@@ -498,7 +498,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_join_view()
+_method construct_model.create_join_view()
 	_local holder << _self.selected_top_holder
 	_self.ensure_collection_is_sw_collection(holder)
 	_local dia << sw_view_join_dialog.new_dialog(_self)
@@ -508,7 +508,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_eq_view()
+_method construct_model.create_eq_view()
 	_local holders << _self.selected_top_holders
 	_self.ensure_collection_is_sw_collection(holders[1])
 	_self.ensure_collection_is_sw_collection(holders[2])
@@ -521,7 +521,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.ensure_collection_is_sw_collection(holder)
+_private _method construct_model.ensure_collection_is_sw_collection(holder)
 	_if _not holder.collection.is_sw_collection?
 	_then
 		_self.user_error(:view_only_possible_on_sw_collection)
@@ -531,7 +531,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_spatial_collection()
+_method construct_model.create_spatial_collection()
 	_local holder << _self.selected_top_holder
 	_local dia << spatial_dialog.new_dialog(_self)
 	dia.set_holder(holder, _self.dataset_manager)
@@ -541,17 +541,31 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_buffer()
+_method construct_model.create_buffer_dialog()
 	_local holder << _self.selected_top_holder
 	_local dia << buffer_dialog.new_dialog(_self)
-	dia.set_holder(holder, _self.dataset_manager)
+	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
 	_return dia
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_follow_topology_dialog()
+_method construct_model.edit_buffer_dialog(holder, source_col, source_geom_name,
+					   distance, corner_style, end_style)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	
+	_local dia << buffer_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, source_geom_name,
+		       distance, corner_style, end_style)
+	dia.activate()
+	_return dia
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_model.create_follow_topology_dialog()
 	_local dia << topology_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -560,7 +574,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_topology_dialog(holder, source_col, source_geom_name, target_col)
+_method construct_model.edit_follow_topology_dialog(holder, source_col, source_geom_name, target_col)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	
 	_local dia << topology_dialog.new_dialog(_self)
@@ -573,7 +587,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_follow_trace_dialog()
+_method construct_model.create_follow_trace_dialog()
 	_local dia << trace_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -582,7 +596,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_trace_dialog(holder, source_col, source_geom_name, stop_predicates, max_length, target_col)
+_method construct_model.edit_follow_trace_dialog(holder, source_col, source_geom_name, stop_predicates, max_length, target_col)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local dia << trace_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
@@ -594,7 +608,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_follow_root_dialog()
+_method construct_model.create_follow_root_dialog()
 	_local dia << follow_root_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -603,7 +617,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_root_dialog(holder, source_col, target_col)
+_method construct_model.edit_follow_root_dialog(holder, source_col, target_col)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local dia << follow_root_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
@@ -614,7 +628,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_follow_join_dialog()
+_method construct_model.create_follow_join_dialog()
 	_local dia << follow_join_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -623,7 +637,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_join_dialog(holder, source_col, join_field_name)
+_method construct_model.edit_follow_join_dialog(holder, source_col, join_field_name)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local dia << join_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
@@ -634,7 +648,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_follow_method_dialog()
+_method construct_model.create_follow_method_dialog()
 	_local dia << follow_method_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -643,7 +657,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_follow_method_dialog(holder,
+_method construct_model.edit_follow_method_dialog(holder,
 						   source_col, methd)
 	
 	_local source_holder << _self.workspace.holder_for(source_col)
@@ -656,7 +670,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_spatial_filter_dialog()
+_method construct_model.create_spatial_filter_dialog()
 	_local dia << spatial_filter_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -665,7 +679,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_spatial_filter_dialog(holder, source_col, source_geom_name,
+_method construct_model.edit_spatial_filter_dialog(holder, source_col, source_geom_name,
 						    operator,
 						    filter_col, filter_geom_name)
 	_local source_holder << _self.workspace.holder_for(source_col)
@@ -682,7 +696,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_distance_filter_dialog()
+_method construct_model.create_distance_filter_dialog()
 	_local dia << distance_filter_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -691,7 +705,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_distance_filter_dialog(holder, source_col, source_geom_name,
+_method construct_model.edit_distance_filter_dialog(holder, source_col, source_geom_name,
 						    distance, inverse?,
 						    filter_col, filter_geom_name)
 	_local source_holder << _self.workspace.holder_for(source_col)
@@ -707,7 +721,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.create_predicate_filter_dialog()
+_method construct_model.create_predicate_filter_dialog()
 	_local dia << predicate_filter_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_holder)
 	dia.activate()
@@ -716,14 +730,14 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.edit_predicate_filter_dialog(holder, base_col, predicate)
+_method construct_model.edit_predicate_filter_dialog(holder, base_col, predicate)
 	_local record_holder << _self.workspace.holder_for(base_col)
 	_return _self.do_create_predicate_filter_dialog(holder, record_holder, predicate)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.do_create_predicate_filter_dialog(holder, record_holder, _optional predicate)
+_private _method construct_model.do_create_predicate_filter_dialog(holder, record_holder, _optional predicate)
 	_local dia << predicate_filter_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace, holder, record_holder, predicate)
 	dia.activate()
@@ -732,7 +746,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.selected_col_and_spatial()
+_private _method construct_model.selected_col_and_spatial()
 	_local holders << _self.selected_top_holders
 	_local holder, geom
 	_for i_holder _over holders.fast_elements()
@@ -751,7 +765,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.selected_col_and_col()
+_private _method construct_model.selected_col_and_col()
 	_local holders << _self.selected_top_holders
 	_local holder1, holder2
 	_for i_holder _over holders.fast_elements()
@@ -772,7 +786,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.selected_spatial_and_spatial()
+_private _method construct_model.selected_spatial_and_spatial()
 	_local holders << _self.selected_top_holders
 	_local holder1, holder2
 	_for i_holder _over holders.fast_elements()
@@ -794,49 +808,49 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.selected_spatial()
+_private _method construct_model.selected_spatial()
 	_return _self.selected_spatial_and_spatial()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.dataset_manager
+_private _method construct_model.dataset_manager
 	_return .owner.dataset_manager
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.ace_control
+_method construct_model.ace_control
 	_return .owner.ace_control
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.ace
+_method construct_model.ace
 	_return .owner.ace
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.note_workspace_change(renew?)
+_method construct_model.note_workspace_change(renew?)
 	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.note_selection_change()
+_method construct_model.note_selection_change()
 	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.note_map_selection_change(data)
+_method construct_model.note_map_selection_change(data)
 	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.note_map_record_selection_change(data)
+_method construct_model.note_map_record_selection_change(data)
 	_local (pl, rset) << (_scatter data)
 	
 	_if pl.is_kind_of?(explorer_plugin)
@@ -847,25 +861,25 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.note_map_trail_change(data)
+_method construct_model.note_map_trail_change(data)
 	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.has_trail?
+_private _method construct_model.has_trail?
 	>> _self.owner.map_trail.empty?.not
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.has_map_selection?
+_private _method construct_model.has_map_selection?
 	>> _self.owner.map_selection.empty?.not 
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method construct_dialog.has_explorer_selection?
+_private _method construct_model.has_explorer_selection?
 	_local data << .owner.explorer_selection
 	
 	_if data _is _unset _then _return _false _endif
@@ -877,7 +891,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_dialog.manage_actions()
+_method construct_model.manage_actions()
 	_local holders << _self.selected_top_holders
 	_local holder << _if holders.size = 1
 			 _then >> holders.an_element()

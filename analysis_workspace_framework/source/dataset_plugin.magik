@@ -38,7 +38,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis}, usage={subclass})
 dataset_plugin.define_shared_constant( :dialog_exemplar_name,
-	:dataset_dialog,
+	:dataset_model,
 	:public )
 $
 

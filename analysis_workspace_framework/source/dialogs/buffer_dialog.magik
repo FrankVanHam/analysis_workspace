@@ -27,20 +27,39 @@ _pragma(classify_level=basic, topic={analysis})
 ## collection. 
 def_slotted_exemplar(:buffer_dialog,
 	{
-		{:items, _unset},
-		{:holder, _unset}
+		{:distance,     _unset},
+		{:corner_style, _unset},
+		{:end_style,    _unset}
 	},
-	:model)
+	:base_dialog)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-message_handler.new(:buffer_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:buffer_dialog).add_uses(:model, :base_dialog)
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
+	.distance << length_value.new(10,:m)
+	.corner_style << :circular
+	.end_style << :circular
+_endmethod
+$
 
 _pragma(classify_level=restricted, topic={analysis})
-_method buffer_dialog.set_holder(holder)
+_method buffer_dialog.set_holder(workspace,
+				 holder, source_holder, source_geom_name,
+				 distance, corner_style, end_style)
+	.workspace << workspace
 	.holder << holder
+	.source_holder << source_holder
+	.source_geom_name << source_geom_name
+	.distance << distance
+	.corner_style << corner_style
+	.end_style << end_style
+	.name << holder.name
 _endmethod
 $
 
@@ -54,6 +73,7 @@ _method buffer_dialog.activate_in(container)
 				:row_resize_values, {100})
 	_self.build_top_label(rc)
 	_self.build_buffer_options(rc)
+	_self.build_name(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
 	_self.build_buttons(rc)
 	_return rc
@@ -61,42 +81,31 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_dialog.build_top_label(container)
-	sw_text_window.new(container, 7, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill )
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
 _private _method buffer_dialog.build_buffer_options(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
-	sw_label_item.new(rc, _self.message(:source_collection))
-	.items[:col] << sw_label_item.new(rc, .holder.name, :col_alignment, :fill)
-	
-	sw_label_item.new(rc, _self.message(:geometry))
-	.items[:geometry_choice] << sw_text_item.new(rc, _unset, :text_items, {}, 
-							    :editable?, _false, :col_alignment, :fill)
-	
+	_self.build_source_selection_rc(rc)
+		
 	sw_label_item.new(rc, _self.message(:distance))
-	.items[:distance] << ti << managed_value_text_item.new(rc, _unset, :value, 10, :display_length, 10, :col_alignment, :fill)
-	ti.manager << unit_value_manager.new(unit_manager.unit(:m))
-
+	_local a_manager << unit_value_manager.new(unit_manager.unit(:m))
+	.items[:distance] << sw_managed_text_item.new(rc,  
+						      :model, _self,
+						      :manager, a_manager,
+						      :incremental_change_selector, :|distance_changed()|,
+						      :col_alignment, :fill)
+	
 	sw_label_item.new(rc, _self.message(:corner_style))
 	_local act << sw_action.new(:corner_style,
 				    :dialog_control, :image_choice_item,
+				    :change_selector, :|corner_style_changed()|,
 				    :items, _self.corner_style_items)
-	.items[:corner_style] << act.place_control_on(rc, :dialog,
-						      :col_alignment, :left)
-
+	.items[:corner_style] << act.place_control_on(rc, :dialog, :col_alignment, :left)
+	
 	sw_label_item.new(rc, _self.message(:end_style))
 	act << sw_action.new(:corner_style,
 			     :dialog_control, :image_choice_item,
+			     :change_selector, :|end_style_changed()|,
 			     :items, _self.end_style_items)
-	.items[:end_style] << act.place_control_on(rc, :dialog,
-						   :col_alignment, :left)
+	.items[:end_style] << act.place_control_on(rc, :dialog, :col_alignment, :left)
 _endmethod
 $
 
@@ -116,107 +125,43 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method buffer_dialog.on_activation()
-	.items[:corner_style].value << :circular
-	.items[:end_style].value << :circular
-	_self.initialise_geometry_choice()
-	_self.manage_actions()
+	_self.initialise_source_geometry_choice()
+	_self.initialise_settings()
+	_self.initialise_name()
 	_return _super.on_activation()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_dialog.initialise_geometry_choice()
-	_local choice << .items[:geometry_choice]
-	choice.text_items << items << _self.geom_field_items
-	choice.rwan_value_with_notify << _self.most_likely_geom_field(items)
+_private _method buffer_dialog.initialise_settings()
+	.items[:corner_style].value << .corner_style
+	.items[:end_style].value << .end_style
+	.items[:distance].value << .distance
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_dialog.most_likely_geom_field(items)
-	_if items.size = 1
-	_then
-		_return items[1][1]
-	_endif 
-	_local _constant topo_cats << {:chain, :point, :area}
-	_for i_vec _over items.fast_elements()
-	_loop
-		_local geom_cat << i_vec[1].geom_category
-		_if topo_cats.includes?(geom_cat)
-		_then
-			_return i_vec[1]
-		_endif
-	_endloop
-	_return items[1][1]	 
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_method buffer_dialog.manage_actions()
-	_local col? << .holder.is_record_collection?
-	.items[:col].enabled? << col?
-	.items[:geometry_choice].enabled? << col?
+_method buffer_dialog.distance_changed(value)
+	.distance << value 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method buffer_dialog.ok()
-	_local new_col << _self.construct_buffer_filter()
-	.parent_model.add_collection(new_col)
-	_self.close()
+_method buffer_dialog.end_style_changed(value)
+	.end_style << value 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_dialog.construct_buffer_filter()
-	## 
-	##
-	_local corner_style << .items[:corner_style].value
-	_local end_style << .items[:end_style].value
-	_local distance << .items[:distance].value
-	_local fd << .items[:geometry_choice].value
-	_if fd _isnt _unset
-	_then
-		col_geom << fd.name
-	_else
-		col_geom << _unset
-	_endif 
-	_local new_col << .holder.collection.buffer(col_geom, distance, corner_style, end_style)
-	_return new_col
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_method buffer_dialog.cancel()
-	_self.close()
+_method buffer_dialog.corner_style_changed(value)
+	.corner_style << value 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_dialog.geom_field_items
-	_return _self.geom_field_items_for(.holder.collection)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method buffer_dialog.geom_field_items_for(col)
-	_local items << rope.new()
-	_if .holder.is_record_collection?
-	_then 
-		_local sw_col << col.expose()
-		_for i_fd _over sw_col.descriptor.geometry_fields()
-		_loop
-			_if i_fd.name _is :meatball _then _continue _endif 
-			items.add( {i_fd, i_fd.external_name} )
-		_endloop
-		items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
-		items << rope.new_from(items)
-	_else
-		items.add({_unset, _self.message(:geometry_collection)})
-	_endif 
-	_return items
+_method buffer_dialog.construct_holder()
+	_local col << .holder.collection.buffer(.source_geom_name, .distance, .corner_style, .end_style)
+	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 
@@ -248,4 +193,16 @@ _private _method buffer_dialog.end_style_items
 _endmethod
 $
 
+
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif .source_geom_name _isnt _unset
+	.items[:source_geometry_choice] .enabled? << .readonly?.not
+	.items[:name].enabled? << .readonly?.not
+	.items[:distance].enabled? << .readonly?.not
+	.items[:end_style].enabled? << .readonly?.not
+	.items[:corner_style].enabled? << .readonly?.not
+_endmethod
+$
 

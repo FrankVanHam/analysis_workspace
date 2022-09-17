@@ -5,19 +5,18 @@ base_model
 
 background_runner
 
-report_grouping_and_calculation_dialog
-runner_dialog
+runner_model
 runner_plugin
 
 tree_builder
-tree_dialog
+tree_model
 tree_plugin
 
 dialogs/
 
 construct_plugin
-construct_dialog
+construct_model
 dataset_plugin
-dataset_dialog
-highlight_dialog
+dataset_model
+highlight_model
 highlight_plugin

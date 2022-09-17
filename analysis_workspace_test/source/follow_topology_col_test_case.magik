@@ -18,19 +18,19 @@
 _package rwan
 $
 
-#remex(:topology_col_test_case)
+#remex(:follow_topology_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Test topology collections.
 ##
-def_slotted_exemplar(:topology_col_test_case,
+def_slotted_exemplar(:follow_topology_col_test_case,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method topology_col_test_case.test_exposure()
+_method follow_topology_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	# road analytic collection and area 
@@ -41,7 +41,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method topology_col_test_case.create_basic_setup()
+_private _method follow_topology_col_test_case.create_basic_setup()
 	_self.create_road("line", {0, 0, 100000, 0})
 	_self.create_hotel("h1", {1000, 0})
 	_self.create_hotel("h2", {4000, 0})
@@ -57,7 +57,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method topology_col_test_case.test_basic_collection()
+_method follow_topology_col_test_case.test_basic_collection()
 	_local one_road_col << _self.create_basic_setup()
 	_local h_col << one_road_col.follow_topology(:centre_line, _self.hotel_collection)
 	_self.assert_equals(2, h_col.size, "2 hotels on the road")
@@ -65,7 +65,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method topology_col_test_case.test_geometry_set()
+_method follow_topology_col_test_case.test_geometry_set()
 	_local one_road_col << _self.create_basic_setup()
 	_local h_col << one_road_col.follow_topology(:centre_line, _self.hotel_collection)
 	
@@ -76,7 +76,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method topology_col_test_case.test_no_tripples()
+_method follow_topology_col_test_case.test_no_tripples()
 	## have a hotel touching three roads. The topology collection
 	## should return only 1 hotel.
 	#

@@ -10,7 +10,6 @@ materialization_setting
 large_record_register
 geom_ref
 
-streams/
 records/
 area/
 spatial/

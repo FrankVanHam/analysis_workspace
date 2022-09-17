@@ -41,7 +41,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis}, usage={subclass})
 highlight_plugin.define_shared_constant( :dialog_exemplar_name,
-	:highlight_dialog,
+	:highlight_model,
 	:public )
 $
 

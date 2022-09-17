@@ -18,20 +18,20 @@
 _package rwan
 $
 
-#remex(:highlight_dialog)
+#remex(:highlight_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 ## Main function is to highlight collections. The functionality
 ## is very basic at the moment, simply a colored
 ## line/symbol/area.
-def_slotted_exemplar(:highlight_dialog,
+def_slotted_exemplar(:highlight_model,
 	{
 	}, :base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method highlight_dialog.set_highlight_colour()
+_method highlight_model.set_highlight_colour()
 	_if .items[:editor] _is _unset
 	_then
 		.items[:editor] << _self.activate_colour_editor()
@@ -42,7 +42,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method highlight_dialog.activate_colour_editor()
+_private _method highlight_model.activate_colour_editor()
 	_local colour_editor << sw:colour_palette_editor.new_dialog(
 					   _self,
 					   _self, :|set_colour()|,
@@ -55,7 +55,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method highlight_dialog.set_colour(action, clr)
+_method highlight_model.set_colour(action, clr)
 	_local holders << _self.selected_holders
 	_if holders.empty?.not
 	_then
@@ -70,7 +70,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method highlight_dialog.manage_actions()
+_method highlight_model.manage_actions()
 	_local any_sel? << _self.any_selection?
 	_local open? << _self.open?
 	
@@ -79,7 +79,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method highlight_dialog.note_selection_change()
+_method highlight_model.note_selection_change()
 	_self.manage_actions()
 _endmethod
 $

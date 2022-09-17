@@ -23,5 +23,5 @@ spatial_materialize_dialog
 base_sw_view_dialog
 sw_view_join_dialog
 sw_view_eq_dialog
-
+report_grouping_and_calculation_dialog
 sw/

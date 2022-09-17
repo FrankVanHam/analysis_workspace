@@ -225,7 +225,7 @@ _endmethod
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_topology_collection(col, base_col, target_col, geom_name)
+_method tree_builder.display_tree_for_follow_topology_collection(col, base_col, target_col, geom_name)
 	_local tree << _self.display_tree(col)
 	_local image << _self.sw_collection_image(target_col)
 	tree.styled_string << _self.styled_string(:image, {:trace, _self.module_name}, :image, image)
@@ -246,7 +246,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_trace_collection(col, base_col, target_col, geom_name)
+_method tree_builder.display_tree_for_follow_trace_collection(col, base_col, target_col, geom_name)
 	_local tree << _self.display_tree(col)
 	_local image << _self.sw_collection_image(target_col)
 	tree.styled_string << _self.styled_string(:image, {:trace, _self.module_name}, :image, image)
@@ -267,7 +267,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_root_collection(col, base_col, target_col)
+_method tree_builder.display_tree_for_follow_root_collection(col, base_col, target_col)
 	_local tree << _self.display_tree(col)
 	
 	_local image << _self.sw_collection_image(target_col.expose())
@@ -282,7 +282,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_method_analysis(col, base_col, target_col, methd)
+_method tree_builder.display_tree_for_follow_method_analysis(col, base_col, target_col, methd)
 	_local tree << _self.display_tree(col)
 	_local image << _self.sw_collection_image(target_col)
 	tree.styled_string << _self.styled_string(:image, {:method, _self.module_name},
@@ -295,7 +295,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_join_analysis(col, base_col, target_col, jf_name)
+_method tree_builder.display_tree_for_follow_join_analysis(col, base_col, target_col, jf_name)
 	_local tree << _self.display_tree(col)
 	_local image << _self.sw_collection_image(target_col)
 	tree.styled_string << _self.styled_string(:image, {:relationship_field, :ui_resources},
@@ -503,37 +503,19 @@ $
 #$
 #
 #_pragma(classify_level=advanced, topic={analysis})
-#_method topology_collection.display_tree_in(owner)
-#	_return owner.display_tree_for_topology_collection(_self, _self.base_collection, _self.target_collection, .geom_name)
-#_endmethod
-#$
-#
-#_pragma(classify_level=advanced, topic={analysis})
-#_method trace_collection.display_tree_in(owner)
-#	_return owner.display_tree_for_trace_collection(_self, _self.base_collection, _self.target_collection, .geom_name)
-#_endmethod
-#$
-#
-#_pragma(classify_level=advanced, topic={analysis})
-#_method root_collection.display_tree_in(owner)
-#	_return owner.display_tree_for_root_collection(_self, _self.base_collection, _self.target_collection)
-#_endmethod
-#$
-#
-#_pragma(classify_level=advanced, topic={analysis})
 #_method record_set.display_tree_in(owner)
 #	_return owner.display_tree_for_set(_self, .base_set)
 #_endmethod
 #$
 #
 #_pragma(classify_level=advanced, topic={analysis})
-#_method method_collection.display_tree_in(owner)
+#_method follow_method_collection.display_tree_in(owner)
 #	_return owner.display_tree_for_method_analysis(_self, _self.base_collection, _self.target_collection, .methd)
 #_endmethod
 #$
 #
 #_pragma(classify_level=advanced, topic={analysis})
-#_method join_collection.display_tree_in(owner)
+#_method follow_join_collection.display_tree_in(owner)
 #	_return owner.display_tree_for_join_analysis(_self, _self.base_collection, _self.target_collection, .methd)
 #_endmethod
 #$

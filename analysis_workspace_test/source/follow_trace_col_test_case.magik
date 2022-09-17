@@ -18,19 +18,19 @@
 _package rwan
 $
 
-#remex(:trace_col_test_case)
+#remex(:follow_trace_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Test topology collections.
 ##
-def_slotted_exemplar(:trace_col_test_case,
+def_slotted_exemplar(:follow_trace_col_test_case,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method trace_col_test_case.test_exposure()
+_method follow_trace_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	# road analytic collection
@@ -42,7 +42,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method trace_col_test_case.create_basic_setup()
+_private _method follow_trace_col_test_case.create_basic_setup()
 	_self.create_road("line", {0, 0, 50000, 0})
 	_self.create_road("line", {0, 0, 0, 50000})
 	_self.create_road("line", {0, 0, 0, -50000})
@@ -58,7 +58,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method trace_col_test_case.test_simple_trace()
+_method follow_trace_col_test_case.test_simple_trace()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local start << _self.create_basic_setup()
 
@@ -70,7 +70,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method trace_col_test_case.test_no_doubles()
+_method follow_trace_col_test_case.test_no_doubles()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local (start, start2) << _self.create_basic_setup()
 
@@ -82,7 +82,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method trace_col_test_case.test_trace_with_max_length()
+_method follow_trace_col_test_case.test_trace_with_max_length()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local start << _self.create_basic_setup()
 
@@ -94,7 +94,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method trace_col_test_case.test_trace_with_any_stop_predicate()
+_method follow_trace_col_test_case.test_trace_with_any_stop_predicate()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local start << _self.create_basic_setup()
 
@@ -108,7 +108,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method trace_col_test_case.test_trace_with_specific_stop_predicate()
+_method follow_trace_col_test_case.test_trace_with_specific_stop_predicate()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local start << _self.create_basic_setup()
 
@@ -122,7 +122,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method trace_col_test_case.test_geometry_set()
+_method follow_trace_col_test_case.test_geometry_set()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local start << _self.create_basic_setup()
 

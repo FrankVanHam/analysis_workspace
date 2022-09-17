@@ -18,7 +18,7 @@
 _package rwan
 $
 
-#remex(:root_collection)
+#remex(:follow_root_collection)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
@@ -29,7 +29,7 @@ _pragma(classify_level=basic, topic={analysis})
 ## rot collection can yield the roads that lead to the hotels
 ## you required.
 ## 
-def_slotted_exemplar(:root_collection,
+def_slotted_exemplar(:follow_root_collection,
 	{
 		{:target_collection, _unset}
 	},
@@ -37,13 +37,13 @@ def_slotted_exemplar(:root_collection,
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method root_collection.new(dsm, base_col, target_col)
+_method follow_root_collection.new(dsm, base_col, target_col)
 	_return _clone.init(dsm, base_col, target_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method root_collection.init(dsm, source_col, target_col)
+_private _method follow_root_collection.init(dsm, source_col, target_col)
 	_if target_col.is_kind_of?(rwan:base_collection).not _then condition.raise(:error) _endif 
 	.target_collection << target_col
 	_return _super.init(dsm, source_col, _unset)
@@ -51,7 +51,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method root_collection.activate_editor_in(dialog, holder)
+_method follow_root_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_follow_root_dialog(holder,
 					       .source_collection,
 					       .target_collection)
@@ -60,7 +60,7 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_method root_collection.serial_slots()
+_method follow_root_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:target_collection})
 	values.add_all_last({.target_collection})
@@ -69,7 +69,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method root_collection.init_from_serial(dsm, source_col, target_collection)
+_method follow_root_collection.init_from_serial(dsm, source_col, target_collection)
     _super.init_from_serial(dsm, source_col)
     .target_collection << target_collection
     _return _self 
@@ -77,14 +77,14 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method root_collection.equals?(other)
+_method follow_root_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.source_collection, .target_collection)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method root_collection.equals_in_details?(source_col, target_col)
+_method follow_root_collection.equals_in_details?(source_col, target_col)
 	_return _super.equals_in_details?(source_col) _andif
 		.target_collection.equals?(target_col)
 _endmethod
@@ -93,19 +93,19 @@ $
 
 ###################################################################################################################
 _pragma(classify_level=basic, topic={analysis})
-_method root_collection.editable?
+_method follow_root_collection.editable?
 	_return _true 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method root_collection.expose()
+_method follow_root_collection.expose()
 	_return .target_collection.expose()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method root_collection.read_stream(_optional filter)
+_method follow_root_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. 
 	#
@@ -120,15 +120,15 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method root_collection.discard()
+_method follow_root_collection.discard()
 	.target_collection << _unset
 	_super.discard()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method root_collection.display_tree_in(owner)
-	_return owner.display_tree_for_root_collection(_self, .source_collection,
+_method follow_root_collection.display_tree_in(owner)
+	_return owner.display_tree_for_follow_root_collection(_self, .source_collection,
 						       .target_collection)
 _endmethod
 $

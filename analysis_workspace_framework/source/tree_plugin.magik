@@ -30,7 +30,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis}, usage={subclass})
 tree_plugin.define_shared_constant( :dialog_exemplar_name,
-	:tree_dialog,
+	:tree_model,
 	:public )
 $
 

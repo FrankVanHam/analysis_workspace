@@ -44,11 +44,8 @@
 	<action name="construct.follow_method"/>
 	<action name="construct.follow_root"/>
       </submenu>
-      <submenu name="spatial" mnemonic_id="spatial_m">
-	<action name="construct.create_spatial"/>
-	<action name="construct.create_buffer"/>
-      </submenu>
       <submenu name="set" mnemonic_id="set_m">
+	<action name="construct.create_buffer"/>
 	<action name="construct.intersection"/>
 	<action name="construct.subtraction"/>
 	<action name="construct.union"/>
@@ -91,11 +88,8 @@
     <action name="construct.follow_method"/>
     <action name="construct.follow_root"/>
   </toolbar>
-  <toolbar name="spatial">
-    <action name="construct.create_spatial"/>
-    <action name="construct.create_buffer"/>
-  </toolbar>
   <toolbar name="set">
+    <action name="construct.create_buffer"/>
     <action name="construct.intersection"/>
     <action name="construct.subtraction"/>
     <action name="construct.union"/>
@@ -133,7 +127,6 @@
     <toolbar name="add"/>
     <toolbar name="collection"/>
     <toolbar name="follow"/>
-    <toolbar name="spatial"/>
     <toolbar name="set"/>
     <toolbar name="materialize"/>
     <toolbar name="tree"/>

@@ -39,7 +39,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis}, usage={subclass})
 construct_plugin.define_shared_constant( :dialog_exemplar_name,
-	:construct_dialog,
+	:construct_model,
 	:public )
 $
 
@@ -129,7 +129,7 @@ _method construct_plugin.init_actions()
 	_self.add_action(sw_action.new(:create_buffer,
 				       :engine, _self.dialog,
 				       :image, {:buffer, _self.module_name},
-				       :action_message, :|create_buffer()|))
+				       :action_message, :|create_buffer_dialog()|))
 	
 	_self.add_action(sw_action.new(:view_by_join,
 				       :engine, _self.dialog,

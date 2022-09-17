@@ -19,27 +19,27 @@
 _package rwan
 $
 
-#remex(:dataset_dialog)
+#remex(:dataset_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 ## Implements the basic file based actions like open, close,
 ## save, etc.
-def_slotted_exemplar(:dataset_dialog,
+def_slotted_exemplar(:dataset_model,
 	{},
 	:base_model)
 $
-message_handler.new(:dataset_dialog).add_uses(:base_model)
+message_handler.new(:dataset_model).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.note_workspace_change(renew?)
+_method dataset_model.note_workspace_change(renew?)
 	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.manage_actions()
+_method dataset_model.manage_actions()
 	_local open? << _self.open?
 	_local dirty? << open? _andif _self.workspace.dirty?
 	
@@ -52,7 +52,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.save()
+_method dataset_model.save()
 	_self.save_ds_file()
 	_self.workspace_changed()
 	_self.manage_actions()
@@ -60,13 +60,13 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method dataset_dialog.save_ds_file()
+_private _method dataset_model.save_ds_file()
 	_self.workspace.save()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.save_as()
+_method dataset_model.save_as()
 	_local dia << file_dialog.new(_self, :|save_ds_as()|, _unset,
 				      :operation, :save,
 				      :title, _self.message(:save_as_file_title),
@@ -78,7 +78,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.save_ds_as(path)
+_method dataset_model.save_ds_as(path)
 	_self.save_ds_file_as(path)
 	_self.workspace_changed()
 	_self.manage_actions()
@@ -86,7 +86,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_dialog.save_ds_file_as(target_path)
+_method dataset_model.save_ds_file_as(target_path)
 	
 	_if system.file_exists?(target_path)
 	_then
@@ -101,7 +101,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method dataset_dialog.save_or_cancel_if_updated()
+_private _method dataset_model.save_or_cancel_if_updated()
 	_if _self.workspace _is _unset _then _return _endif
 	
 	_if _self.workspace.dirty?
@@ -130,7 +130,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_dialog.open_default_ds()
+_method dataset_model.open_default_ds()
 	
 	_if _self.dsm _isnt _unset _then _return _endif
 	
@@ -148,7 +148,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method dataset_dialog.do!open_default_ds(path)
+_private _method dataset_model.do!open_default_ds(path)
 	_local ok? << _false 
 	_protect 
 		_local dsm << rwan:analysis_dataset_manager.open(_self.dsm_name, path)
@@ -164,7 +164,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.new_file()
+_method dataset_model.new_file()
 	_self.save_or_cancel_if_updated()
 	_local dia << file_dialog.new(_self, :|new_ds()|, _unset,
 				      :operation, :save,
@@ -177,7 +177,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.new_ds(path)
+_method dataset_model.new_ds(path)
 	_self.new_ds_file(path)
 	_self.workspace_changed()
 	_self.manage_actions()
@@ -185,7 +185,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_dialog.new_ds_file(target_path)
+_method dataset_model.new_ds_file(target_path)
 	
 	_if system.file_exists?(target_path)
 	_then
@@ -200,7 +200,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.close()
+_method dataset_model.close()
 	_self.save_or_cancel_if_updated()
 	_self.close_ds_file()
 	_self.workspace_changed()
@@ -209,7 +209,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method dataset_dialog.close_ds_file()
+_private _method dataset_model.close_ds_file()
 	_if _self.dsm _isnt _unset
 	_then 
 		.owner.remove_from_application()
@@ -221,7 +221,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.open()
+_method dataset_model.open()
  	_self.save_or_cancel_if_updated()
 	_local dia << file_dialog.new(_self, :|open_ds()|, _unset,
 				      :operation, :open,
@@ -233,7 +233,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method dataset_dialog.open_ds(file)
+_method dataset_model.open_ds(file)
 	_self.open_ds_file(file)
 	_self.workspace_changed()
 	_self.manage_actions()
@@ -241,7 +241,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_dialog.open_ds_file(path, _optional first_time?)
+_method dataset_model.open_ds_file(path, _optional first_time?)
 	_local dsm << rwan:analysis_dataset_manager.open(_self.dsm_name, path)
 	
 	_self.close_ds_file()
@@ -258,13 +258,13 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method dataset_dialog.workspace_changed()
+_private _method dataset_model.workspace_changed()
 	.owner.publish_workspace()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method dataset_dialog.dsm
+_private _method dataset_model.dsm
 	_local holder << _self.workspace
 	_if holder _isnt _unset
 	_then 
@@ -276,7 +276,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method dataset_dialog.dsm_name
+_private _method dataset_model.dsm_name
 	_return .owner.dsm_name	 
 _endmethod
 $

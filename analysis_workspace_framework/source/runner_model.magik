@@ -19,24 +19,24 @@
 _package rwan
 $
 
-#remex(:runner_dialog)
+#remex(:runner_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 ## Provide a GUI for executing (in background) and reporting
 ## the results of an analysis collection.
-def_slotted_exemplar(:runner_dialog,
+def_slotted_exemplar(:runner_model,
 	{
 		{:runner, _unset}
 	},
 	:base_model)
 $
 
-message_handler.new(:runner_dialog).add_uses(:base_model)
+message_handler.new(:runner_model).add_uses(:base_model)
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.activate_in(container)
+_method runner_model.activate_in(container)
 	_local rc << rowcol.new(container,  1, _unset, :pixel, :style, :nested,
 				:col_alignment, :fill
 			    )
@@ -54,31 +54,31 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.refresh_map()
+_method runner_model.refresh_map()
 	.owner.refresh_map()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.cancel_run()
+_method runner_model.cancel_run()
 	.runner.cancel_run()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.run_in_background(receiver, meth, args, descr)
+_method runner_model.run_in_background(receiver, meth, args, descr)
 	.runner.run_in_background(receiver, meth, args, descr)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.running?
+_method runner_model.running?
 	_return .runner.running?	
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.report_sums()
+_method runner_model.report_sums()
 	_local holder << _self.selected_holder
 	_local dia << report_grouping_and_calculation_dialog.new_dialog(_self)
 	dia.set_holder(holder)
@@ -87,14 +87,14 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.goto()
+_method runner_model.goto()
 	_local descr <<  _self.selection_description()
 	_self.run_in_background(_self, :|do_goto()|, {}, _self.message(:going_to, _unset, descr))
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.do_goto()
+_method runner_model.do_goto()
 	_local b
 	_for i_holder _over _self.selected_holders.fast_elements()
 	_loop
@@ -115,14 +115,14 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.goto_one()
+_method runner_model.goto_one()
 	_local descr <<  _self.selection_description()
 	_self.run_in_background(_self, :|do_goto_one()|, {}, _self.message(:going_to, _unset, descr))
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.do_goto_one()
+_method runner_model.do_goto_one()
 	_local bounds
 	_local holder << _self.selected_holder
 	_local col << holder.collection
@@ -146,7 +146,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.send_to_explorer()
+_method runner_model.send_to_explorer()
 	_local holder << _self.selected_holder
 	_if holder.is_record_collection?.not _then _return _endif
 	
@@ -156,21 +156,21 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.do_send_to_explorer()
+_method runner_model.do_send_to_explorer()
 	_local col << _self.selected_holder.collection
 	.owner.explore(analysis_ds_collection_proxy.new(col))
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.export_to_excel()
+_method runner_model.export_to_excel()
 	_self.run_in_background(_self, :|do_export_to_excel()|, {},
 				_self.message(:export_to_excel))
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.do_export_to_excel()
+_method runner_model.do_export_to_excel()
 	_local name << _self.selected_top_holder.name
 	_local col << _self.selected_top_holder.collection
 	_local lazy << analysis_ds_collection_proxy.new(col)
@@ -191,14 +191,14 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.export_to_access()
+_method runner_model.export_to_access()
 	_self.run_in_background(_self, :|do_export_to_access()|, {},
 				_self.message(:export_to_access))
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.do_export_to_access()
+_method runner_model.do_export_to_access()
 	_local name << _self.selected_top_holder.name
 	_local col << _self.selected_top_holder.collection
 	_local lazy << analysis_ds_collection_proxy.new(col)
@@ -221,13 +221,13 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.note_selection_change()
+_method runner_model.note_selection_change()
 	_self.manage_actions()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method runner_dialog.selection_description()
+_private _method runner_model.selection_description()
 	_local holders << _self.selected_holders
 	_if holders.size > 1
 	_then
@@ -240,7 +240,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.manage_actions()
+_method runner_model.manage_actions()
 	_local sel << _self.selected_holder
 	_local select? << sel _isnt _unset
 	_local record_sel? << select? _andif
@@ -263,44 +263,44 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method runner_dialog.note_change(who, what)
+_method runner_model.note_change(who, what)
 	_self.manage_actions()
 _endmethod
 $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method runner_dialog.stop_image
+_private _method runner_model.stop_image
 	_return smallworld_product.get_raster_image(:stop, :ui_resources)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method runner_dialog.grey_stop_image
+_private _method runner_model.grey_stop_image
 	_return smallworld_product.get_raster_image(:stop_grey, :ui_resources)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method runner_dialog.export_excel_image
+_private _method runner_model.export_excel_image
 	_return smallworld_product.get_raster_image(:export_to_excel, :ui_resources)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method runner_dialog.grey_export_excel_image
+_private _method runner_model.grey_export_excel_image
 	_return smallworld_product.get_raster_image(:export_to_excel_grey, :ui_resources)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method runner_dialog.export_access_image
+_private _method runner_model.export_access_image
 	_return smallworld_product.get_raster_image(:export_to_access, :ui_resources)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_private _method runner_dialog.grey_export_access_image
+_private _method runner_model.grey_export_access_image
 	_return smallworld_product.get_raster_image(:export_to_access_grey, :ui_resources)
 _endmethod
 $

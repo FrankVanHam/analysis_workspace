@@ -18,80 +18,72 @@
 _package rwan
 $
 
-#remex(:method_collection)
+
+#remex(:follow_join_collection)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
-## Analysis collection that performs some kind of method with
-## some arguments on each record to yield the actual records we
-## are interested in.
+## Analysis collection that follows over a join to another
+## collection
 ##
-def_slotted_exemplar(:method_collection,
+def_slotted_exemplar(:follow_join_collection,
 	{
-		{:methd, _unset}
-	}, :base_follow_collection)
+		{:join_field_name, _unset}
+	},
+	:base_follow_collection)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method method_collection.new(dsm, source_col, methd)
-	_return _clone.init(dsm, source_col, methd)
+_method follow_join_collection.new(dsm, source_col, join_field_name)
+	_return _clone.init(dsm, source_col, join_field_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method method_collection.init(dsm, source_col, methd)
-	.methd << methd
-
-	_local (x, x, x, target) << _self.method_data(source_col, methd)
+_private _method follow_join_collection.init(dsm, source_col, join_field_name)
+	.join_field_name << join_field_name
 	
-	_return _super.init(dsm, source_col, target)
+	_return _super.init(dsm, source_col)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method method_collection.method_data(source_col, methd)
-	_local vec << source_col.expose().record_exemplar.rwan_methods[methd]
-	_return _scatter vec
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method method_collection.activate_editor_in(dialog, holder)
-	_return dialog.edit_follow_method_dialog(holder,
-						 .source_collection, .methd)
+_method follow_join_collection.activate_editor_in(dialog, holder)
+	_return dialog.edit_follow_join_dialog(holder,
+					       .source_collection, .join_field_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.serial_slots()
+_method follow_join_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:methd})
-	values.add_all_last({.methd})
+	keys.add_all_last({:join_field_name})
+	values.add_all_last({.join_field_name})
 	_return keys, values
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.init_from_serial(dsm, source_col,
-					   methd)
+_method follow_join_collection.init_from_serial(dsm, source_col,
+					 join_field_name)
     _super.init_from_serial(dsm, source_col)
-    .methd << methd
+    .join_field_name << join_field_name
     _return _self 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method method_collection.equals?(other)
+_method follow_join_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif 
 		other.equals_in_details?(.source_collection,
-					 .methd)
+					 .join_field_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.equals_in_details?(source_col, methd)
+_method follow_join_collection.equals_in_details?(source_col, join_field_name)
 	_return _super.equals_in_details?(source_col) _andif
-		.methd = methd
+		.join_field_name = join_field_name
 _endmethod
 $
 
@@ -99,12 +91,19 @@ $
 ###################################################################################################################
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.read_stream(_optional filter)
+_method follow_join_collection.actual_collection
+	_local sw_col << .source_collection.expose()
+	_return sw_col.field(.join_field_name).result_table(sw_col.dataset)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method follow_join_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. 
 	#
-	_local (methd, args, external_name, target) << _self.method_data(.source_collection, .methd)
-	_local str << rwan:follow_method_read_stream.new(.source_collection, methd, args)
+	_local str << rwan:follow_join_read_stream.new(.source_collection, .join_field_name)
 	_if filter _isnt _unset
 	_then
 		_return filter.filter_stream(str)
@@ -115,16 +114,16 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method method_collection.discard()
-	.methd << _unset
+_method follow_join_collection.discard()
+	.join_field_name << _unset
 	_super.discard()
 _endmethod
 $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method method_collection.display_tree_in(owner)
-	_return owner.display_tree_for_method_analysis(_self, .source_collection,
-						       _self.expose(), .methd)
+_method follow_join_collection.display_tree_in(owner)
+	_return owner.display_tree_for_follow_join_analysis(_self, .source_collection,
+						     _self.expose(), .join_field_name)
 _endmethod
 $

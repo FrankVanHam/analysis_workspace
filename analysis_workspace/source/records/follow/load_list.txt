@@ -1,7 +1,7 @@
 base_follow_collection
 
-method_collection
-join_collection
-root_collection
-topology_collection
-trace_collection
+follow_method_collection
+follow_join_collection
+follow_root_collection
+follow_topology_collection
+follow_trace_collection

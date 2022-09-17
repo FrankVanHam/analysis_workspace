@@ -96,7 +96,8 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name)
+		other.equals_in_details?(.source_collection, .source_geom_name,
+					 .operator, .filter_collection, .filter_geom_name)
 _endmethod
 $
 
