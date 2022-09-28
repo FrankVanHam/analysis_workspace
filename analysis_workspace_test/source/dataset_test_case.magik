@@ -109,13 +109,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_analysis_set()
-	_local col << _self.haig_and_chesterton_set(.ds)
-	_self.basic_storage_test(col)
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_follow_root_col()
 	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
 	_local acol << pcol.follow_join(:min_roads)
@@ -131,19 +124,6 @@ _method dataset_test_case.test_follow_method_col()
 	_local m_col << road_col.follow_method(:hotel_10)
 	
 	_self.basic_storage_test(m_col)
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_binary_op()
-	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
-	_local pred1 << predicate.eq(:type, "Restaurant")
-	_local pred2 << predicate.eq(:cuisine, "Chinese")
-	_local pcol1 << pcol.filter_by_predicate(pred1)
-	_local pcol2 << pcol.filter_by_predicate(pred2)
-	_local and_col << pcol1.intersection(pcol2)
-	
-	_self.basic_storage_test(and_col)
 _endmethod
 $
 
@@ -172,21 +152,16 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_spatial_operation()
-	
-	_local geom1 << rwan:area_collection.new(.ds, _self.park_collection.at(9492).coverage)
-	_local geom2 << rwan:area_collection.new(.ds, _self.poi_collection.at(9579).coverage)
-	_local subt << geom1.subtraction(geom2)
-	
-	_self.basic_storage_test(subt)
-_endmethod
-$
+_method dataset_test_case.test_area_binary_op_col()
+	_local acol1 << _self.area_collection(.ds, {0,0,100000,0,100000,100000,0,100000,0,0})
+	_local acol2 << _self.area_collection(.ds, {50000,50000,200000,50000,200000,200000,50000,200000,50000,50000})
 
-_pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_spatial_col()
-	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
-	_local rgeom << rcol.spatial_collection(:centre_line)
-	_self.basic_storage_test(rgeom)
+	_local bin_col << acol1.area_binary_op(:geometry, :union, acol2, :geometry)
+	_self.basic_storage_test(bin_col)
+
+	_local park_col << rwan:sw_collection.new(.ds, _self.park_collection)
+	bin_col << acol1.area_binary_op(:geometry, :union, park_col, :coverage)
+	_self.basic_storage_test(bin_col)
 _endmethod
 $
 

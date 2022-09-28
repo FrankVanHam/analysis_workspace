@@ -1,12 +1,8 @@
-spatial_filter_base_read_stream
-spatial_filter_record_read_stream
-spatial_filter_geometry_read_stream
+spatial_filter_read_stream
 
 predicate_filter_read_stream
 
-distance_filter_base_read_stream
-distance_filter_geometry_read_stream
-distance_filter_record_read_stream
+distance_filter_read_stream
 
 follow_base_read_stream
 trace_read_stream
@@ -14,3 +10,4 @@ follow_join_read_stream
 topology_read_stream
 follow_method_read_stream
 follow_root_read_stream
+need_geometry_read_stream

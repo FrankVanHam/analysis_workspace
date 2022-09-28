@@ -1,0 +1,178 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:area_binary_op_dialog)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## dialog to construct a topology collection to follow topology
+## of the source collection.
+##
+def_slotted_exemplar(:area_binary_op_dialog,
+	{
+		{:operator, _unset}
+	},
+	:base_dialog)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+area_binary_op_dialog.define_shared_constant(:defined_operators, {:intersection, :union, :xor, :subtraction}, :private)
+$
+
+message_handler.new(:area_binary_op_dialog).add_uses(:model, :base_dialog) 
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_dialog.set_source_holder(workspace, source_holder, operator)
+	.workspace << workspace
+	.source_holder << source_holder
+	.operator << operator
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_dialog.set_holder(workspace,
+					 holder, source_holder, source_geom_name,
+					 operator, filter_holder, filter_geom_name)
+	.workspace << workspace
+	.holder << holder
+	.source_holder << source_holder
+	.source_geom_name << source_geom_name
+	.operator << operator
+	_if _self.defined_operators.includes?(operator).not _then condition.raise(:error) _endif
+	
+	.filter_holder << filter_holder
+	.filter_geom_name << filter_geom_name
+	.name << holder.name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_dialog.activate_in(container)
+	container.top_frame.modality << :primary_modal
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
+				:row_alignment, :fill,
+				:col_alignment, :fill)
+	_self.build_top_label(rc)
+	_self.build_source_filter_and_operation_selection(rc)
+	_self.build_name(rc)
+	panel_separator.new(rc, :col_alignment, :fill) 
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_binary_op_dialog.build_source_filter_and_operation_selection(container)
+	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
+	_self.build_source_selection_rc(rc)
+	
+	sw_label_item.new(rc, _self.message(:operation))
+	.items[:operation_choice] << sw_text_item.new(rc,
+						      :text_items, {},
+						      :editable?, _false,
+						      :model, _self,
+						      :change_selector, :|operation_changed()|,
+						      :col_alignment, :fill)
+	
+	_self.build_filter_selection_rc(rc)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_dialog.on_activation()
+	_self.initialise_source_geometry_choice()
+	_self.initialise_filter_holder_choice()
+	_self.initialise_operator_choice()
+	_self.initialise_name()
+	_super.on_activation()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_binary_op_dialog.initialise_operator_choice()
+	 _local choice << .items[:operation_choice]
+	 choice.text_items << items << _self.operation_items
+	 _local op << _if .operator _is _unset
+		      _then
+			      >> items[1][1]
+		      _else
+			      >> .operator
+		      _endif
+	 choice.rwan_value_with_notify << op
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_dialog.operation_changed(value)
+	.operator << value
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_binary_op_dialog.construct_holder()
+	_local col << .source_holder.collection.area_binary_op(.source_geom_name, .operator,
+							       .filter_holder.collection, .filter_geom_name)
+	_return .parent_model.new_holder(col, .name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_binary_op_dialog.operation_items
+	_local ops <<  _self.defined_operators
+	_local items << rope.new()
+	_for i_key _over ops.fast_elements()
+	_loop
+		items.add( {i_key, _self.message(i_key)} )
+	_endloop
+	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_binary_op_dialog.geom_field_items_for(col)
+	_local items << rope.new()
+	_for i_ref _over col.geometry_refs.fast_elements()
+	_loop
+		_if i_ref.geom_category _is :area
+		_then 
+			items.add({i_ref, i_ref.external_name})
+		_endif 
+	_endloop
+	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )
+	items << rope.new_from(items)
+	_return items
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_binary_op_dialog.manage_actions()
+	_local has_name? << .name.default("") <> ""
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif .source_geom_name _isnt _unset _andif .filter_geom_name _isnt _unset
+
+	.items[:source_geometry_choice] .enabled? << .readonly?.not
+	.items[:filter_holder_choice].enabled? << .readonly?.not
+	.items[:filter_geometry_choice].enabled? << .readonly?.not
+	.items[:name].enabled? << .readonly?.not
+	.items[:operation_choice].enabled? << .readonly?.not
+_endmethod
+$

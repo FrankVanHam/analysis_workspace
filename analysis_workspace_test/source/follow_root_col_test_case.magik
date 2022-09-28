@@ -133,7 +133,7 @@ _method follow_root_col_test_case.test_geometry_set()
 
 	_local gs << r_col.geometry_set(:centre_line)
 	
-	_self.assert_equals(1, gs.size, "1 road")
+	_self.assert_equals(2, gs.size, "2 roads")
 	_self.assert_not_unset(r_col.goto_bounds)
 _endmethod
 $

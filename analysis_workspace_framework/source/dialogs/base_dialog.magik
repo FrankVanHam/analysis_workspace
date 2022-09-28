@@ -154,11 +154,11 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_dialog.initialise_filter_holder_choice()
 	_local choice << .items[:filter_holder_choice]
-	 choice.text_items << items << _self.filter_holder_items()
-	 _if items.empty?.not
-	 _then 
-		 choice.rwan_value_with_notify << items[1][1]
-	 _endif 
+	_local items << _self.filter_holder_items()
+	_local holder << _self.filter_holder_selection(items, .filter_holder)
+	
+	 choice.text_items << items
+	 choice.rwan_value_with_notify << holder
 _endmethod
 $
 
@@ -188,33 +188,9 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method base_dialog.geom_field_selection(items, name)
 	_for i_vec _over items.fast_elements()
 	_loop
-		_if i_vec[2] = name _then _return i_vec[1] _endif
+		_if i_vec[1].name = name _then _return i_vec[1] _endif
 	_endloop
 	>> _self.most_likely_geom_field(items)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method base_dialog.most_likely_geom_field(items)
-	_if items.size = 1
-	_then
-		_return items[1][1]
-	_endif 
-	_local _constant topo_cats << {:chain, :point, :area}
-	_for i_vec _over items.fast_elements()
-	_loop
-		_local geom_cat << i_vec[1].geom_category
-		_if topo_cats.includes?(geom_cat)
-		_then
-			_return i_vec[1]
-		_endif
-	_endloop
-	_if items.empty?
-	_then
-		_return _unset
-	_else
-		_return items[1][1]
-	_endif 
 _endmethod
 $
 
@@ -319,6 +295,30 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.most_likely_geom_field(items)
+	_if items.size = 1
+	_then
+		_return items[1][1]
+	_endif 
+	_local _constant topo_cats << {:chain, :point, :area}
+	_for i_vec _over items.fast_elements()
+	_loop
+		_local geom_cat << i_vec[1].geom_category
+		_if topo_cats.includes?(geom_cat)
+		_then
+			_return i_vec[1]
+		_endif
+	_endloop
+	_if items.empty?
+	_then
+		_return _unset
+	_else
+		_return items[1][1]
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _private _method base_dialog.filter_holder_items()
 	_local items << rope.new()
 	_for i_holder _over .workspace.top_holders.fast_elements()
@@ -333,3 +333,19 @@ _private _method base_dialog.filter_holder_items()
 	_return items
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_dialog.filter_holder_selection(items, cur_holder)
+	_for i_vec _over items.fast_elements()
+	_loop
+		_if i_vec[1] _is cur_holder _then _return i_vec[1] _endif
+	_endloop
+	_if items.empty?.not
+	_then
+		_return items[1]
+	_else
+		_return _unset
+	_endif 
+_endmethod
+$
+

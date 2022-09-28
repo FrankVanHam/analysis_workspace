@@ -117,6 +117,13 @@ _method base_collection.geometry_ref(name)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.geom_category(name)
+	_return _self.geometry_ref(name).geom_category
+_endmethod
+$
+
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.expose()
@@ -309,6 +316,24 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_collection.geometry_set(geom_name)
+	## Defaults to retrieving the set by getting the geometries
+	## from the individual records.
+	## 
+	_local gs << geometry_set.new()
+	_for i_rec _over _self.fast_elements()
+	_loop
+		_local geom << _self.geometry_for(i_rec, geom_name)
+		_if geom _isnt _unset
+		_then
+			gs.add(geom)
+		_endif
+	_endloop
+	_return gs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.geometry_refs_for(actual_collection)
 	_local refs << rope.new()
 	_for i_fd _over actual_collection.descriptor.geometry_fields()
@@ -385,5 +410,12 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method base_collection.message(id, _gather args)
 	_return message_handler.new(_self.class_name).human_string(id, _unset, _scatter args)	
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.area_binary_op(source_geom_name, operation, filter_collection, filter_geometry)
+	_return rwan:area_binary_op_collection.new(.dsm, _self, source_geom_name, operation, filter_collection, filter_geometry)
 _endmethod
 $

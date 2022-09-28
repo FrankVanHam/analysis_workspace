@@ -411,71 +411,50 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_intersection()
-	_local holders << _self.selected_top_holders
-	_local holder1 << holders[1]
-	_local holder2 << holders[2]
-	_local new_col << holder1.collection.intersection(holder2.collection)
-	_self.add_holder(_self.new_holder(new_col))
+	_local dia << area_binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :intersection)
+	dia.activate()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_union()
-	_local holders << _self.selected_top_holders
-	_local holder1 << holders[1]
-	_local holder2 << holders[2]
-	_self.ensure_set_operation_makes_sense(holder1, holder2)
-	_local new_col << holder1.collection.union(holder2.collection)
-	_self.add_holder(_self.new_holder(new_col))
+	_local dia << area_binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :union)
+	dia.activate()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_xor()
-	_local holders << _self.selected_top_holders
-	_local holder1 << holders[1]
-	_local holder2 << holders[2]
-	_self.ensure_set_operation_makes_sense(holder1, holder2)
-	_local new_col << holder1.collection.xor(holder2.collection)
-	_self.add_holder(_self.new_holder(new_col))
+	_local dia << area_binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :xor)
+	dia.activate()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_subtraction()
-	_local holders << _self.selected_top_holders
-	_local holder1 << holders[1]
-	_local holder2 << holders[2]
-	_self.ensure_set_operation_makes_sense(holder1, holder2)
-	_local dia << record_subtraction_dialog.new_dialog(_self)
-	dia.set_holders(holder1, holder2, _self.dataset_manager)
+	_local dia << area_binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :subtraction)
 	dia.activate()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_model.create_spatial_subtraction()
-	_local (holder1,holder2) << _self.selected_spatial_and_spatial()
-	_self.ensure_set_operation_makes_sense(holder1, holder2)
-	_local dia << spatial_subtraction_dialog.new_dialog(_self)
-	dia.set_holder(holder1, holder2, _self.dataset_manager)
+_method construct_model.edit_area_binary_op_dialog(holder, source_col, source_geom_name,
+						   operation, filter_col, filter_geom_name)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	_local filter_holder << _self.workspace.holder_for(filter_col)
+	_local dia << area_binary_op_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder, source_geom_name,
+		       operation, filter_holder, filter_geom_name)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_model.ensure_set_operation_makes_sense(holder1, holder2)
-	_if holder1.collection.is_record_collection? _andif
-	    holder2.collection.is_record_collection?
-	_then
-		_if holder1.collection.expose() _isnt holder2.collection.expose()
-		_then
-			_self.user_error(:set_operator_must_have_same_base)
-		_endif
-	_endif
-_endmethod
-$
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.materialize_spatial()

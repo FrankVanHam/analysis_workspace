@@ -25,3 +25,5 @@ sw_view_join_dialog
 sw_view_eq_dialog
 report_grouping_and_calculation_dialog
 sw/
+
+area_binary_op_dialog

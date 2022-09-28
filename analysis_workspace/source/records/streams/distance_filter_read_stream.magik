@@ -18,29 +18,34 @@
 _package rwan
 $
 
-#remex(:distance_filter_base_read_stream)
+#remex(:distance_filter_read_stream)
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-def_slotted_exemplar(:distance_filter_base_read_stream,
+def_slotted_exemplar(:distance_filter_read_stream,
 	## stream that filters the sourcestream on spatial predicate.
 	{
-		{:source_stream,    _unset},
-		{:distance,         _unset},
-		{:inverse?,         _unset},
-		{:filter_gs,        _unset}
+		{:source_collection, _unset},
+		{:source_geom_name,  _unset},
+		{:source_stream,     _unset},
+		{:distance,          _unset},
+		{:inverse?,          _unset},
+		{:filter_gs,         _unset}
 	}, :input_stream_with_unget_mixin)
 $
 	
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method distance_filter_base_read_stream.new(source_stream, distance, inverse?, filter_gs)
-	_return _clone.init(source_stream, distance, inverse?, filter_gs)
+_method distance_filter_read_stream.new(source_col, source_stream, source_geom_name, distance, inverse?, filter_gs)
+	_return _clone.init(source_col, source_stream, source_geom_name, distance, inverse?, filter_gs)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method distance_filter_base_read_stream.init(source_stream, distance, inverse?, filter_gs)
+_private _method distance_filter_read_stream.init(source_col, source_stream, source_geom_name, distance, inverse?, filter_gs)
+	.source_collection << source_col
+	.source_geom_name << source_geom_name
+	
 	_if distance.is_kind_of?(1.0).not _then condition.raise(:error) _endif
 	
 	.source_stream << source_stream
@@ -53,13 +58,26 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_abstract _method distance_filter_base_read_stream.get()
-	
+_method distance_filter_read_stream.get()
+	_loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset _then _return _unset _endif #exhausted
+
+		_local geom << .source_collection.geometry_for(rec, .source_geom_name)
+		_if geom _isnt _unset
+		_then 	
+			_local match? << _self.match?(geom)
+			_if match?
+			_then
+				_return rec
+			_endif
+		_endif
+	_endloop 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_private _method distance_filter_base_read_stream.match?(geom)
+_private _method distance_filter_read_stream.match?(geom)
 	_local in? << .filter_gs.distance_to_within?(geom, .distance)
 	_if .inverse?
 	_then
@@ -71,19 +89,19 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method distance_filter_base_read_stream.size_is_fast?
+_method distance_filter_read_stream.size_is_fast?
 	_return _false 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method distance_filter_base_read_stream.close()
+_method distance_filter_read_stream.close()
 	.source_stream.close()
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method distance_filter_base_read_stream.reset()
+_method distance_filter_read_stream.reset()
 	.source_stream.reset()
 _endmethod
 $

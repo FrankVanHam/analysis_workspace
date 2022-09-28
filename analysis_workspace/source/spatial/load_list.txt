@@ -6,3 +6,5 @@ geometry_collection
 #spatial_materialized_collection
 spatial_filter_geometry_collection
 distance_filter_geometry_collection
+buffer_geometry_collection
+area_binary_op_collection

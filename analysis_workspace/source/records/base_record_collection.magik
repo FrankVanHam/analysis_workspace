@@ -415,32 +415,33 @@ $
 #
 ##
 
+
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_predicate(predicate)
-	_return predicate_filter_collection.new(.dsm,
-						_self, predicate)
+	_return rwan:predicate_filter_collection.new(.dsm,
+						     _self, predicate)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.buffer(source_geom_name, distance, corner_style, end_style)
-	_return buffer_collection.new(.dsm, _self, source_geom_name,
-				      distance, corner_style, end_style)
+	_return rwan:buffer_collection.new(.dsm, _self, source_geom_name,
+					   distance, corner_style, end_style)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_geometry(source_geom_name, operator, filter_collection, filter_geometry)
-	_return spatial_filter_collection.new(.dsm,
-					      _self, source_geom_name, operator,
-					      filter_collection, filter_geometry)
+	_return rwan:spatial_filter_collection.new(.dsm,
+						   _self, source_geom_name, operator,
+						   filter_collection, filter_geometry)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.filter_by_distance(source_geom_name, distance, inverse?, filter_collection, filter_geometry)
-	_return distance_filter_collection.new(.dsm,
-					       _self, source_geom_name, distance, inverse?,
-					       filter_collection, filter_geometry)
+	_return rwan:distance_filter_collection.new(.dsm,
+						    _self, source_geom_name, distance, inverse?,
+						    filter_collection, filter_geometry)
 _endmethod
 $

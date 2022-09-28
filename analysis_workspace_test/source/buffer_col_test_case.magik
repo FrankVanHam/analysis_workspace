@@ -18,19 +18,19 @@
 _package rwan
 $
 
-#remex(:buffer_test_case)
+#remex(:buffer_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Test distance filters.
 ##
-def_slotted_exemplar(:buffer_test_case,
+def_slotted_exemplar(:buffer_col_test_case,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method buffer_test_case.test_exposure()
+_method buffer_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	
 	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
@@ -45,7 +45,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method buffer_test_case.test_basics()
+_method buffer_col_test_case.test_basics()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	
 	_local r1 << _self.create_road("access1", {0,0,100000,0})
@@ -71,7 +71,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method buffer_test_case.test_geometry_set()
+_method buffer_col_test_case.test_geometry_set()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	
 	_local r1 << _self.create_road("access1", {0,0,100000,0})

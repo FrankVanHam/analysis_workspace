@@ -52,7 +52,6 @@ _private _method spatial_filter_geometry_collection.init(dsm, source_col, operat
 	# protect agains nonsense
 	.filter_collection.assert_geom_name(.filter_geom_name)
 
-
 	_return _super.init(dsm)
 _endmethod
 $
@@ -155,6 +154,13 @@ _method spatial_filter_geometry_collection.read_stream(_optional filter)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_filter_geometry_collection.geometry_for(rec, geom_name)
+	_return .source_collection.geometry_for(rec, geom_name)	
+_endmethod
+$
+
+
 #_pragma(classify_level=restricted, topic={analysis})
 #_method spatial_filter_geometry_collection.filter_stream_for_actual_collection(actual_collection)
 #	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
@@ -191,7 +197,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_filter_geometry_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return spatial_filter_geometry_read_stream.new(stream, .operator, filter_gs)
+	_return spatial_filter_read_stream.new(.source_collection, stream, :geometry, .operator, filter_gs)
 _endmethod
 $
 #

@@ -203,7 +203,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_geometry_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return distance_filter_geometry_read_stream.new(stream, _self.world_distance, .inverse?, filter_gs)
+	_return distance_filter_read_stream.new(stream, _self.world_distance, .inverse?, filter_gs)
 _endmethod
 $
 #

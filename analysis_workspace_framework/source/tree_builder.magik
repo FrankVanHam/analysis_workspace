@@ -52,6 +52,25 @@ _method tree_builder.tree(holder)
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={analysis})
+_private _method tree_builder.display_tree_for(col, source_col, source_geom_name, tree_image)
+	_local tree << _self.display_tree(col)
+	_if source_col.is_record_collection?
+	_then 
+		_local field_image << source_col.geom_category(source_geom_name)
+		_local sw_col << source_col.expose()
+		_local col_image << _self.sw_collection_image(sw_col)
+		tree.styled_string << _self.styled_string(:image, {tree_image, _self.module_name},
+							  :image, col_image,
+							  :image, field_image)
+	_else
+		_local field_image << source_col.geom_category
+		tree.styled_string << _self.styled_string(:image, {tree_image, _self.module_name},
+							  :image, field_image)
+	_endif
+	_return tree
+_endmethod
+$
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method tree_builder.display_tree(col)
@@ -107,13 +126,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_spatial_filter_collection(col, source_col, source_geom_name, selector, filter_col, filter_geom_name)
-	_local sw_col << source_col.expose()
-	_local image << _self.sw_collection_image(sw_col)
-	_local field_image << source_col.geometry_ref(source_geom_name).geom_category
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, {:spatial, _self.module_name},
-						  :image, image,
-						  :image, field_image)
+	_local tree << _self.display_tree_for(col, source_col, source_geom_name, :spatial)
 	
 	_local base_tree << _self.tree(source_col)
 	tree.add_child(base_tree)
@@ -123,13 +136,10 @@ _method tree_builder.display_tree_for_spatial_filter_collection(col, source_col,
 	_return tree
 _endmethod
 $
-
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_spatial_filter_geometry_collection(col, source_col, selector, filter_col, filter_geom_name)
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, {:spatial, _self.module_name},
-						  :image, col.geom_category)
+	_local tree << _self.display_tree_for(col, source_col, _unset, :spatial)
 	
 	_local base_tree << _self.tree(source_col)
 	tree.add_child(base_tree)
@@ -139,17 +149,12 @@ _method tree_builder.display_tree_for_spatial_filter_geometry_collection(col, so
 	_return tree
 _endmethod
 $
+
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_distance_filter_collection(col, source_col, source_geom_name,
 								 distance, arg)
-	_local sw_col << source_col.expose()
-	_local image << _self.sw_collection_image(sw_col)
-	_local field_image << source_col.geometry_ref(source_geom_name).geom_category
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, {:distance, _self.module_name},
-						  :image, image,
-						  :image, field_image)
+	_local tree << _self.display_tree_for(col, source_col, source_geom_name, :distance)
 	
 	_local base_tree << _self.tree(source_col)
 	tree.add_child(base_tree)
@@ -161,10 +166,9 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_distance_filter_geometry_collection(col, source_col, geom_name, distance, arg)
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, {:distance, _self.module_name},
-						  :image, col.geom_category)
+_method tree_builder.display_tree_for_distance_filter_geometry_collection(col, source_col,
+								 distance, arg)
+	_local tree << _self.display_tree_for(col, source_col, _unset, :distance)
 	
 	_local base_tree << _self.tree(source_col)
 	tree.add_child(base_tree)
@@ -174,6 +178,7 @@ _method tree_builder.display_tree_for_distance_filter_geometry_collection(col, s
 	_return tree
 _endmethod
 $
+
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_predicate_collection(col, source_col, pred)
@@ -315,15 +320,14 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_binary_op_collection(col, source_col, other_col, op)
-	_local tree << _self.display_tree(col)
-	_local sw_col << source_col.expose()
-	_local image << _self.sw_collection_image(sw_col)
-	tree.styled_string << _self.styled_string(:image, {op, _self.module_name}, :image, image)
+_method tree_builder.display_tree_for_area_binary_op_collection(col, source_col, source_geom_name,
+								operation, filter_col, filter_geom_name)
+
+	_local tree << _self.display_tree_for(col, source_col, source_geom_name, operation)
 	
 	_local base_tree << _self.tree(source_col)
 	tree.add_child(base_tree)
-	_local other_tree << _self.tree(other_col)
+	_local other_tree << _self.tree(filter_col)
 	tree.add_child(other_tree)
 	_return tree	
 _endmethod
@@ -378,27 +382,15 @@ _method tree_builder.display_tree_for_spatial_collection(col, source_col, geom_n
 	_local field_image << _self.sw_geom_field_image(fd)
 	_local tree << _self.display_tree(col)
 	tree.styled_string << _self.styled_string(:image, field_image)
-#	tree.styled_string << {:image, image, sw_col.external_name,
-#			       :image, field_image, :black, fd.external_name}
-	
 	_local child << _self.tree(source_col)
 	tree.add_child(child)
 	_return tree 
 _endmethod
 $
-
-
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_buffer(col,source_col,geom_name,distance)
-	_local sw_col << source_col.expose()
-	_local image << _self.sw_collection_image(sw_col)
-	_local geom_field_image << source_col.geometry_ref(geom_name).geom_category
-	
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, {:buffer, _self.module_name},
-						  :image, image,
-						  :image, geom_field_image)
+_method tree_builder.display_tree_for_buffer_collection(col, source_col, source_geom_name, distance)
+	_local tree << _self.display_tree_for(col, source_col, source_geom_name, :buffer)
 	
 	_local child << _self.tree(source_col)
 	tree.add_child(child)
@@ -406,6 +398,15 @@ _method tree_builder.display_tree_for_buffer(col,source_col,geom_name,distance)
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_buffer_geometry_collection(col,source_col,distance)
+	_local tree << _self.display_tree_for(col, source_col, _unset, :buffer)
+	
+	_local child << _self.tree(source_col)
+	tree.add_child(child)
+	_return tree 
+_endmethod
+$
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_area_collection(col, area)

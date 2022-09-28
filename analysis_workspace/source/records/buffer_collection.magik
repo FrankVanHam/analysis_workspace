@@ -36,6 +36,9 @@ def_slotted_exemplar(:buffer_collection,
 	}, :base_record_collection)
 $
 
+message_handler.new(:buffer_collection).add_use(:base_record_collection)
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method buffer_collection.new(dsm, source_col, source_geom_name, distance, corner_style, end_style)
 	_return _clone.init(dsm, source_col, source_geom_name, distance, corner_style, end_style)
@@ -169,10 +172,13 @@ _method buffer_collection.size
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _private _method buffer_collection.set_world_distance()
-	_local world << .source_collection.expose().record_exemplar.rwan_world_for(.source_geom_name)
+	_local sw_col << .source_collection.expose()
+	_local world << _if sw_col _isnt _unset
+			_then >> sw_col.record_exemplar.rwan_world_for(.source_geom_name)
+			_else >> .source_collection.an_element().world
+			_endif 
 	.world_distance << .distance.value_in(world.unit)
 _endmethod
 $
@@ -248,6 +254,6 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method buffer_collection.display_tree_in(owner)
-	_return owner.display_tree_for_buffer(_self, .source_collection, .source_geom_name, .distance)
+	_return owner.display_tree_for_buffer_collection(_self, .source_collection, .source_geom_name, .distance)
 _endmethod
 $

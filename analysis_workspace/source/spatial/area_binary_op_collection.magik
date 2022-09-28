@@ -18,33 +18,43 @@
 _package rwan
 $
 
-#remex(:spatial_filter_collection)
+#remex(:area_binary_op_collection)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Collection that performs a spatial operator on a geometry
-## field of the base collection.
-def_slotted_exemplar(:spatial_filter_collection,
+## collection.
+def_slotted_exemplar(:area_binary_op_collection,
 	{
 		{:source_collection, _unset},
 		{:source_geom_name,  _unset},
 		{:operator,          _unset},
 		{:filter_collection, _unset},
 		{:filter_geom_name,  _unset}
-	}, :base_record_collection)
+	}, :base_spatial_collection)
+$
+
+message_handler.new(:area_binary_op_collection).add_use(:base_spatial_collection)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.new(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
+area_binary_op_collection.define_shared_constant(:defined_operators, {:intersection, :union, :xor, :subtraction}, :private)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_binary_op_collection.new(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
 	_return _clone.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method spatial_filter_collection.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
+_private _method area_binary_op_collection.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
 	.source_collection << source_col
 	.source_geom_name << source_geom_name
 	.operator << operator
+	
+	_if _self.defined_operators.includes?(operator).not _then condition.raise(:error) _endif
+	
 	.filter_collection << filter_col
 	.filter_geom_name << filter_geom_name
 
@@ -56,23 +66,18 @@ _private _method spatial_filter_collection.init(dsm, source_col, source_geom_nam
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.init_copy()
-	_return _super.init_copy()
-_endmethod
-$
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.activate_editor_in(dialog, holder)
-	_return dialog.edit_spatial_filter_dialog(holder,
-						  .source_collection,
-						  .source_geom_name, .operator,
+_method area_binary_op_collection.activate_editor_in(dialog, holder)
+	_return dialog.edit_area_binary_op_dialog(holder,
+						  .source_collection, .source_geom_name,
+						  .operator,
 						  .filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.serial_slots()
+_method area_binary_op_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:source_collection, :source_geom_name, :operator, :filter_collection, :filter_geom_name})
 	values.add_all_last({.source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name})
@@ -81,8 +86,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_collection.init_from_serial(dsm, source_col, source_geom_name,
-							    operator, filter_collection, filter_geom_name)
+_private _method area_binary_op_collection.init_from_serial(dsm, source_col, source_geom_name, operator, filter_collection, filter_geom_name)
     _super.init_from_serial(dsm)
     .source_collection << source_col
     .source_geom_name << source_geom_name
@@ -94,18 +98,18 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.equals?(other)
+_method area_binary_op_collection.equals?(other)
 	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.source_collection, .source_geom_name,
-					 .operator, .filter_collection, .filter_geom_name)
+		other.equals_in_details?(.source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.equals_in_details?(source_col, source_geom_name, operator, filter_collection, filter_geom_name)
+_method area_binary_op_collection.equals_in_details?(source_col, source_geom_name,
+						     operator, filter_collection, filter_geom_name)
 	_return _super.equals_in_details?() _andif
 		.source_collection.equals?(source_col) _andif
-		.source_geom_name = source_geom_name _andif
+		.source_geom_name = source_geom_name _andif 
 		.operator = operator _andif
 		.filter_collection.equals?(filter_collection) _andif
 		.filter_geom_name = filter_geom_name
@@ -115,110 +119,103 @@ $
 ###################################################################################################################
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.editable?
+_method area_binary_op_collection.editable?
 	_return _true 
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.geometry_refs
-	_return .source_collection.geometry_refs
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.expose()
-	_return .source_collection.expose()
-_endmethod
-$
-
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.geometry_for(rec, geom_name)
-	_return .source_collection.geometry_for(rec, geom_name)
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.ref_collections
-	## return the collections I depend on
-	_return {.source_collection, .filter_collection}
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.size_is_fast?
+_method area_binary_op_collection.size_is_fast?
 	## no, size is generally not fast as it is spatially filtered.
 	_return _false 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.read_stream(_optional filter)
+_method area_binary_op_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. Otherwise set myself as the filter of my
 	## source_collection
 	#
-	_local str << .source_collection.read_stream(_self)
-	_if filter _isnt _unset
-	_then
-		_return filter.filter_stream(str)
-	_else 
-		_return str
-	_endif 
+	_return geometry_set.new_with(_self.the_area).read_stream()
+#	_local str << .source_collection.read_stream(_self)
+#	_if filter _isnt _unset
+#	_then
+#		_return filter.filter_stream(str)
+#	_else 
+#		_return str
+#	_endif 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.filter_stream_for_actual_collection(actual_collection)
+_method area_binary_op_collection.geometry_for(rec, geom_name)
+	_return rec
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method area_binary_op_collection.the_area
+	_local source_gs << .source_collection.geometry_set(.source_geom_name)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-
-	# limit the source by the filter bounds to only look in that
-	# bounds. Except for disjoint operation...
-	_local bounds << _if .operator _isnt :disjoint_from
-			 _then >> filter_gs.bounds
-			 _else >> _unset 
-			 _endif 
-	_local source_stream << _self.source_rwo_stream(actual_collection, bounds)
-	_return rwan:spatial_filter_read_stream.new(.source_collection, source_stream, .source_geom_name, .operator, filter_gs)
+	
+	_local methd << write_string(.operator+:|()|).as_symbol()
+	
+	_local a << source_gs.areas_as_coverage().perform(methd, filter_gs.areas_as_coverage())
+	a.world << source_gs.an_element().world
+	_return a
 _endmethod
 $
 
+#_pragma(classify_level=restricted, topic={analysis})
+#_method area_binary_op_collection.filter_stream_for_actual_collection(actual_collection)
+#	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
+#
+#	# limit the source by the filter bounds to only look in that
+#	# bounds. Except for disjoint operation...
+#	_local bounds << _if .operator _isnt :disjoint_from
+#			 _then >> filter_gs.bounds
+#			 _else >> _unset 
+#			 _endif 
+#	_local source_stream << _self.source_rwo_stream(actual_collection, bounds)
+#	_return rwan:spatial_filter_read_stream.new(source_stream, .source_geom_name, .operator, filter_gs)
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method area_binary_op_collection.source_rwo_stream(actual_collection, bounds)
+#	_local source_gs << _self.source_geometry_set(actual_collection, bounds)
+#	_return gs_rwo_set.new(actual_collection.dataset,
+#			       property_list.new_with(
+#				       :data_source, source_gs)).read_stream()
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method area_binary_op_collection.source_geometry_set(actual_collection, bounds)
+#	# if the operator is restricting to the filter, then set the
+#	# bounds.
+#	_local world << actual_collection.record_exemplar.rwan_world_for(.source_geom_name)
+#	_return actual_collection.geometry_set(world, bounds, .source_geom_name)
+#_endmethod
+#$
+#
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.filter_stream(stream)
-	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return rwan:spatial_filter_read_stream.new(.source_collection, stream, .source_geom_name, .operator, filter_gs)
+_method area_binary_op_collection.filter_stream(stream)
+	_return need_geometry_read_stream.new(.source_collection, stream, .source_geom_name)
 _endmethod
 $
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_collection.source_rwo_stream(actual_collection, bounds)
-	_local source_gs << _self.source_geometry_set(actual_collection, bounds)
-	_return gs_rwo_set.new(actual_collection.dataset,
-			       property_list.new_with(
-				       :data_source, source_gs)).read_stream()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_collection.source_geometry_set(actual_collection, bounds)
-	# if the operator is restricting to the filter, then set the
-	# bounds.
-	_local world << actual_collection.record_exemplar.rwan_world_for(.source_geom_name)
-	_return actual_collection.geometry_set(world, bounds, .source_geom_name)
-_endmethod
-$
-
-
-
+#
+#
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_method spatial_filter_collection.size
+#_method area_binary_op_collection.size
 #	_local geom << _self.need_geometry(.arg)
 #	_return _self.source_collection.size_filtered_by_geometry(.source_geom_name, .operator, geom)
 #_endmethod
 #$
 #
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_method spatial_filter_collection.includes?(rec)
+#_method area_binary_op_collection.includes?(rec)
 #	_local geom << rec.geometry(.source_geom_name)
 #	_if geom _is _unset
 #	_then
@@ -232,7 +229,7 @@ $
 #
 #
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_iter _method spatial_filter_collection.fast_elements()
+#_iter _method area_binary_op_collection.fast_elements()
 #	_local geom << _self.need_geometry(.arg)
 #	_for i_rec _over _self.source_collection.fast_elements_filtered_by_geometry(.source_geom_name, .operator, geom)
 #	_loop
@@ -242,7 +239,7 @@ $
 #$
 #
 #_pragma(classify_level=basic, topic={analysis, collections})
-#_method spatial_filter_collection.convert_to_geometry()
+#_method area_binary_op_collection.convert_to_geometry()
 #	_local geom << _self.need_geometry(.arg)
 #	_return _self.source_collection.convert_to_geometry_filtered_by_geometry(.source_geom_name, .operator, geom)
 #_endmethod
@@ -250,14 +247,14 @@ $
 #
 #
 #_pragma(classify_level=restricted, topic={analysis})
-#_private _method spatial_filter_collection.need_geometry(arg)
+#_private _method area_binary_op_collection.need_geometry(arg)
 #	_return arg.convert_to_geometry()
 #_endmethod
 #$
 #
 #
 #_pragma(classify_level=basic, topic={analysis})
-#_method spatial_filter_collection.description(translator)
+#_method area_binary_op_collection.description(translator)
 #	_local base_name << translator.name_for_collection(_self.source_collection)
 #	_local target_name << translator.name_for_collection(.arg)
 #	_return _self.message(:description, base_name, .source_geom_name,
@@ -267,14 +264,15 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method spatial_filter_collection.display_tree_in(owner)
-	_return owner.display_tree_for_spatial_filter_collection(_self, .source_collection, .source_geom_name, .operator,
-								 .filter_collection, .filter_geom_name)
+_method area_binary_op_collection.display_tree_in(owner)
+	_return owner.display_tree_for_area_binary_op_collection(
+			_self, .source_collection, .source_geom_name, .operator,
+			.filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method spatial_filter_collection.discard()
+_method area_binary_op_collection.discard()
 	.source_collection << .source_geom_name << .operator << .filter_collection << .filter_geom_name << _unset 
 	_super.discard()
 _endmethod

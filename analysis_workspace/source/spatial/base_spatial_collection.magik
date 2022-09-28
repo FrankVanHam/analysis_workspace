@@ -39,29 +39,25 @@ _method base_spatial_collection.geometry_refs
 _endmethod
 $
 
+
 _pragma(classify_level=basic, topic={analysis})
-_method base_spatial_collection.geometry_set(geom_name)
-	## Defaults to retrieving the set by getting the geometries
-	## from the individual records.
-	## 
-	_local gs << geometry_set.new()
-	_for i_geom _over _self.fast_elements()
-	_loop
-		gs.add(i_geom)
-	_endloop
-	_return gs
+_method base_spatial_collection.geom_category
+	_return _self.an_element().geom_category
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_spatial_collection.geom_category
-	_local geom << _self.an_element()
-	_if geom _isnt _unset
-	_then
-		_return geom.geom_category
-	_endif 
+_method base_spatial_collection.geometry_for(rec, geom_name)
+	_return rec
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.goto_bounds
+	_return _self.geometry_set(:geometry).bounds
+_endmethod
+$
+
 
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_spatial_collection.is_spatial?
@@ -140,11 +136,18 @@ $
 #	_return _self.message(:description)
 #_endmethod
 #$
-
+#
+#
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.buffer(source_geom_name, distance, corner_style, end_style)
+	_return rwan:buffer_geometry_collection.new(.dsm, _self,
+					       distance, corner_style, end_style)
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.filter_by_geometry(geom_name, operator, filter_collection, filter_geometry)
-	_return spatial_filter_geometry_collection.new(.dsm,
+	_return rwan:spatial_filter_geometry_collection.new(.dsm,
 						       _self, operator,
 						       filter_collection, filter_geometry)
 _endmethod
@@ -152,8 +155,9 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.filter_by_distance(geom_name, distance, inverse?, filter_collection, filter_geometry)
-	_return distance_filter_geometry_collection.new(.dsm,
+	_return rwan:distance_filter_geometry_collection.new(.dsm,
 							_self, distance, inverse?,
 							filter_collection, filter_geometry)
 _endmethod
 $
+
