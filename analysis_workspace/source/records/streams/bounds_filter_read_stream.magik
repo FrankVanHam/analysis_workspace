@@ -1,0 +1,94 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:bounds_filter_read_stream)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+## stream that filters the sourcestream on spatial predicate.
+def_slotted_exemplar(:bounds_filter_read_stream,
+	{
+		{:source_collection, _unset},
+		{:source_geom_name,  _unset},
+		{:source_stream,     _unset},
+		{:bounds,            _unset}
+	}, :input_stream_with_unget_mixin)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method bounds_filter_read_stream.new(source_col, source_stream, source_geom_name, bounds)
+	_return _clone.init(source_col, source_stream, source_geom_name, bounds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method bounds_filter_read_stream.init(source_col, source_stream, source_geom_name, bounds)
+	.source_collection << source_col
+	.source_geom_name << source_geom_name
+	
+	.source_stream << source_stream
+	.bounds << bounds
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method bounds_filter_read_stream.get()
+	_loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset _then _return _unset _endif #exhausted
+		
+		_local geom << .source_collection.geometry_for(rec, .source_geom_name)
+		_if geom _isnt _unset
+		_then 	
+			_local match? << _self.matches?(geom)
+			_if match?
+			_then
+				_return rec
+			_endif
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method bounds_filter_read_stream.matches?(geom)
+	## Test if geom interacts
+	_return geom.interacts_with?(.bounds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method bounds_filter_read_stream.size_is_fast?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method bounds_filter_read_stream.close()
+	.source_stream.close()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method bounds_filter_read_stream.reset()
+	.source_stream.reset()
+_endmethod
+$

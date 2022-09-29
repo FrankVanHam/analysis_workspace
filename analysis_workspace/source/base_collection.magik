@@ -58,6 +58,28 @@ _private _method base_collection.init_copy()
 _endmethod
 $
 
+#################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.sorted_local_slot_names
+	_local slot_names << rope.new()
+	_local my_name << _self.class_name
+	_for i_name _over _self.sys!all_slot_names().fast_elements()
+	_loop
+		_if i_name.index_of_seq(my_name) _is 1
+		_then
+			_local slot_name << i_name.write_string.slice_to_end(my_name.size+2).as_symbol()
+			slot_names.add(slot_name)
+		_endif 
+	_endloop
+	_return slot_names.as_simple_vector()
+_endmethod
+$
+
+
+
+##################################################
+
 
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_collection.base_collections

@@ -57,13 +57,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_geometry_collection.init_copy()
-
-	_return _super.init_copy()
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_geometry_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_spatial_filter_dialog(holder,
 						  .source_collection, :geometry,

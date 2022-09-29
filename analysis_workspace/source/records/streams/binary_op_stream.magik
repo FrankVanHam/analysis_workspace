@@ -1,0 +1,177 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:binary_op_stream)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+## stream that filters the sourcestream on spatial predicate.
+def_slotted_exemplar(:binary_op_stream,
+	{
+		{:source_collection, _unset},
+		{:source_stream,     _unset},
+		{:operator,          _unset},
+		{:filter_collection, _unset},
+		{:filter_stream,     _unset},
+		{:register,          _unset}
+	}, :input_stream_with_unget_mixin)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+binary_op_stream.define_shared_constant(
+	:supported_operations,
+	{:intersection, :union, :xor, :subtraction},
+	:private)
+$
+	
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_stream.new(source_col, source_stream, operator, filter_col, filter_stream)
+	_return _clone.init(source_col, source_stream, operator, filter_col, filter_stream)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_stream.init(source_col, source_stream, operator,
+				       filter_col, filter_stream)
+	.source_collection << source_col
+	.source_stream     << source_stream
+	
+	_if _self.supported_operations.includes?(operator).not
+	_then
+		condition.raise(:error, :string, write_string("Operator ", operator, " is not supported"))
+	_endif
+	
+	.operator  << operator
+	
+	.filter_collection << filter_col
+	.filter_stream     << filter_stream
+	
+	.register << large_record_register.new(1000)
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_stream.get()
+	_return _self.perform_private(write_string(:|get_|, .operator, :|()|).as_symbol())
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_stream.get_intersection()
+	##
+	## Return records that are both in source as in filter. So
+	## looping over soure is sufficient.
+	##
+	_loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset _then _return _unset _endif #exhausted
+
+		_if .filter_collection.includes?(rec)
+		_then
+			_return rec
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_stream.get_union()
+	## 
+	## Return records from source AND filter, but do not return the
+	## same records twice.
+	 _loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset
+		_then
+			rec << .filter_stream.get()
+			_if rec _is _unset _then _return _unset _endif #exhausted
+		_endif
+		_if .register.includes?(rec).not
+		_then
+			.register.add(rec)
+			_return rec
+		_endif
+	 _endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_stream.get_xor()
+	## 
+	## Return records that are in source, but not in filter
+	## AND
+	## return the records in filter, but not in source.
+	_loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset
+		_then
+			rec << .filter_stream.get()
+			_if rec _is _unset _then _return _unset _endif #exhausted
+			# we have a filter
+			_if .source_collection.includes?(rec).not
+			_then
+				_return rec
+			_endif
+		_else
+			# we have a source
+			_if .filter_collection.includes?(rec).not
+			_then
+				_return rec
+			_endif
+		_endif
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_stream.get_subtraction()
+	## 
+	## Return the records from source that are NOT in filter.
+	 _loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset _then _return _unset _endif #exhausted
+
+		_if .filter_collection.includes?(rec).not
+		_then
+			_return rec
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_stream.size_is_fast?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_stream.close()
+	.source_stream.close()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_stream.reset()
+	.source_stream.reset()
+_endmethod
+$

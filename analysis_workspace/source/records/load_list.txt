@@ -2,6 +2,7 @@ base_record_collection
 predicate_filter_collection
 spatial_filter_collection
 distance_filter_collection
+bounds_filter_collection
 #distance_area_filter_collection
 #
 #base_source_collection

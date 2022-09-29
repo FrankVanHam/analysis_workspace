@@ -49,16 +49,57 @@ _method area_binary_op_col_test_case.test_simple()
 	_local a2 << bounding_box.new(50000,50000,200000,200000)
 	_local acol1 << _self.area_collection(dsm, a1.coords)
 	_local acol2 << _self.area_collection(dsm, a2.coords)
-
+	
 	_for i_op _over {:intersection, :union, :xor, :subtraction}.fast_elements()
 	_loop 
 		_local bin_col << acol1.area_binary_op(:geometry, i_op, acol2, :geometry)
 		_local bin_gs << bin_col.geometry_set(:geometry)
 		_local correct_value << (pseudo_area.new(a1).perform(i_op+:|()|, pseudo_area.new(a2))).area
-		_self.assert_equals(correct_value, bin_gs.areas_as_coverage().area, write_string(i_op, " should match", 5))
+		_self.assert_equals(correct_value, bin_gs.areas_as_coverage().area, write_string(i_op, " should match"), 1)
 	_endloop 
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method area_binary_op_col_test_case.test_multi_areas()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local acol1 << _self.areas_collection(dsm,
+					       {bounding_box.new_with_size(0,0,10000,10000).coords,
+						bounding_box.new_with_size(0,10000,10000,10000).coords,
+						bounding_box.new_with_size(30000,0,10000,10000).coords})
+	_local acol2 << _self.areas_collection(dsm,
+					       {bounding_box.new_with_size(5000,5000,10000,10000).coords,
+						bounding_box.new_with_size(5000,-5000,10000,10000).coords,
+						bounding_box.new_with_size(3000,30000,10000,10000).coords})
+	
+	_local bin_col << acol1.area_binary_op(:geometry, :intersection, acol2, :geometry)
+	_local bin_gs << bin_col.geometry_set(:geometry)
+	_local bin_area << bin_gs.areas_as_coverage()
+	_local correct_value << (5000*5000)*3
+	_self.assert_equals(correct_value, bin_area.area, write_string("Intersection should match"), 1)
+	
+	bin_col << acol1.area_binary_op(:geometry, :union, acol2, :geometry)
+	bin_gs << bin_col.geometry_set(:geometry)
+	bin_area << bin_gs.areas_as_coverage()
+	correct_value << (5000*5000)*21
+	
+	_self.assert_equals(correct_value, bin_area.area, write_string("Union should match"), 1)
+	
+	bin_col << acol1.area_binary_op(:geometry, :xor, acol2, :geometry)
+	bin_gs << bin_col.geometry_set(:geometry)
+	bin_area << bin_gs.areas_as_coverage()
+	correct_value << (5000*5000)*18
+	
+	_self.assert_equals(correct_value, bin_area.area, write_string("Xor should match"), 1)
+
+	bin_col << acol1.area_binary_op(:geometry, :subtraction, acol2, :geometry)
+	bin_gs << bin_col.geometry_set(:geometry)
+	bin_area << bin_gs.areas_as_coverage()
+	correct_value << (5000*5000)*9
+	_self.assert_equals(correct_value, bin_area.area, write_string("Subtraction should match"), 1)
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method area_binary_op_col_test_case.test_area_collection()

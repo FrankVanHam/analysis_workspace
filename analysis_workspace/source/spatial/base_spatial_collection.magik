@@ -146,6 +146,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.filter_by_bounds(geom_name, bounds)
+	_return rwan:bounds_filter_geometry_collection.new(.dsm, _self, bounds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.filter_by_geometry(geom_name, operator, filter_collection, filter_geometry)
 	_return rwan:spatial_filter_geometry_collection.new(.dsm,
 						       _self, operator,
