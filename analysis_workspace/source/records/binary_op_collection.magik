@@ -29,7 +29,7 @@ def_slotted_exemplar(:binary_op_collection,
 		{:source_collection, _unset},
 		{:operator,          _unset},
 		{:filter_collection, _unset}
-	}, :base_collection)
+	}, :base_record_collection)
 $
 
 message_handler.new(:binary_op_collection).add_use(:base_spatial_collection)
@@ -54,10 +54,27 @@ _private _method binary_op_collection.init(dsm, source_col, operator, filter_col
 	
 	.filter_collection << filter_col
 	
+	_self.ensure_similar_collections()
+	
 	_return _super.init(dsm)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_collection.ensure_similar_collections()
+	_if _not _self.similar_collections?
+	_then
+		condition.raise(:error, :string, "Requires similar collections")
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_collection.similar_collections?
+	_return .filter_collection.is_record_collection? _andif
+		.source_collection.expose() = .filter_collection.expose()
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis})
 _method binary_op_collection.activate_editor_in(dialog, holder)
@@ -104,8 +121,8 @@ _method binary_op_collection.read_stream(_optional filter)
 	_local source_str << .source_collection.read_stream(_self)
 	_local filter_str << .filter_collection.read_stream(_self)
 	_local bin_str << binary_op_stream.new(.source_collection, source_str,
-					       .filter_collection, filter_str, 
-					       .operator)
+					       .operator,
+					       .filter_collection, filter_str)
 	_if filter _isnt _unset
 	_then
 		_return filter.filter_stream(bin_str)

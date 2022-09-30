@@ -1,6 +1,7 @@
 declare_package
 globals
 base_collection
+
 analysis_ds_collection_proxy
 
 materialized_collection_creator
@@ -16,5 +17,4 @@ spatial/
 sw/
 workspace/
 grouping/
-
-
+streams/

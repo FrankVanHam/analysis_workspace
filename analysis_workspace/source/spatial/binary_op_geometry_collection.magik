@@ -1,0 +1,160 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:binary_op_geometry_collection)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Collection that performs a spatial operator on a geometry
+## collection.
+def_slotted_exemplar(:binary_op_geometry_collection,
+	{
+		{:source_collection, _unset},
+		{:operator,          _unset},
+		{:filter_collection, _unset}
+	}, :base_spatial_collection)
+$
+
+message_handler.new(:binary_op_geometry_collection).add_use(:base_spatial_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+binary_op_geometry_collection.define_shared_constant(:defined_operators, {:intersection, :union, :xor, :subtraction}, :private)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_geometry_collection.new(dsm, source_col, operator, filter_col)
+	_return _clone.init(dsm, source_col, operator, filter_col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_geometry_collection.init(dsm, source_col, operator, filter_col)
+	.source_collection << source_col
+	.operator << operator
+	
+	_if _self.defined_operators.includes?(operator).not _then condition.raise(:error) _endif
+	
+	.filter_collection << filter_col
+	
+	_self.ensure_similar_collections()
+	
+	_return _super.init(dsm)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_geometry_collection.ensure_similar_collections()
+	_if _not _self.similar_collections?
+	_then
+		condition.raise(:error, :string, "Requires similar collections")
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_geometry_collection.similar_collections?
+	_return .filter_collection.is_record_collection?.not _andif
+		.source_collection.geom_category = .filter_collection.geom_category
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_geometry_collection.activate_editor_in(dialog, holder)
+	_return dialog.edit_binary_op_dialog(holder,
+						  .source_collection,
+						  .operator,
+						  .filter_collection)
+_endmethod
+$
+
+###################################################################################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_geometry_collection.editable?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_geometry_collection.geometry_refs
+	_return .source_collection.geometry_refs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_geometry_collection.expose()
+	_return .source_collection.expose()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method binary_op_geometry_collection.size_is_fast?
+	## no, size is generally not fast as it is spatially filtered.
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method binary_op_geometry_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. Otherwise set myself as the filter of my
+	## source_collection
+	#
+	_local source_str << .source_collection.read_stream(_self)
+	_local filter_str << .filter_collection.read_stream(_self)
+	_local bin_str << binary_op_stream.new(.source_collection, source_str,
+					       .operator,
+					       .filter_collection, filter_str)
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream(bin_str)
+	_else
+		_return bin_str
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method binary_op_geometry_collection.geometry_for(rec, geom_name)
+	_return .source_collection.geometry_for(rec, geom_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method binary_op_geometry_collection.filter_stream(stream)
+	_return stream
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method binary_op_geometry_collection.display_tree_in(owner)
+	_return owner.display_tree_for_binary_op_geometry_collection(
+			_self, .source_collection, .operator,
+			.filter_collection)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method binary_op_geometry_collection.discard()
+	.source_collection << .operator << .filter_collection << _unset 
+	_super.discard()
+_endmethod
+$

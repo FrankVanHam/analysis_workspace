@@ -167,3 +167,8 @@ _method base_spatial_collection.filter_by_distance(geom_name, distance, inverse?
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_collection.binary_op(operation, filter_collection)
+	_return rwan:binary_op_geometry_collection.new(.dsm, _self, operation, filter_collection)
+_endmethod
+$

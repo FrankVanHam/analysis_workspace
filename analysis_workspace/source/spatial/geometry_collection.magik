@@ -123,6 +123,12 @@ _endmethod
 $
 ###########################################################################
 
+_pragma(classify_level=restricted, topic={analysis})
+_method geometry_collection.includes?(geom)
+	_return .geometry.includes?(geom)	
+_endmethod
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.geometry_set(geom_name)
 	_return .geometry

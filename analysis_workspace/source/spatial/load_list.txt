@@ -9,3 +9,4 @@ distance_filter_geometry_collection
 buffer_geometry_collection
 area_binary_op_collection
 bounds_filter_geometry_collection
+binary_op_geometry_collection

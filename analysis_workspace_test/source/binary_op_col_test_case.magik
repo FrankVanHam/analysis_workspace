@@ -1,0 +1,137 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:binary_op_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test distance filters.
+##
+def_slotted_exemplar(:binary_op_col_test_case,
+	{},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_col_test_case.test_need_similar_collections()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local park_col << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local road_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+
+	_try 
+		_local op_col << park_col.binary_op(:union, road_col)
+		_self.assert_true(_false, "There should have been an error because the collections do not match")
+	_when error
+
+	_endtry
+
+	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
+	_local line_col << _self.lines_collection(dsm, {{0,0,100,100}})
+	_try 
+		_local op_col << area_col.binary_op(:union, line_col)
+		_self.assert_true(_false, "There should have been an error because the collections do not match")
+	_when error
+
+	_endtry
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_col_test_case.test_exposure()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	_local park_col1 << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local park_col2 << rwan:sw_collection.new(dsm, _self.park_collection)
+	
+	_local op_col << park_col1.binary_op(:union, park_col2)
+	_self.assert_is(op_col.expose(), park_col1.expose(), "expose should be unset")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_col_test_case.test_simple_record()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	
+	_local p1 << _self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
+	_local p2 << _self.create_park("p2", {0,0,10000,0,10000,10000,0,10000,0,0})
+	_local p3 << _self.create_park("p3", {0,0,10000,0,10000,10000,0,10000,0,0})
+	
+	_local s1 << rwan:record_set_collection.new(dsm, {p1,p2})
+	_local s2 << rwan:record_set_collection.new(dsm, {p2,p3})
+	
+	_local op_col << s1.binary_op(:intersection, s2)
+	_self.assert_equals(p2, op_col.an_element(), "Intersection")
+
+	op_col << s1.binary_op(:union, s2)
+	_self.assert_equals(3, op_col.size, "Union")
+
+	op_col << s1.binary_op(:xor, s2)
+	_self.assert_equals(2, op_col.size, "Xor")
+
+	op_col << s1.binary_op(:subtraction, s2)
+	_self.assert_equals(p1, op_col.an_element(), "Subtraction") 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_col_test_case.test_simple_geom()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	_local sectors << _self.sector_rope_from({0,0,100,100})
+	_local p1 << pseudo_chain.new_for_world(sectors, _self.gv.world)
+	_local p2 << pseudo_chain.new_for_world(sectors, _self.gv.world)
+	_local p3 << pseudo_chain.new_for_world(sectors, _self.gv.world)
+	
+	_local s1 << rwan:geometry_collection.new(dsm, geometry_set.new_with(p1,p2))
+	_local s2 << rwan:geometry_collection.new(dsm, geometry_set.new_with(p2,p3))
+	
+	_local op_col << s1.binary_op(:intersection, s2)
+	_self.assert_equals(p2, op_col.an_element(), "Intersection")
+
+	op_col << s1.binary_op(:union, s2)
+	_self.assert_equals(3, op_col.size, "Union")
+
+	op_col << s1.binary_op(:xor, s2)
+	_self.assert_equals(2, op_col.size, "Xor")
+
+	op_col << s1.binary_op(:subtraction, s2)
+	_self.assert_equals(p1, op_col.an_element(), "Subtraction") 
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_col_test_case.test_geometry_set()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	
+	_self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
+	_local p1 << _self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
+	_local p2 << _self.create_park("p2", {0,0,10000,0,10000,10000,0,10000,0,0})
+	_local p3 << _self.create_park("p3", {0,0,10000,0,10000,10000,0,10000,0,0})
+	
+	_local s1 << rwan:record_set_collection.new(dsm, {p1,p2})
+	_local s2 << rwan:record_set_collection.new(dsm, {p2,p3})
+	
+	_local op_col << s1.binary_op(:intersection, s2)
+	_local gs << op_col.geometry_set(:coverage)
+	_self.assert_equals(1, gs.size, "1 geometry")
+	_self.assert_not_unset(op_col.goto_bounds)
+_endmethod
+$

@@ -113,6 +113,13 @@ _method record_set_collection.size_is_fast?
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis, collections})
+_method record_set_collection.includes?(rec)
+	_return .base_set.includes?(rec)
+_endmethod
+$
+
+
 #_pragma(classify_level=basic, topic={analysis, collections})
 #_iter _method record_set_collection.fast_elements()
 #	_for i_rec _over .base_set.fast_elements()

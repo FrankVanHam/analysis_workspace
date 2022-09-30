@@ -452,3 +452,9 @@ _method base_record_collection.filter_by_distance(source_geom_name, distance, in
 						    filter_collection, filter_geometry)
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.binary_op(operation, filter_collection)
+	_return rwan:binary_op_collection.new(.dsm, _self, operation, filter_collection)
+_endmethod
+$
