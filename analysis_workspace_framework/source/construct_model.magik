@@ -408,6 +408,7 @@ _method construct_model.trail
 	_return geom
 _endmethod
 $
+##################################
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_intersection()
@@ -442,11 +443,59 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_model.edit_area_binary_op_dialog(holder, source_col, source_geom_name,
-						   operation, filter_col, filter_geom_name)
+_method construct_model.edit_area_binary_op_dialog(holder, source_col,
+						   operation, filter_col)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local filter_holder << _self.workspace.holder_for(filter_col)
 	_local dia << area_binary_op_dialog.new_dialog(_self)
+	dia.set_holder(_self.workspace,
+		       holder, source_holder,
+		       operation, filter_holder)
+	dia.activate()
+	_return dia
+_endmethod
+$
+
+###############################
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_model.create_col_intersection()
+	_local dia << binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :intersection)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_model.create_col_union()
+	_local dia << binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :union)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_model.create_col_xor()
+	_local dia << binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :xor)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_model.create_col_subtraction()
+	_local dia << binary_op_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :subtraction)
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method construct_model.edit_binary_op_dialog(holder, source_col, source_geom_name,
+						   operation, filter_col, filter_geom_name)
+	_local source_holder << _self.workspace.holder_for(source_col)
+	_local filter_holder << _self.workspace.holder_for(filter_col)
+	_local dia << binary_op_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
 		       holder, source_holder, source_geom_name,
 		       operation, filter_holder, filter_geom_name)
@@ -454,6 +503,8 @@ _method construct_model.edit_area_binary_op_dialog(holder, source_col, source_ge
 	_return dia
 _endmethod
 $
+
+###############################
 
 
 _pragma(classify_level=advanced, topic={analysis})
@@ -898,12 +949,17 @@ _method construct_model.manage_actions()
 	.owner.action(:follow_root).enabled? << open? _andif record?
 
 	.owner.action(:create_spatial).enabled? << open?
-	.owner.action(:create_buffer).enabled? << open?
+	.owner.action(:create_buffer).enabled? << open? _andif any_top_sel?
 
-	.owner.action(:intersection).enabled? << open?
-	.owner.action(:subtraction).enabled? << open?
-	.owner.action(:union).enabled? << open?
-	.owner.action(:xor).enabled? << open?
+	.owner.action(:intersection).enabled? << open? _andif any_top_sel?
+	.owner.action(:subtraction).enabled? << open? _andif any_top_sel?
+	.owner.action(:union).enabled? << open? _andif any_top_sel?
+	.owner.action(:xor).enabled? << open? _andif any_top_sel?
+
+	.owner.action(:col_intersection).enabled? << open? _andif any_top_sel?
+	.owner.action(:col_subtraction).enabled? << open? _andif any_top_sel?
+	.owner.action(:col_union).enabled? << open? _andif any_top_sel?
+	.owner.action(:col_xor).enabled? << open? _andif any_top_sel?
 
 	.owner.action(:view_by_join).enabled? << open?
 	.owner.action(:view_by_eq).enabled? << open?

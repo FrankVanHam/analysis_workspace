@@ -55,16 +55,16 @@
 :create_buffer			Create Buffer
 :create_buffer_tooltip		Create a buffer around the selection
 
-:intersection			Intersection
+:intersection			Area Intersection
 :intersection_tooltip		Create an intersection based on areas
 
-:union				Union
+:union				Area Union
 :union_tooltip			Create a union of areas
 
-:subtraction			Subtraction
+:subtraction			Area Subtraction
 :subtraction_tooltip		Create a subtraction of areas
 
-:xor				Xor
+:xor				Area Xor
 :xor_tooltip			Create an eXclusive OR based on areas
 
 :view				Join 2 tables
@@ -79,6 +79,18 @@
 
 :materialize_spatial		Materialize spatial
 :materialize_spatial_tooltip	Create a new spatial collection that is a materialised copy of the selected collection
+
+:col_intersection			Collection Intersection
+:col_intersection_tooltip		Create an intersection of two collections
+
+:col_union				Collection Union
+:col_union_tooltip			Create a union of two collections
+
+:col_subtraction			Collection Subtraction
+:col_subtraction_tooltip		Create a subtraction of two collections
+
+:col_xor				Collection Xor
+:col_xor_tooltip			Create an eXclusive OR based on two collections
 
 :yes				Yes
 :no				No

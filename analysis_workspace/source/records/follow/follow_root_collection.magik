@@ -58,39 +58,6 @@ _method follow_root_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
-
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_root_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:target_collection})
-	values.add_all_last({.target_collection})
-	_return keys, values
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_root_collection.init_from_serial(dsm, source_col, target_collection)
-    _super.init_from_serial(dsm, source_col)
-    .target_collection << target_collection
-    _return _self 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method follow_root_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.source_collection, .target_collection)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_root_collection.equals_in_details?(source_col, target_col)
-	_return _super.equals_in_details?(source_col) _andif
-		.target_collection.equals?(target_col)
-_endmethod
-$
-
-
 ###################################################################################################################
 _pragma(classify_level=basic, topic={analysis})
 _method follow_root_collection.editable?

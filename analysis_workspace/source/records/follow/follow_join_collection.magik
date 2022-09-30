@@ -54,40 +54,6 @@ _method follow_join_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_join_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:join_field_name})
-	values.add_all_last({.join_field_name})
-	_return keys, values
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_join_collection.init_from_serial(dsm, source_col,
-					 join_field_name)
-    _super.init_from_serial(dsm, source_col)
-    .join_field_name << join_field_name
-    _return _self 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method follow_join_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.source_collection,
-					 .join_field_name)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_join_collection.equals_in_details?(source_col, join_field_name)
-	_return _super.equals_in_details?(source_col) _andif
-		.join_field_name = join_field_name
-_endmethod
-$
-
-
 ###################################################################################################################
 
 _pragma(classify_level=restricted, topic={analysis})

@@ -44,6 +44,12 @@
 	<action name="construct.follow_method"/>
 	<action name="construct.follow_root"/>
       </submenu>
+      <submenu name="col" mnemonic_id="col_m">
+	<action name="construct.col_intersection"/>
+	<action name="construct.col_subtraction"/>
+	<action name="construct.col_union"/>
+	<action name="construct.col_xor"/>
+      </submenu>
       <submenu name="set" mnemonic_id="set_m">
 	<action name="construct.create_buffer"/>
 	<action name="construct.intersection"/>
@@ -88,6 +94,12 @@
     <action name="construct.follow_method"/>
     <action name="construct.follow_root"/>
   </toolbar>
+  <toolbar name="col">
+    <action name="construct.col_intersection"/>
+    <action name="construct.col_subtraction"/>
+    <action name="construct.col_union"/>
+    <action name="construct.col_xor"/>
+  </toolbar>
   <toolbar name="set">
     <action name="construct.create_buffer"/>
     <action name="construct.intersection"/>
@@ -127,6 +139,7 @@
     <toolbar name="add"/>
     <toolbar name="collection"/>
     <toolbar name="follow"/>
+    <toolbar name="col"/>
     <toolbar name="set"/>
     <toolbar name="materialize"/>
     <toolbar name="tree"/>

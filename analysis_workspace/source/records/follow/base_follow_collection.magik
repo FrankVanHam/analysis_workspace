@@ -49,51 +49,13 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_follow_collection.init_copy()
-
-	_return _super.init_copy()
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _abstract _method base_follow_collection.activate_editor_in(dialog, holder)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method base_follow_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:source_collection})
-	values.add_all_last({.source_collection})
-	_return keys, values	
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method base_follow_collection.init_from_serial(dsm, source_col)
-    _super.init_from_serial(dsm)
-    .source_collection << source_col
-    _return _self 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _abstract _method base_follow_collection.actual_collection
 		 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_follow_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.source_collection)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method base_follow_collection.equals_in_details?(source_col)
-	_return _super.equals_in_details?() _andif
-		.source_collection.equals?(source_col)
 _endmethod
 $
 

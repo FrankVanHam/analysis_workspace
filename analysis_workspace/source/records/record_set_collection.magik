@@ -48,51 +48,54 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_set_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:base_set})
-	_local urns << rope.new_for(.base_set.size)
-	_for i_rec _over .base_set.fast_elements()
-	_loop
-		urns.add(urn_manager.get_urn_from_object(i_rec))
-	_endloop 
-	values.add_all_last({urns})
-	_return keys, values
+_private _method record_set_collection.get_serial_from_slot(slot_name)
+	_if slot_name _is :base_set
+	_then
+		_local urns << rope.new_for(.base_set.size)
+		_for i_rec _over .base_set.fast_elements()
+		_loop
+			urns.add(urn_manager.get_urn_from_object(i_rec))
+		_endloop 
+		_return urns
+	_else
+		_return _super.get_serial_from_slot(slot_name)
+	_endif 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_set_collection.init_from_serial(dsm, urn_rope)
-    _super.init_from_serial(dsm)
-    .base_set << rwo_set.new(urn_rope.size)
-    _for i_urn _over urn_rope.fast_elements()
-    _loop
-	    _local rec << urn_manager.get_object_from_urn(i_urn)
-	    _if rec _isnt _unset
-	    _then
-		    .base_set.add(rec)
-	    _endif
-    _endloop
-    urn_rope.empty()
-    _return _self 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method record_set_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.base_set)	
+_private _method record_set_collection.get_slot_from_serial(slot_name, serial_value)
+	_if slot_name _is :base_set
+	_then
+		_local base_set << rwo_set.new(urn_rope.size)
+		_for i_urn _over urn_rope.fast_elements()
+		_loop
+			_local rec << urn_manager.get_object_from_urn(i_urn)
+			_if rec _isnt _unset
+			_then
+				base_set.add(rec)
+			_endif
+		_endloop
+		_return base_set
+	_else
+		_return _super.get_slot_from_serial(slot_name, serial_value)
+	_endif 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_set_collection.equals_in_details?(other_set)
-	_if .base_set.size <> other_set.size _then _return _false _endif
-	
-	_local s << equality_set.new_from(other_set)
-	_local eq? << s.includes_all?(.base_set)
-	s.empty()
-	_return eq?
+_private _method record_set_collection.equal_slots?(slot_name, my_value, arg_value)
+	_if slot_name _is :base_set
+	_then
+		_if .base_set.size <> other_set.size _then _return _false _endif
+		
+		_local s << equality_set.new_from(other_set)
+		_local eq? << s.includes_all?(.base_set)
+		s.empty()
+		_return eq?
+	_else 
+		_return _super.equal_slots?(slot_name, my_value, arg_value)
+	_endif 
 _endmethod
 $
 

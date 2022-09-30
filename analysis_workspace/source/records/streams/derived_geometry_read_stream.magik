@@ -1,0 +1,80 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:derived_geometry_read_stream)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+def_slotted_exemplar(:derived_geometry_read_stream,
+	## stream that converts the content to a geometry by invoking a
+	## handle to get the geometry.
+	{
+		{:source_stream, _unset},
+		{:handler,       _unset}
+	}, :input_stream_with_unget_mixin)
+$
+	
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method derived_geometry_read_stream.new(source_stream, geom_handler)
+	_return _clone.init(source_stream, geom_handler)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method derived_geometry_read_stream.init(source_stream, geom_handler)
+	.source_stream << source_stream
+	.handler << geom_handler
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method derived_geometry_read_stream.get()
+	_loop
+		_local rec << .source_stream.get()
+		_if rec _is _unset _then _return _unset _endif #exhausted
+
+		_local geom << .handler(rec)
+		_if geom _isnt _unset
+		_then 	
+			_return geom
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method derived_geometry_read_stream.size_is_fast?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method derived_geometry_read_stream.close()
+	.source_stream.close()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method derived_geometry_read_stream.reset()
+	.source_stream.reset()
+_endmethod
+$

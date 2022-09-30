@@ -61,18 +61,116 @@ $
 #################################################
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_collection.sorted_local_slot_names
+_private _method base_collection.sorted_local_slot_names
 	_local slot_names << rope.new()
 	_local my_name << _self.class_name
 	_for i_name _over _self.sys!all_slot_names().fast_elements()
 	_loop
-		_if i_name.index_of_seq(my_name) _is 1
+		_local (class, slot) << (_scatter i_name.write_string.split_by(%!))
+		_if class <> "base_collection"
 		_then
-			_local slot_name << i_name.write_string.slice_to_end(my_name.size+2).as_symbol()
-			slot_names.add(slot_name)
+			slot_names.add(slot.as_symbol())
 		_endif 
 	_endloop
 	_return slot_names.as_simple_vector()
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.new_from_serial(keys,values)
+	_dynamic !current_analysis_dataset_manager!
+	
+	_local dsm << !current_analysis_dataset_manager!
+	_local oop << values[1]
+	_local col << dsm.collection_at_oop(oop)
+	_if col _is _unset
+	_then
+		col << _clone.init_from_serial(dsm,_scatter values.slice_to_end(2))
+		dsm.cache_collection_at_oop(oop, col)
+	_endif 
+	_return col
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_collection.serial_slots()
+	_local keys   << rope.new_with(:oop)
+	_local values << rope.new_with(_self.as_oop)
+	
+	_for i_slot_name _over _self.sorted_local_slot_names.fast_elements()
+	_loop 
+		keys.add(i_slot_name)
+		values.add(_self.get_serial_from_slot(i_slot_name))
+	_endloop
+	_return keys, values
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_collection.get_serial_from_slot(slot_name)
+	_return _self.sys!slot(slot_name)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_collection.init_from_serial(dsm, _gather p_args)
+    .dsm << dsm
+    _for i_index, i_slot_name _over _self.sorted_local_slot_names.fast_keys_and_elements()
+    _loop
+	    _self.sys!slot(i_slot_name) << _self.get_slot_from_serial(i_slot_name, p_args[i_index])
+    _endloop 
+    _return _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_collection.get_slot_from_serial(slot_name, serial_value)
+	 _return serial_value
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.equals?(other)
+	_local slot_names << _self.sorted_local_slot_names
+	_local slot_values << rope.new_for(slot_names.size)
+	_for i_slot_name _over slot_names.fast_elements()
+	_loop 
+		slot_values.add(_self.sys!slot(i_slot_name))
+	_endloop 
+	_return _self.is_class_of?(other) _andif other.equals_in_details?(_scatter slot_values)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_collection.equals_in_details?(_gather other_slot_values)
+	_for i_index, i_slot_name _over _self.sorted_local_slot_names.fast_keys_and_elements()
+	_loop
+		_local arg_value << other_slot_values[i_index]
+		_local my_value << _self.sys!slot(i_slot_name)
+
+		 _if _self.equal_slots?(i_slot_name, my_value, arg_value).not
+		 _then
+			 _return _false
+		 _endif 
+	_endloop
+	_return _true
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method base_collection.equal_slots?(slot_name, my_value, arg_value)
+
+	_if my_value.responds_to?(:|equals?()|)
+	_then
+		_return my_value.equals?(arg_value)
+	_elif my_value.responds_to?(:|eq?()|)
+	_then
+		_return my_value.eq?(arg_value)
+	_else
+		_return my_value = arg_value
+	_endif 
 _endmethod
 $
 
@@ -242,51 +340,6 @@ $
 #	_return _false 
 #_endmethod
 #$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.serial_slots()
-    _local keys   << rope.new_with(:oop)
-    _local values << rope.new_with(_self.as_oop)
-    _return keys, values
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.new_from_serial(keys,values)
-	_dynamic !current_analysis_dataset_manager!
-	
-	_local dsm << !current_analysis_dataset_manager!
-	_local oop << values[1]
-	_local col << dsm.collection_at_oop(oop)
-	_if col _is _unset
-	_then 
-		col << _clone.init_from_serial(dsm,_scatter values.slice_to_end(2))
-		dsm.cache_collection_at_oop(oop, col)
-	_endif 
-	_return col
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_private _method base_collection.init_from_serial(dsm)
-	.dsm << dsm
-	_return _self 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.equals?(other)
-	_if _not _self.is_class_of?(other) _then _return _false _endif
-	_return _self.equals_in_details?()
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method base_collection.equals_in_details?()
-	_return _true
-_endmethod
-$
-
 #_pragma(classify_level=basic, topic={analysis})
 #_method base_collection.is_leaf?
 #	_return .base_collections.empty?

@@ -31,7 +31,7 @@ def_slotted_exemplar(:distance_filter_collection,
 		{:source_collection, _unset},
 		{:source_geom_name,  _unset},
 		{:distance,          _unset},
-		{:inverse?,          _unset},
+		{:is_inverse,        _unset},
 		{:filter_collection, _unset},
 		{:filter_geom_name,  _unset}
 	}, :base_record_collection)
@@ -39,17 +39,17 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method distance_filter_collection.new(dsm, source_col, source_geom_name, distance, inverse?, filter_col, filter_geom_name)
-	_return _clone.init(dsm, source_col, source_geom_name, distance, inverse?, filter_col, filter_geom_name)
+_method distance_filter_collection.new(dsm, source_col, source_geom_name, distance, is_inverse, filter_col, filter_geom_name)
+	_return _clone.init(dsm, source_col, source_geom_name, distance, is_inverse, filter_col, filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method distance_filter_collection.init(dsm, source_col, source_geom_name, distance, inverse?, filter_col, filter_geom_name)
+_private _method distance_filter_collection.init(dsm, source_col, source_geom_name, distance, is_inverse, filter_col, filter_geom_name)
 	.source_collection << source_col
 	.source_geom_name << source_geom_name
 	.distance << distance
-	.inverse? << inverse?
+	.is_inverse << is_inverse
 	.filter_collection << filter_col
 	.filter_geom_name << filter_geom_name
 
@@ -62,59 +62,11 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method distance_filter_collection.init_copy()
-	>> _super.init_copy()
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method distance_filter_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_distance_filter_dialog(holder,
 						  .source_collection,
-						  .source_geom_name, .distance, .inverse?,
+						  .source_geom_name, .distance, .is_inverse,
 						  .filter_collection, .filter_geom_name)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:source_collection, :source_geom_name, :distance, :inverse, :filter_collection, :filter_geom_name})
-	values.add_all_last({.source_collection, .source_geom_name, .distance, .inverse?, .filter_collection, .filter_geom_name})
-	_return keys, values
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method distance_filter_collection.init_from_serial(dsm, source_col, source_geom_name, distance, inverse?, filter_collection, filter_geom_name)
-    _super.init_from_serial(dsm)
-    .source_collection << source_col
-    .source_geom_name << source_geom_name
-    .distance << distance
-    .inverse? << inverse?
-    .filter_collection << filter_collection
-    .filter_geom_name << filter_geom_name
-    _return _self
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method distance_filter_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.source_collection, .source_geom_name, .distance, .inverse?, .filter_collection, .filter_geom_name)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_collection.equals_in_details?(source_col, source_geom_name, distance, inverse?, filter_collection, filter_geom_name)
-	_return _super.equals_in_details?() _andif
-		.source_collection.equals?(source_col) _andif
-		.source_geom_name = source_geom_name _andif
-		.distance = distance _andif
-		.inverse? = inverse? _andif
-		.filter_collection.equals?(filter_collection) _andif
-		.filter_geom_name = filter_geom_name
 _endmethod
 $
 
@@ -201,14 +153,14 @@ _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.filter_stream_for_actual_collection(actual_collection)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
 	_local source_stream << actual_collection.read_stream()
-	_return rwan:distance_filter_read_stream.new(.source_collection, source_stream, .source_geom_name, _self.world_distance, .inverse?, filter_gs)
+	_return rwan:distance_filter_read_stream.new(.source_collection, source_stream, .source_geom_name, _self.world_distance, .is_inverse, filter_gs)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return rwan:distance_filter_read_stream.new(.source_collection, stream, .source_geom_name, _self.world_distance, .inverse?, filter_gs)
+	_return rwan:distance_filter_read_stream.new(.source_collection, stream, .source_geom_name, _self.world_distance, .is_inverse, filter_gs)
 _endmethod
 $
 
@@ -272,7 +224,7 @@ $
 #	_dynamic !rwan_limit_bounds! << scan_bounds
 #	
 #	_local allows? << _false 
-#	_if _not .inverse?
+#	_if _not .is_inverse
 #	_then
 #		# if geon is near to any of them, then it is true.
 #		_for i_geom _over .arg.fast_geometries()
@@ -311,7 +263,7 @@ $
 #	_local format << unit_specific_format.new_with_properties(.distance.unit,
 #								  :float_decimal_places,0)
 #	_local distance_string << format.format(.distance)
-#	_if .inverse?
+#	_if .is_inverse
 #	_then 
 #		_return _self.message(:description_inverse, base_name, distance_string, arg_name)
 #	_else
@@ -329,7 +281,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_collection.discard()
-	.source_collection << .source_geom_name << .distance << .inverse? << .filter_collection << .filter_geom_name << _unset
+	.source_collection << .source_geom_name << .distance << .is_inverse << .filter_collection << .filter_geom_name << _unset
 	_super.discard()
 _endmethod
 $

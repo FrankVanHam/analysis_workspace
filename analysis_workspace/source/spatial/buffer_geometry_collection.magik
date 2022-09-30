@@ -62,49 +62,6 @@ _method buffer_geometry_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method buffer_geometry_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:source_collection, :distance, :corner_style, :end_style})
-	values.add_all_last({.source_collection, .distance, .corner_style, .end_style})
-	_return keys, values	
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method buffer_geometry_collection.init_from_serial(dsm, source_col,
-					   distance, corner_style, end_style)
-    _super.init_from_serial(dsm)
-    
-    .source_collection << source_col
-    
-    .distance << distance
-    .corner_style << corner_style
-    .end_style << end_style
-    
-    _return _self 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method buffer_geometry_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.source_collection,
-					 .distance, .corner_style, .end_style)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method buffer_geometry_collection.equals_in_details?(source_col, distance, corner_style, end_style)
-	_return _super.equals_in_details?() _andif 
-		.source_collection.equals?(source_col) _andif
-		.distance = distance _andif
-		.corner_style = corner_style _andif
-		.end_style = end_style
-_endmethod
-$
-
-
 ###################################################################################################################
 
 

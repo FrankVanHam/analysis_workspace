@@ -102,6 +102,24 @@ _method construct_plugin.init_actions()
 				       :engine, _self.dialog,
 				       :image, {:xor, _self.module_name},
 				       :action_message, :|create_xor()|))
+	
+	_self.add_action(sw_action.new(:col_intersection,
+				       :engine, _self.dialog,
+				       :image, {:col_intersection, _self.module_name},
+				       :action_message, :|create_col_intersection()|))
+	_self.add_action(sw_action.new(:col_subtraction,
+				       :engine, _self.dialog,
+				       :image, {:col_subtraction, _self.module_name},
+				       :action_message, :|create_col_subtraction()|))
+	_self.add_action(sw_action.new(:col_union,
+				       :engine, _self.dialog,
+				       :image, {:col_union, _self.module_name},
+				       :action_message, :|create_col_union()|))
+	_self.add_action(sw_action.new(:col_xor,
+				       :engine, _self.dialog,
+				       :image, {:col_xor, _self.module_name},
+				       :action_message, :|create_col_xor()|))
+	
 	_self.add_action(sw_action.new(:follow_topology,
 				       :engine, _self.dialog,
 				       :image, {:topology, _self.module_name},

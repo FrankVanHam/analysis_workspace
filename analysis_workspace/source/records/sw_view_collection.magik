@@ -129,7 +129,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method sw_view_collection.serial_slots()
+_method sw_view_collection.serial_slotsx()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:int_name, :ext_name, :ds_name, :table_names, :eqs, :linked_field_name, :field_specs})
 	values.add_all_last({.int_name, .ext_name, .ds_name, .table_names, .eqs, .linked_field_name, .field_specs})

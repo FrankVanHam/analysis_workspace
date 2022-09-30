@@ -55,7 +55,8 @@ _method area_binary_op_col_test_case.test_simple()
 		_local bin_col << acol1.area_binary_op(:geometry, i_op, acol2, :geometry)
 		_local bin_gs << bin_col.geometry_set(:geometry)
 		_local correct_value << (pseudo_area.new(a1).perform(i_op+:|()|, pseudo_area.new(a2))).area
-		_self.assert_equals(correct_value, bin_gs.areas_as_coverage().area, write_string(i_op, " should match"), 1)
+		
+		_self.assert_equals(correct_value, bin_gs.areas_as_coverage().area, write_string(i_op, " should match"), 5)
 	_endloop 
 _endmethod
 $

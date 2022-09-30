@@ -42,17 +42,8 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_collection.init(dsm, source_col, pred)
 	.source_collection << source_col
 	.pred << pred
-	
-
-	
+		
 	_return _super.init(dsm)  
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_collection.init_copy()
-
-	>> _super.init_copy()
 _endmethod
 $
 
@@ -63,44 +54,40 @@ _method predicate_filter_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
+############################################
+
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:source_collection, :pred})
-	_local s << internal_text_output_stream.new()
-	.pred.store_on(s)
-	values.add_all_last({.source_collection, s.string})
-	_return keys, values
+_private _method predicate_filter_collection.get_serial_from_slot(slot_name)
+	_if slot_name _is :pred
+	_then
+		_local s << internal_text_output_stream.new()
+		.pred.store_on(s)
+		_return s.string
+	_else 
+		_return _super.get_serial_from_slot(slot_name)
+	_endif 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method predicate_filter_collection.init_from_serial(dsm, source_col, pred_string)
-    _super.init_from_serial(dsm)
-    .source_collection << source_col
-    .pred << pred_string.evaluate()
-    _return _self 
-_endmethod
-$
-
-#_pragma(classify_level=basic, topic={analysis})
-#_method predicate_filter_collection.editable?
-#	_return _true 
-#_endmethod
-#$
-
-_pragma(classify_level=basic, topic={analysis})
-_method predicate_filter_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.source_collection, .pred)
+_private _method predicate_filter_collection.get_slot_from_serial(slot_name, serial_value)
+	_if slot_name _is :pred
+	_then
+		_return serial_value.evaluate()
+	_else
+		_return _super.get_slot_from_serial(slot_name, serial_value)
+	_endif 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method predicate_filter_collection.equals_in_details?(source_col, pred)
-	_return _super.equals_in_details?() _andif
-		.source_collection.equals?(source_col) _andif
-		.pred.is_equivalent_to?(pred)
+_private _method predicate_filter_collection.equal_slots?(slot_name, my_value, arg_value)
+	_if slot_name _is :pred
+	_then
+		_return arg_value.is_equivalent_to?(my_value)
+	_else
+		_return _super.equal_slots?(slot_name, my_value, arg_value)
+	_endif 
 _endmethod
 $
 

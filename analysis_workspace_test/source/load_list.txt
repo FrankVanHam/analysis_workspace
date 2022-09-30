@@ -28,3 +28,4 @@ follow_trace_col_test_case
 
 buffer_col_test_case
 filter_by_distance_col_test_case
+area_binary_op_col_test_case

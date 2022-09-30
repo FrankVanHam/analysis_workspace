@@ -22,8 +22,15 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 ##
-## Collection that performs a spatial operator on a geometry
-## collection.
+## Collection that performs binary operations on analysis
+## collections, both the one that contain records and the ones
+## that contain geometry (areas).
+##
+## The collection is designed to be able to work on large
+## datasets without creating large memory area structures.
+# This effort makes this collection a lot complexer then it could
+# be if memory was no problem.
+#
 def_slotted_exemplar(:area_binary_op_collection,
 	{
 		{:source_collection, _unset},
@@ -46,8 +53,6 @@ _method area_binary_op_collection.new(dsm, source_col, source_geom_name, operato
 	_return _clone.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
 _endmethod
 $
-
-
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method area_binary_op_collection.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
@@ -78,80 +83,6 @@ _method area_binary_op_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method area_binary_op_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	
-	_for i_slot_name _over _self.sorted_local_slot_names.fast_elements()
-	_loop 
-		keys.add(i_slot_name)
-		values.add(_self.get_serial_from_slot(i_slot_name))
-	_endloop
-	_return keys, values
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_collection.get_serial_from_slot(slot_name)
-	_return _self.sys!slot(slot_name)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_collection.init_from_serial(dsm, _gather p_args)
-    _super.init_from_serial(dsm)
-    _for i_index, i_slot_name _over _self.sorted_local_slot_names.fast_keys_and_elements()
-    _loop
-	    _self.set_slot_from_serial(i_slot_name, p_args[i_index])
-    _endloop 
-    _return _self 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_collection.set_slot_from_serial(slot_name, serial_value)
-	 _self.sys!slot(slot_name) << serial_value
-_endmethod
-$
-
-
-_pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_collection.equals?(other)
-	_local slot_names << _self.sorted_local_slot_names
-	_local slot_values << rope.new_for(slot_names.size)
-	_for i_slot_name _over slot_names.fast_elements()
-	_loop 
-		slot_values.add(_self.sys!slot(i_slot_name))
-	_endloop 
-	_return _self.is_class_of?(other) _andif other.equals_in_details?(_scatter slot_values)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method area_binary_op_collection.equals_in_details?(_gather other_slot_values)
-	_if _super.equals_in_details?() _is _false _then _return _false _endif
-	
-	_for i_index, i_slot_name _over _self.sorted_local_slot_names.fast_keys_and_elements()
-	_loop
-		_local arg_value << other_slot_values[i_index]
-		_local my_value << _self.sys!slot(i_slot_name)
-
-		_if arg_value.is_class_of?(symbol) _orif
-		    arg_value.is_class_of?("")
-		_then
-			_if arg_value <> my_value _then _return _false _endif
-		_elif arg_value.is_class_of?(predicate)
-		_then
-			_if arg_value.is_equivalent_to?(my_value).not _then _return _false _endif
-		_else 
-			_if arg_value.equals?(my_value).not _then _return _false _endif
-		_endif 
-	_endloop
-	_return _true
-_endmethod
-$
-
 ###################################################################################################################
 
 _pragma(classify_level=basic, topic={analysis})
@@ -172,66 +103,84 @@ _method area_binary_op_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. Otherwise set myself as the filter of my
 	## source_collection
-	#
-	_return geometry_set.new_with(_self.the_area).read_stream()
-#	_if {:union, :xor}.includes?(.operator)
-#	_then
-#		_local add_col << .filter_collection.filter_by_geometry(
-#					  .filter_geom_name, :disjoint_from,
-#					  .source_collection, .source_geom_name)
-#		
-#
-#		
-#		_local source_str << .source_collection.read_stream(_self)
-#		_local filter_str << .filter_collection.read_stream(_self)
-#		_local bin_str << binary_op_stream.new(.source_collection, source_str,
-#						       .filter_collection, filter_str, 
-#						       :union)
-#	
-#	
-#	_local str << .source_collection.read_stream(_self)
-#	_if filter _isnt _unset
-#	_then
-#		str << filter.filter_stream(str)
-#	_endif
-#
-#	_return str
+
+	# Start with a binary op collection that only returns elements
+	# from the source.
+	_local source_str << derived_geometry_read_stream.new(
+				     .source_collection.read_stream(),
+				     handler.new(_self, :|source_geometry()|))
+	
+	# If the operation is :union or :xor then we want to return the
+	# elements of the filter collection too that are not touching
+	# any of the source. Otherwise the set is incomplete.
+	_if {:union, :xor}.includes?(.operator)
+	_then
+		_local add_col << .filter_collection.filter_by_geometry(
+					  .filter_geom_name, :disjoint_from,
+					  .source_collection, .source_geom_name)
+		
+		_local add_str << derived_geometry_read_stream.new(
+				     add_col.read_stream(),
+				     handler.new(_self, :|filter_geometry()|))
+		
+		str << binary_op_stream.new(.source_collection, source_str,
+					    :union,
+					    add_col, add_str)
+	_else
+		str << source_str
+	_endif
+	_if filter _isnt _unset
+	_then
+		str << filter.filter_stream(str)
+	_endif
+	_return str
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method area_binary_op_collection.geometry_for(rec, geom_name)
 	_return rec
-#	_local source_geom << .source_collection.geometry_for(rec, .source_geom_name)
-#
-#	_local b_col << .filter_collection.filter_by_bounds(.filter_geom_name, source_geom.bounds)
-#	_local filter_gs << b_col.geometry_set(.filter_geom_name)
-#	
-#	_if filter_gs.empty?.not
-#	_then
-#		_local methd << write_string(.operator+:|()|).as_symbol()
-#		_local area << source_geom.perform(methd, filter_gs.areas_as_coverage())
-#
-#		_if (.operator _is :xor)
-#		_then
-#			substract_col << .source_collection.filter_by_bounds(.source_geom_name, filter_gs.bounds)
-#			substract_gs << substract_col.geometry_set(.source_geom_name)
-#			substract_gs.remove(source_geom)
-#			_if substract_gs.empty?.not
-#			_then 
-#				area << area.subtraction(substract_gs.areas_as_coverage())
-#			_endif 
-#		_endif 
-#		area.world << source_geom.world
-#		_return area
-#	_else
-#		_if {:union, :xor, :subtraction}.includes?(.operator)
-#		_then
-#			_return source_geom
-#		_else 
-#			_return _unset
-#		_endif 
-#	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_collection.filter_geometry(filter_rec)
+	_return .filter_collection.geometry_for(filter_rec, .filter_geom_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_collection.source_geometry(source_rec)
+	_local source_geom << .source_collection.geometry_for(source_rec, .source_geom_name)
+
+	_local b_col << .filter_collection.filter_by_bounds(.filter_geom_name, source_geom.bounds)
+	_local filter_gs << b_col.geometry_set(.filter_geom_name)
+
+	_if filter_gs.empty?.not
+	_then
+		_local methd << write_string(.operator+:|()|).as_symbol()
+		_local area << source_geom.perform(methd, filter_gs.areas_as_coverage())
+
+		_if (.operator _is :xor)
+		_then
+			substract_col << .source_collection.filter_by_bounds(.source_geom_name, filter_gs.bounds)
+			substract_gs << substract_col.geometry_set(.source_geom_name)
+			substract_gs.remove(source_geom)
+			_if substract_gs.empty?.not
+			_then 
+				area << area.subtraction(substract_gs.areas_as_coverage())
+			_endif 
+		_endif 
+		area.world << source_geom.world
+		_return area
+	_else
+		_if {:union, :xor, :subtraction}.includes?(.operator)
+		_then
+			_return source_geom
+		_else 
+			_return _unset
+		_endif 
+	_endif 
 _endmethod
 $
 

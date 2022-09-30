@@ -62,40 +62,6 @@ _method follow_method_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_method_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:methd})
-	values.add_all_last({.methd})
-	_return keys, values
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_method_collection.init_from_serial(dsm, source_col,
-					   methd)
-    _super.init_from_serial(dsm, source_col)
-    .methd << methd
-    _return _self 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method follow_method_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif 
-		other.equals_in_details?(.source_collection,
-					 .methd)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method follow_method_collection.equals_in_details?(source_col, methd)
-	_return _super.equals_in_details?(source_col) _andif
-		.methd = methd
-_endmethod
-$
-
-
 ###################################################################################################################
 
 _pragma(classify_level=restricted, topic={analysis})

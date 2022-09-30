@@ -67,7 +67,9 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method geometry_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
+	_local keys   << rope.new_with(:oop)
+	_local values << rope.new_with(_self.as_oop)
+	
 	keys.add_all_last({:geometry})
 
 	_if .id _is _unset
@@ -82,7 +84,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method geometry_collection.init_from_serial(dsm, id)
-	_super.init_from_serial(dsm)
+	.dsm << dsm
 	.id << id
 	.geometry << .dsm.geometry_set(.id)
 	_return _self 
@@ -98,8 +100,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method geometry_collection.equals_in_details?(geometry)
-	_return _super.equals_in_details?() _andif 
-		_self.geometry_sets_equal?(.geometry, geometry)
+	_return _self.geometry_sets_equal?(.geometry, geometry)
 _endmethod
 $
 

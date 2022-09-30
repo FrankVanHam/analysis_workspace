@@ -57,12 +57,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.init_copy()
-	_return _super.init_copy()
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.activate_editor_in(dialog, holder)
 	_return dialog.edit_spatial_filter_dialog(holder,
 						  .source_collection,
@@ -71,46 +65,6 @@ _method spatial_filter_collection.activate_editor_in(dialog, holder)
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.serial_slots()
-	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:source_collection, :source_geom_name, :operator, :filter_collection, :filter_geom_name})
-	values.add_all_last({.source_collection, .source_geom_name, .operator, .filter_collection, .filter_geom_name})
-	_return keys, values
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_filter_collection.init_from_serial(dsm, source_col, source_geom_name,
-							    operator, filter_collection, filter_geom_name)
-    _super.init_from_serial(dsm)
-    .source_collection << source_col
-    .source_geom_name << source_geom_name
-    .operator << operator
-    .filter_collection << filter_collection
-    .filter_geom_name << filter_geom_name
-    _return _self 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_filter_collection.equals?(other)
-	_return _self.is_class_of?(other) _andif
-		other.equals_in_details?(.source_collection, .source_geom_name,
-					 .operator, .filter_collection, .filter_geom_name)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_filter_collection.equals_in_details?(source_col, source_geom_name, operator, filter_collection, filter_geom_name)
-	_return _super.equals_in_details?() _andif
-		.source_collection.equals?(source_col) _andif
-		.source_geom_name = source_geom_name _andif
-		.operator = operator _andif
-		.filter_collection.equals?(filter_collection) _andif
-		.filter_geom_name = filter_geom_name
-_endmethod
-$
 
 ###################################################################################################################
 

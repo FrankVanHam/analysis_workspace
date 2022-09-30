@@ -13,3 +13,4 @@ follow_root_read_stream
 need_geometry_read_stream
 bounds_filter_read_stream
 binary_op_stream
+derived_geometry_read_stream

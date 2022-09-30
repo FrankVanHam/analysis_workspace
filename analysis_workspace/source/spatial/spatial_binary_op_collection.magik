@@ -54,7 +54,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method spatial_binary_op_collection.serial_slots()
+_method spatial_binary_op_collection.serial_slotsx()
 	_local (keys, values) << _super.serial_slots()
 	keys.add_all_last({:operation})
 	values.add_all_last({.operation})
