@@ -36,9 +36,10 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.set_up()
-	_local source_path << smallworld_product.get_resource_file("analysis.ds",
-								  "data",
-								  rwan:analysis_dataset_manager.module_name)
+	_local source_path << smallworld_product.get_resource_file(
+				      "analysis.ds",
+				      "data",
+				      rwan:analysis_dataset_manager.module_name)
 	_local target_path << system.temp_file_name("munit_analysis.ds")
 	system.file_copy(source_path, target_path)
 	.file_name << target_path
@@ -175,6 +176,28 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method dataset_test_case.test_materialized_col()
+	_local hotel_col << rwan:sw_collection.new(.ds, _self.hotel_collection)
+	
+	_local _constant forbidden << {:rwo_id, :ds!version, :meatball}
+	_local settings << materialization_settings.new(_self.hotel_collection)
+	_for i_field _over hotel_col.expose().physical_fields()
+	_loop
+		_if settings.field_allowed?(i_field)
+		_then 
+			settings.add_field(i_field.name)
+		_endif 
+	_endloop 
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hotel_col,
+							   settings)
+	
+	_self.basic_storage_test(mat_col)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.basic_storage_test(col)
 	## 
 	##
@@ -190,8 +213,6 @@ _method dataset_test_case.basic_storage_test(col)
 	
 	_self.assert_true(col_back.is_class_of?(col), "Classes should match")
 	_self.assert_true(col.equals?(col_back), "what goes in, should come out")
-	_global y
-	y << {col, col_back}
 	
 	_return col_back
 _endmethod

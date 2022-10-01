@@ -1,1 +1,3 @@
-# van geometry_sets wisselen naar geometry stream zodat grote sets niet uit geheugen lopen en ook buffers blijven werken.
+* van geometry_sets wisselen naar geometry stream zodat grote sets niet uit geheugen lopen en ook buffers blijven werken.
+* alle collections moeten include?() kennen, in test case opvoeren.
+* construct_model opknippen naar een holder manipulatoe model voor up, down, delete etc.

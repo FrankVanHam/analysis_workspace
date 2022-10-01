@@ -25,8 +25,11 @@ _pragma(classify_level=basic, topic={analysis})
 ##
 ## Holds a materialized collection in the analysis dataset.
 def_slotted_exemplar(:materialized_collection,
-	{},
-	:base_source_collection)
+	{
+		{:source_collection, _unset},
+		{:actual_table_name, _unset}
+	},
+	:base_record_collection)
 $
 
 _pragma(classify_level=basic, topic={analysis})
@@ -39,35 +42,38 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_collection.init(dsm, base_col, settings)
 	_local new_col << dsm.materialize_collection(base_col, settings)
 	dsm.increase_ref_count(new_col.name)
-	
-	_return _super.init(dsm, base_col, new_col.name)
+	.source_collection << base_col
+	.actual_table_name << new_col.name
+	_return _super.init(dsm)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method materialized_collection.init_copy()
 	.dsm.increase_ref_count(.actual_table_name)
-	_return _self
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method materialized_collection.is_sw_collection?
-	_return _true 
+	_return _super.init_copy()
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method materialized_collection.init_from_serial(dsm, base_cols, name)
-	_return _super.init_from_serial(dsm, base_cols, name)
+_method materialized_collection.ref_collections
+	_return {.source_collection}
 _endmethod
 $
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.actual_collection
 	_return .dsm.materialized_collection(.actual_table_name)
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_collection.expose()
+	_return _self.actual_collection
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.size_is_fast?
@@ -82,10 +88,31 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method materialized_collection.description(translator)
-	_local base_name << translator.name_for_collection(_self.base_collection)
-	
-	_return _self.message(:description, base_name)
+_method materialized_collection.includes?(rec)
+	_return _self.expose().get(rec) _isnt _unset 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. Otherwise set myself as the filter of my
+	## source_collection
+	#
+	_local str << _self.actual_collection.read_stream()
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream(str)
+	_else 
+		_return str
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_collection.geometry_refs
+	_return _self.geometry_refs_for(_self.expose())
 _endmethod
 $
 
@@ -99,8 +126,15 @@ _method materialized_collection.discard()
 			.dsm.discard_collection(.actual_table_name)
 		_endif
 		.actual_table_name << _unset
-	_endif 
+	_endif
+	.source_collection << _unset 
 	_super.discard()
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={analysis})
+_method materialized_collection.display_tree_in(owner)
+	_return owner.display_tree_for_materialized_collection(_self,
+							       .source_collection)
+_endmethod
+$

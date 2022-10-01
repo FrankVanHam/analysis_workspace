@@ -4,7 +4,6 @@ base_analysis_test_case
 
 dataset_test_case
 
-sw_view_collection_test_case
 grouping_test_case
 follow_analysis_test_case
 sw_collection_test_case

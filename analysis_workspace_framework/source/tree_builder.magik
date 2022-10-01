@@ -99,7 +99,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_materialized_collection(col, source_col, sw_col)
+_method tree_builder.display_tree_for_materialized_collection(col, source_col)
 	_local tree << _self.display_tree(col)
 	_local org_sw_col << source_col.expose()
 	_local image << _self.sw_collection_image(org_sw_col)

@@ -28,39 +28,26 @@ _pragma(classify_level=restricted, topic={analysis})
 ## it with new names and join aspect fields.
 def_slotted_exemplar(:base_materialize_dialog,
 	{
-		{:items, _unset},
-		{:holder, _unset},
-		{:analysis_dsm, _unset},
-		{:log_file, _unset},
+		{:log_file,   _unset},
 		{:log_stream, _unset},
-		{:thread, _unset}
+		{:thread,     _unset}
 	},
-	:model)
+	:base_dialog)
 $
 
-message_handler.new(:base_materialize_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:base_materialize_dialog).add_uses(:model, :base_dialog)
 $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_method base_materialize_dialog.set_holder(holder, ds)
-	.holder << holder
-	.analysis_dsm << ds
+_method base_materialize_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _abstract _method base_materialize_dialog.activate_in(container)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method base_materialize_dialog.build_top_label(container)
-	sw_text_window.new(container, 4, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill)
 _endmethod
 $
 
@@ -74,27 +61,6 @@ _private _method base_materialize_dialog.build_progress(container)
 							 :insensitive_image, _self.grey_stop_image,
 							 :col_alignment, :right)
 	.items[:interrupt].set_property(:has_border?, _false)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method base_materialize_dialog.build_buttons(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box,
-				:row_alignment, :fill,
-				:col_alignment, :right)
-	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|,
-						:row_alignment, :bottom,
-						:min_width, 75)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method base_materialize_dialog.on_activation()
-	_self.manage_actions()
-	_return _super.on_activation()
 _endmethod
 $
 
@@ -150,19 +116,14 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method base_materialize_dialog.materialize()
 	_local new_col << _self.construct_materialized()
-	.parent_model.add_collection(new_col)
+	_local new_holder << .parent_model.new_holder(new_col, .name)
+	.parent_model.add_holder(new_holder)
 	_self.close()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _abstract _private _method base_materialize_dialog.construct_materialized()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method base_materialize_dialog.cancel()
-	_self.close()
 _endmethod
 $
 

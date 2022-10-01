@@ -1,0 +1,156 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:materialized_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using Materialized collection.
+##
+def_slotted_exemplar(:materialized_col_test_case,
+	{
+		{:file_name, _unset},
+		{:ds,        _unset}
+	},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialized_col_test_case.create_base_data()
+	_local r1 << _self.create_road("GS1", {0,0, 100000,0})
+	_local r2 << _self.create_road("GS2", {0,0,-100000,0})
+	_local r3 << _self.create_road("GS3", {0,0,0,100000})
+	
+	_return rwan:record_set_collection.new(.ds, {r1,r2,r3})
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.test_rename_field()
+	_local road_col << _self.create_base_data()
+	_local settings << materialization_settings.new(_self.min_road_collection)
+	settings.set_name(:int_name, :ext_name)
+	settings.add_field(:min_road_id)
+	settings.add_field(:name, :new_name, "New Ex Name", _unset)
+	
+	_local mat_col << rwan:materialized_collection.new(.ds, road_col, settings)
+	
+	_local mat_sw_col << mat_col.expose()
+	_self.assert_not_unset(mat_sw_col.field(:new_name), "Field should exist")
+	_self.assert_equals("New Ex Name", mat_sw_col.field(:new_name).external_name, "Externe name should match")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.test_joins()
+	_local r1 << _self.create_road("GS1", {0,0, 100000,0})
+	_local r2 << _self.create_road("GS2", {0,0,-100000,0})
+	_local r3 << _self.create_road("GS3", {0,0,0,100000})
+	
+	_local pub << _self.create_pub("The Drunk", {0,0})
+	pub.comments << comments << "Comments are like a join"
+	
+	pub.min_roads.add_all({r1,r2,r3})
+	_local pub_col << rwan:record_set_collection.new(.ds, {pub})
+	
+	_local settings << materialization_settings.new(_self.pub_rest_collection)
+	settings.set_name(:int_name, :ext_name)
+	settings.add_field(:name)
+	settings.add_field(:street)
+	settings.add_field(:min_roads)
+	settings.add_field(:comments)
+
+	_local mat_col << rwan:materialized_collection.new(.ds, pub_col, settings)
+	_local rec << mat_col.expose().an_element()
+	_self.assert_equals(3, rec.min_roads, "3 min_roads for the pub")
+	_self.assert_equals(comments, rec.comments, "Comments are copied too")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.test_filter_distance_collection()
+	_local road_col << _self.create_base_data()
+	
+	_local area_col << _self.area_collection(.ds, bounding_box.new(-100000,0,100000,100000).coords)
+	_local fcol << road_col.filter_by_distance(:centre_line, length_value(1,:mm), _false, area_col, :geometry)
+	_self.assert_equals(3, fcol.size, "3 lines fall inside the area")
+
+	_local settings << materialization_settings.new(_self.min_road_collection)
+	settings.set_name(:int_name, :ext_name)
+	settings.add_field(:min_road_id)
+	settings.add_field(:centre_line)
+	_local mat_col << rwan:materialized_collection.new(.ds, road_col, settings)
+	fcol << mat_col.filter_by_distance(:centre_line, length_value(1,:mm), _false, area_col, :geometry)
+	_self.assert_equals(3, fcol.size, "3 lines, again, fall inside the area")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.test_geometry_set()
+	_local road_col << _self.create_base_data()
+	
+	_local settings << materialization_settings.new(_self.min_road_collection)
+	settings.set_name(:int_name, :ext_name)
+	settings.add_field(:min_road_id)
+	settings.add_field(:centre_line)
+	_local mat_col << rwan:materialized_collection.new(.ds, road_col, settings)
+	
+	_local gs << mat_col.geometry_set(:centre_line)
+	_self.assert_equals(3, gs.size, "three roads should match")
+	_self.assert_not_unset(mat_col.goto_bounds)
+	_self.assert_true(mat_col.includes?(mat_col.an_element()), "Include should work")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialized_col_test_case.set_up_dsm()
+	_local source_path << smallworld_product.get_resource_file(
+				      "analysis.ds",
+				      "data",
+				      rwan:analysis_dataset_manager.module_name)
+	_local target_path << system.temp_file_name("munit_analysis.ds")
+	system.file_copy(source_path, target_path)
+	.file_name << target_path
+	.ds << rwan:analysis_dataset_manager.open(:test, .file_name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.set_up()
+	_self.set_up_dsm()
+	_return _super.set_up()
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialized_col_test_case.tear_down_dsm()
+	.ds.discard()
+	system.unlink( .file_name, _true, _true)
+	.ds << .file_name << _unset 	 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.tear_down()
+	_self.tear_down_dsm()
+	_return _super.tear_down()
+_endmethod
+$

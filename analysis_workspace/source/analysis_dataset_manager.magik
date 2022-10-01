@@ -127,6 +127,8 @@ _private _method analysis_dataset_manager.int!do_open(gv, filename, concurrency_
 	.ds_view << gv
 	.ds_view.view_name << .name
 	.ds_view.dataset_name << .name
+
+	gis_program_manager.databases[.name] << .ds_view
 _endmethod
 $
 

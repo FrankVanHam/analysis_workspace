@@ -53,7 +53,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.compatible_with?(other)
+_method base_spatial_collection.compatible_with?(other)
 	_return other.is_record_collection?.not _andif
 		_self.geom_category = other.geom_category
 _endmethod

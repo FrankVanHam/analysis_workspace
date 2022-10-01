@@ -52,7 +52,6 @@ _method binary_op_col_test_case.test_need_similar_collections()
 	_endtry
 _endmethod
 $
-
 _pragma(classify_level=basic, topic={analysis})
 _method binary_op_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
@@ -61,7 +60,7 @@ _method binary_op_col_test_case.test_exposure()
 	_local park_col2 << rwan:sw_collection.new(dsm, _self.park_collection)
 	
 	_local op_col << park_col1.binary_op(:union, park_col2)
-	_self.assert_is(op_col.expose(), park_col1.expose(), "expose should be unset")
+	_self.assert_is(op_col.expose(), park_col1.expose(), "expose should be identical to park")
 _endmethod
 $
 

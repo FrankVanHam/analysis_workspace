@@ -58,8 +58,6 @@
 	<action name="construct.xor"/>
       </submenu>
       <submenu name="materialize" mnemonic_id="materialize_m">
-	<action name="construct.view_by_join"/>
-	<action name="construct.view_by_eq"/>
 	<action name="construct.materialize"/>
 	<action name="construct.materialize_spatial"/>
       </submenu>
@@ -108,8 +106,6 @@
     <action name="construct.xor"/>
   </toolbar>
   <toolbar name="materialize">
-    <action name="construct.view_by_join"/>
-    <action name="construct.view_by_eq"/>
     <action name="construct.materialize"/>
     <action name="construct.materialize_spatial"/>
   </toolbar>

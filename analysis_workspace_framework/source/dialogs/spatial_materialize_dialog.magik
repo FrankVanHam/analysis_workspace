@@ -78,22 +78,14 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_materialize_dialog.construct_materialized()
 	_self.create_log_stream()
 	_protect
-		.analysis_dsm.add_dependent(_self)
+		.workspace.dsm.add_dependent(_self)
 		_self.log(_self.message(:started_at, _unset, date_time_now()))
-		_if .holder.is_area?
-		_then
-			col << area_materialized_collection.new(.analysis_dsm,
-								.holder.collection)
-		_elif .holder.is_spatial?
-		_then
-			col << spatial_materialized_collection.new(.analysis_dsm,
-								   .holder.collection)
-		_else
-			condition.raise(:error, :string, "Huh")
-		_endif
+		col << spatial_materialized_collection.new(.workspace.dsm,
+							   .holder.collection)
+		
 		_self.log(_self.message(:ended_at, _unset, date_time_now()))
 	_protection
-		.analysis_dsm.remove_dependent(_self)
+		.workspace.dsm.remove_dependent(_self)
 		_self.close_log_stream()
 	_endprotect
 	_self.open_log()

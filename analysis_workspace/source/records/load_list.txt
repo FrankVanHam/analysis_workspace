@@ -10,8 +10,7 @@ record_set_collection
 sw_collection
 buffer_collection
 binary_op_collection
-#sw_view_collection
-#materialized_collection
+materialized_collection
 #binary_op/
 follow/
 #binary_op/

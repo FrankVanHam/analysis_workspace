@@ -149,14 +149,6 @@ _method construct_plugin.init_actions()
 				       :image, {:buffer, _self.module_name},
 				       :action_message, :|create_buffer_dialog()|))
 	
-	_self.add_action(sw_action.new(:view_by_join,
-				       :engine, _self.dialog,
-				       :image, {:view_collection, _self.module_name},
-				       :action_message, :|create_join_view()|))
-	_self.add_action(sw_action.new(:view_by_eq,
-				       :engine, _self.dialog,
-				       :image, {:eq_view_collection, _self.module_name},
-				       :action_message, :|create_eq_view()|))
 	_self.add_action(sw_action.new(:materialize,
 				       :engine, _self.dialog,
 				       :image, {:materialize, _self.module_name},

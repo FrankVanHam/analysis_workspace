@@ -113,3 +113,5 @@
 :copy_holder			       Copy of #1
 :cannot_delete			       The collection #1 can not be deleted because it is used by #2 collections.
 :record_selection		       Map selection of #1 of #2
+:explorer_content		       Explorer content: #1
+:explorer_selection		       Explorer selection: #1

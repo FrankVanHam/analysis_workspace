@@ -331,7 +331,8 @@ _method construct_model.do_add_explorer_content()
 			_else
 				col << rwan:record_set.new(dsm, i_set)
 			_endif
-			holders.add(_self.new_holder(col))
+			_local ex_name << i_set.an_element().external_name
+			holders.add(_self.new_holder(col, _self.message(:explorer_content, _unset, ex_name)))
 		_endloop 
 	_endloop
 	_self.add_holders(holders)
@@ -351,8 +352,9 @@ _method construct_model.add_explorer_selection()
 	_if sel.is_records?
 	_then
 		set << rwo_set.new_from_iter(sel, :|records()|)
-		col << rwan:record_set.new(dsm, set)
-		holders.add(_self.new_holder(col))
+		col << rwan:record_set_collection.new(dsm, set)
+		_local ex_name << set.an_element().external_name
+		holders.add(_self.new_holder(col, _self.message(:explorer_selection, _unset, ex_name)))
 	_else
 		_self.user_error(:please_select_records_in_explorer)
 	_endif
@@ -526,39 +528,6 @@ _method construct_model.materialize()
 	_return dia
 _endmethod
 $
-
-_pragma(classify_level=advanced, topic={analysis})
-_method construct_model.create_join_view()
-	_local holder << _self.selected_top_holder
-	_local dia << sw_view_join_dialog.new_dialog(_self)
-	dia.set_source_holder(_self.workspace, holder)
-	dia.activate()
-	_return dia
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method construct_model.create_eq_view()
-	_local holders << _self.selected_top_holders
-	_self.ensure_collection_is_sw_collection(holders[1])
-	_self.ensure_collection_is_sw_collection(holders[2])
-	_local dia << sw_view_eq_dialog.new_dialog(_self)
-	dia.set_holder(holders[1], holders[2], _self.dataset_manager)
-	dia.activate()
-	_return dia
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_model.ensure_collection_is_sw_collection(holder)
-	_if _not holder.collection.is_sw_collection?
-	_then
-		_self.user_error(:view_only_possible_on_sw_collection)
-	_endif
-_endmethod
-$
-
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_spatial_collection()
@@ -862,6 +831,7 @@ _method construct_model.manage_actions()
 	_local any_sel? << _self.selected_holders.empty?.not
 	_local any_top_sel? << holder _isnt _unset
 	_local record? << holder _isnt _unset _andif holder.is_record_collection?
+	_local geom?   << holder _isnt _unset _andif holder.is_record_collection?.not
 	_local open? << _self.open?
 	.owner.action(:add_collections).enabled? << open?
 	.owner.action(:add_trail).enabled? << open? _andif _self.has_trail?
@@ -893,10 +863,8 @@ _method construct_model.manage_actions()
 	.owner.action(:col_union).enabled? << open? _andif any_top_sel?
 	.owner.action(:col_xor).enabled? << open? _andif any_top_sel?
 
-	.owner.action(:view_by_join).enabled? << open?
-	.owner.action(:view_by_eq).enabled? << open?
-	.owner.action(:materialize).enabled? << open?
-	.owner.action(:materialize_spatial).enabled? << open?
+	.owner.action(:materialize).enabled? << open? _andif record?
+	.owner.action(:materialize_spatial).enabled? << open? _andif geom?
 
 	.owner.action(:edit).enabled? << open? _andif any_top_sel? _andif holder.editable?
 	.owner.action(:view).enabled? << open? _andif any_top_sel? _andif holder.editable?

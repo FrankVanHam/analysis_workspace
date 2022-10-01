@@ -623,8 +623,7 @@ _private _method materialized_collection_creator.verify_key_match()
 			all_field_names.add(i_field.name)
 		_endif
 	_endloop
-	_local field_names << all_field_names.slice(1,key_field_names.size)
-	_if _not field_names.eq?(key_field_names)
+	_if all_field_names.includes_all?(key_field_names).not
 	_then
 		condition.raise(:error, :string, "All keys should be included")
 	_endif 
@@ -639,10 +638,16 @@ _private _method materialized_collection_creator.create_unique_enum(enum_name, f
 	_loop 
 		_if .target_ds.get_field_type(i_name) _is _unset
 		_then
-			new_enum << fd.type.enumerator.copy()
-			new_enum.name << i_name
+			_local type << fd.type
+			_local enum << type.enumerator
+
+			_local new_enum <<enum.copy()
+			new_enum.name << i_name			
 			.target_ds.new_enumerated_type(new_enum,
 						       fd.type.phys_type)
+			_local new_type << .target_ds.get_field_type(i_name)
+		
+			new_type.sys!slot(:class) << type.sys!slot(:class)
 			_return i_name
 		_endif
 	_endloop 
@@ -666,7 +671,7 @@ _private _iter _method materialized_collection_creator.possible_enum_names(name)
 		_else
 			new_name << write_string(name, post_fix)
 		_endif
-		_loopbody(new_name)
+		_loopbody(new_name.as_symbol())
 		running_post_fix +<< 1
 	_endloop 
 _endmethod
@@ -692,9 +697,9 @@ _private _iter _method materialized_collection_creator.field_elements()
 	## 3) the new external name
 	## 4) if the field is a 1:1 join field, this is the field in the
 	##    joined object thwt should be used to retrieve the value.
-	_for field, int_name, ext_name, join_aspect _over .settings.field_properties()
+	_for field, ext_name, join_aspect _over .settings.field_properties()
 	_loop
-		_loopbody(field, int_name, ext_name, join_aspect)
+		_loopbody(field, field.name, ext_name, join_aspect)
 	_endloop 
 _endmethod
 $
