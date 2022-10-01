@@ -40,29 +40,22 @@ $
 message_handler.new(:sw_view_eq_dialog).add_uses(:base_sw_view_dialog)
 $
 
-
-_pragma(classify_level=restricted, topic={analysis})
-_method sw_view_eq_dialog.set_holder(holder1, holder2, dsm)
-	.holder << holder1
-	.source_table << holder1.collection.expose()
-	.linked_table << holder2.collection.expose()
-	.analysis_dsm << dsm
-_endmethod
-$
-
-
 _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_eq_dialog.build_link_button(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
 				:row_alignment, :fill)
-	.items[:link] << sw_button_item.new_safe(rc, _self.message(:link),
-					      _self, :|link()|,
-					      :min_width, 75,
-					      :row_alignment, :top)
-	.items[:swap] << sw_button_item.new_safe(rc, _self.message(:swap),
-					      _self, :|swap()|,
-					      :min_width, 75,
-					      :row_alignment, :bottom)
+	.items[:link] << sw_button_item.new(rc, 
+					    :label, _self.message(:link),
+					    :model,  _self,
+					    :selector, {:|perform_safely()|, :|link()|},
+					    :min_width, 75,
+					    :row_alignment, :top)
+	.items[:swap] << sw_button_item.new(rc, 
+					    :label, _self.message(:swap),
+					    :model, _self,
+					    :selector, {:|perform_safely()|, :|swap()|},
+					    :min_width, 75,
+					    :row_alignment, :bottom)
 _endmethod
 $
 
@@ -159,18 +152,18 @@ _private _method sw_view_eq_dialog.validate_eq_fields()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_private _method sw_view_eq_dialog.construct_view()
-	_local ds_name << .source_table.dataset.original_dataset_name
-	_local (int_name, ext_name) << _self.new_table_name
-	_local field_specs << _self.field_specs()
-	_local tables << {.source_table, .linked_table}
-	_local eqs << {{.eq_source_field, :|=|, .eq_linked_field}}
-	_local col << sw_view_collection.new_eq(.analysis_dsm,
-						int_name, ext_name,
-						tables,
-						eqs,
-						field_specs)
-	_return col
-_endmethod
-$
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method sw_view_eq_dialog.construct_view()
+#	_local ds_name << .source_table.dataset.original_dataset_name
+#	_local (int_name, ext_name) << _self.new_table_name
+#	_local field_specs << _self.field_specs()
+#	_local tables << {.source_table, .linked_table}
+#	_local eqs << {{.eq_source_field, :|=|, .eq_linked_field}}
+#	_local col << sw_view_collection.new_eq(.analysis_dsm,
+#						int_name, ext_name,
+#						tables,
+#						eqs,
+#						field_specs)
+#	_return col
+#_endmethod
+#$

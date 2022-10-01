@@ -39,19 +39,21 @@ message_handler.new(:sw_view_join_dialog).add_uses(:base_sw_view_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method sw_view_join_dialog.set_holder(holder, dsm)
-	.holder << holder
-	.source_table << .holder.collection.expose()
-	.analysis_dsm << dsm
+_method sw_view_join_dialog.set_source_holder(workspace, source_holder)
+	.workspace << workspace
+	.source_holder << source_holder
+	.source_table << .source_holder.collection.expose()
 _endmethod
 $
 
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_join_dialog.build_link_button(container)
-	.items[:link] << sw_button_item.new_safe(container, _self.message(:link),
-					      _self, :|link()|,
-					      :row_alignment, :centre)
+	.items[:link] << sw_button_item.new(container,
+					    :label, _self.message(:link),
+					    :model, _self, 
+					    :selector, {:|perform_safely()|, :|link()|},
+					    :row_alignment, :centre)
 _endmethod
 $
 
@@ -59,8 +61,9 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method sw_view_join_dialog.build_result_collection(container)
 	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
-				:row_alignment, :fill)	
-	.items[:result_table] << sw_text_item.new(rc, _self.message(:table_name))
+				:row_alignment, :fill)
+	sw_label_item.new(rc, _self.message(:table_name))
+	.items[:result_table] << sw_text_item.new(rc)
 _endmethod
 $
 
@@ -79,22 +82,20 @@ _private _method sw_view_join_dialog.validate()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_private _method sw_view_join_dialog.construct_view()
-	_local source_col << .source_table
-	_local ds_name << source_col.dataset.original_dataset_name
-	_local (int_name, ext_name) << _self.new_table_name
-	_local field_specs << _self.field_specs()
-	_local col << sw_view_collection.new_join(.analysis_dsm,
-						  int_name, ext_name,
-						  source_col, .linked_table,
-						  .linked_field,
-						  field_specs)
-	_return col
-_endmethod
-$
-
-
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method sw_view_join_dialog.construct_view()
+#	_local source_col << .source_table
+#	_local ds_name << source_col.dataset.original_dataset_name
+#	_local (int_name, ext_name) << _self.new_table_name
+#	_local field_specs << _self.field_specs()
+#	_local col << sw_view_collection.new_join(.analysis_dsm,
+#						  int_name, ext_name,
+#						  source_col, .linked_table,
+#						  .linked_field,
+#						  field_specs)
+#	_return col
+#_endmethod
+#$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method sw_view_join_dialog.link()

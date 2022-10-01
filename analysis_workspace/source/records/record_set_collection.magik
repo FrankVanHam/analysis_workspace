@@ -67,8 +67,8 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method record_set_collection.get_slot_from_serial(slot_name, serial_value)
 	_if slot_name _is :base_set
 	_then
-		_local base_set << rwo_set.new(urn_rope.size)
-		_for i_urn _over urn_rope.fast_elements()
+		_local base_set << rwo_set.new(serial_value.size)
+		_for i_urn _over serial_value.fast_elements()
 		_loop
 			_local rec << urn_manager.get_object_from_urn(i_urn)
 			_if rec _isnt _unset

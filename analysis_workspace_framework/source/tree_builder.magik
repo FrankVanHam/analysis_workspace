@@ -333,6 +333,23 @@ _method tree_builder.display_tree_for_area_binary_op_collection(col, source_col,
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_builder.display_tree_for_binary_op_collection(col, source_col,
+								operation, filter_col)
+	_local sw_col << source_col.expose()
+	_local image << _self.sw_collection_image(sw_col)
+	_local tree << _self.display_tree(col)
+	tree.styled_string << _self.styled_string(:image, {operation, _self.module_name},
+						  :image, image)
+	
+	_local base_tree << _self.tree(source_col)
+	tree.add_child(base_tree)
+	_local other_tree << _self.tree(filter_col)
+	tree.add_child(other_tree)
+	_return tree	
+_endmethod
+$
+
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_sw_view_collection(col)

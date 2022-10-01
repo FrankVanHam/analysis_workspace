@@ -151,13 +151,21 @@ _pragma(classify_level=basic, topic={analysis})
 _private _method dataset_model.do!open_default_ds(path)
 	_local ok? << _false 
 	_protect 
-		_local dsm << rwan:analysis_dataset_manager.open(_self.dsm_name, path)
+		dsm << rwan:analysis_dataset_manager.open(_self.dsm_name, path)
 		workspace << dsm.retrieve()
 		.owner.publish_workspace(workspace)
 		.owner.add_to_application(workspace.dsm)
 		ok? << _true 
 	_protection
-		_if _not ok? _then .owner.ace.set_default("rwan:path", _unset, _true, _true) _endif 
+		_if _not ok?
+		_then
+			_if dsm _isnt _unset
+			_then
+				dsm.discard()
+			_endif 
+			.owner.ace.set_default("rwan:path", _unset, _true, _true)
+		_endif
+		
 	_endprotect 
 _endmethod
 $

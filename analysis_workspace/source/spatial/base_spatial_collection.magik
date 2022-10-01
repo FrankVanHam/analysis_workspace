@@ -53,6 +53,14 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.compatible_with?(other)
+	_return other.is_record_collection?.not _andif
+		_self.geom_category = other.geom_category
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.goto_bounds
 	_return _self.geometry_set(:geometry).bounds
 _endmethod

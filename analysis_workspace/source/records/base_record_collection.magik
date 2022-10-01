@@ -56,6 +56,13 @@ _method base_record_collection.geometry_set(geom_name)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_record_collection.compatible_with?(other)
+	_return other.is_record_collection? _andif
+		(_self.expose() _is other.expose())
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={demo})
 _abstract _method base_record_collection.read_stream()

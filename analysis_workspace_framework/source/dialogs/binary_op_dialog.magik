@@ -116,11 +116,25 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_private _method binary_op_dialog.filter_holder_items()
+	_local items << _super.filter_holder_items()
+	_for i_vec _over items.elements()
+	_loop
+		(holder, name) << (_scatter i_vec)
+		_if holder.compatible_with?(.source_holder).not
+		_then
+			items.remove(i_vec)
+		_endif 
+	_endloop 
+	_return items
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
 _method binary_op_dialog.initialise_filter_geometry_choice()
 	## no op 
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method binary_op_dialog.initialise_operator_choice()
@@ -165,7 +179,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method binary_op_dialog.manage_actions()
 	_local has_name? << .name.default("") <> ""
-	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif .source_geom_name _isnt _unset _andif .filter_geom_name _isnt _unset
+	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif .filter_holder _isnt _unset 
 
 	.items[:filter_holder_choice].enabled? << .readonly?.not
 	.items[:name].enabled? << .readonly?.not

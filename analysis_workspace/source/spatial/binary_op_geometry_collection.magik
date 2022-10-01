@@ -62,17 +62,10 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method binary_op_geometry_collection.ensure_similar_collections()
-	_if _not _self.similar_collections?
+	_if .source_collection.compatible_with?(.filter_collection).not
 	_then
 		condition.raise(:error, :string, "Requires similar collections")
 	_endif
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_private _method binary_op_geometry_collection.similar_collections?
-	_return .filter_collection.is_record_collection?.not _andif
-		.source_collection.geom_category = .filter_collection.geom_category
 _endmethod
 $
 

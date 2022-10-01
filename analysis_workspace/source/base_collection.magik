@@ -391,6 +391,13 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_collection.compatible_with?(other)
+	show(_self)
+	condition.raise(:error, :string, "Subclass should implement")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method base_collection.geometry_set(geom_name)
 	## Defaults to retrieving the set by getting the geometries
 	## from the individual records.

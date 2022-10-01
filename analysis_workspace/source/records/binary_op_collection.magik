@@ -62,19 +62,13 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method binary_op_collection.ensure_similar_collections()
-	_if _not _self.similar_collections?
+	_if .source_collection.compatible_with?(.filter_collection).not
 	_then
 		condition.raise(:error, :string, "Requires similar collections")
 	_endif
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_private _method binary_op_collection.similar_collections?
-	_return .filter_collection.is_record_collection? _andif
-		.source_collection.expose() = .filter_collection.expose()
-_endmethod
-$
 
 _pragma(classify_level=basic, topic={analysis})
 _method binary_op_collection.activate_editor_in(dialog, holder)

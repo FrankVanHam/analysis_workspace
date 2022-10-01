@@ -342,7 +342,7 @@ _private _method base_dialog.filter_holder_selection(items, cur_holder)
 	_endloop
 	_if items.empty?.not
 	_then
-		_return items[1]
+		_return items[1][1]
 	_else
 		_return _unset
 	_endif 

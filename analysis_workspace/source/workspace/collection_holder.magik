@@ -62,6 +62,12 @@ _method collection_holder.copy()
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method collection_holder.compatible_with?(other)
+	_return .collection.compatible_with?(other.collection)
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.name

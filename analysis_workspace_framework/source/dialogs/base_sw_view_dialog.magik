@@ -18,7 +18,6 @@
 _package rwan
 $
 
-
 #remex(:base_sw_view_dialog)
 $
 
@@ -30,19 +29,16 @@ _pragma(classify_level=restricted, topic={analysis})
 ## 
 def_slotted_exemplar(:base_sw_view_dialog,
 	{
-		{:items, _unset},
-		{:holder, _unset},
-		{:analysis_dsm,  _unset},
 		{:source_fields, _unset},
 		{:source_table,  _unset},
 		{:linked_table,  _unset},
 		{:linked_fields, _unset},
 		{:result_fields, _unset}
 	},
-	:model)
+	:base_dialog)
 $
 
-message_handler.new(:base_sw_view_dialog).add_uses(:model, :gen_graphics)
+message_handler.new(:base_sw_view_dialog).add_uses(:model, :base_dialog)
 $
 
 
@@ -74,22 +70,13 @@ _method base_sw_view_dialog.activate_in(container)
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:row_alignment, :fill,
 				:col_alignment, :fill,
-				:row_resize_values, {0,100,0,0})
+				:row_resize_values, {0,100,0,0,0})
 	_self.build_top_label(rc)
 	_self.build_trees(rc)
+	_self.build_name(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
 	_self.build_buttons(rc)
 	_return rc
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method base_sw_view_dialog.build_top_label(container)
-	sw_text_window.new(container, 4, 100, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill)
 _endmethod
 $
 
@@ -104,9 +91,9 @@ _private _method base_sw_view_dialog.build_trees(container)
 	_self.build_linked_tree(rc)
 	_self.build_arrow(rc)
 	_self.build_result_tree(rc)
+	
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_sw_view_dialog.build_source_tree(container)
@@ -207,11 +194,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_sw_view_dialog.build_result_tree(container)
-	_local rc << rowcol.new(container, _unset, 1, _unset, :style, :nested,
-				:col_alignment, :fill,
-				:row_alignment, :fill)
-	_self.build_result_collection(rc)
-	.items[:result_tree] << tree_item.new(rc,
+	.items[:result_tree] << tree_item.new(container,
 				       :model, _self,
 				       :distribute_spare_width, :always,
 				       :select_notifier, :|result_field_selected()|,
@@ -222,7 +205,7 @@ _private _method base_sw_view_dialog.build_result_tree(container)
 				       :col_resize_values, {0, 40, 40},
 				       :column_widths, {30, 100, 100},
 				       :editors, {{:name, in_place_value_editor}},
-				       :value_changed_notifier, :|name_changed()|,
+				       :value_changed_notifier, :|field_name_changed()|,
 				       #:edit_on_click?, _false,
 				       :col_alignment, :fill,
 				       :row_alignment, :fill)
@@ -233,17 +216,6 @@ _pragma(classify_level=restricted, topic={analysis})
 _abstract _private _method base_sw_view_dialog.build_result_collection(container)
 _endmethod
 $
-
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method base_sw_view_dialog.build_buttons(container) 
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:ok]     << sw_button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
-	.items[:cancel] << sw_button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
-_endmethod
-$
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method base_sw_view_dialog.source_field_selected()
@@ -358,7 +330,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method base_sw_view_dialog.name_changed(tree, key, new_name)
+_method base_sw_view_dialog.field_name_changed(tree, key, new_name)
 	_local (uses?, the_vec) << _self.uses?(tree.key)
 	the_vec[2] << new_name
 #	_self.update_result_tree()			
@@ -369,9 +341,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method base_sw_view_dialog.ok()
 	_self.validate()
-	_local col << _self.construct_view()
-	.parent_model.add_collection(col)
-	_self.close()
+	_return _super.ok()
 _endmethod
 $
 
@@ -482,9 +452,6 @@ _method base_sw_view_dialog.cancel()
 	_self.close()
 _endmethod
 $
-
-
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_sw_view_dialog.set_linked_table()
@@ -607,7 +574,9 @@ _private _method base_sw_view_dialog.fields_for(col)
 	_for a_field _over all_fields.fast_elements()
 	_loop
 		_if _not _self.skip_field_names.includes?( a_field.name ) _andif
-		    a_field.name.index_of_seq( "dd!" ) _is _unset 
+		    (a_field.name.index_of_seq( "dd!" ) _is _unset) _andif
+		    (a_field.name.index_of_seq( "int!" ) _is _unset) _andif
+		    (a_field.name.index_of_seq( "!int" ) _is _unset) 
 		_then
 			fields.add(a_field)
 		_endif 

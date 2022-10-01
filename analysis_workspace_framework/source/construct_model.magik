@@ -62,7 +62,7 @@ _method construct_model.add_holders(holders)
 	_local workspace << _self.workspace
 	workspace.add_holders(holders)
 	.owner.publish_workspace()
-	.owner.publish_selection({holders.last})
+	#.owner.publish_selection({holders.last})
 _endmethod
 $
 
@@ -491,14 +491,14 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_model.edit_binary_op_dialog(holder, source_col, source_geom_name,
-						   operation, filter_col, filter_geom_name)
+_method construct_model.edit_binary_op_dialog(holder, source_col,
+					      operation, filter_col)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local filter_holder << _self.workspace.holder_for(filter_col)
 	_local dia << binary_op_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
-		       holder, source_holder, source_geom_name,
-		       operation, filter_holder, filter_geom_name)
+		       holder, source_holder,
+		       operation, filter_holder)
 	dia.activate()
 	_return dia
 _endmethod
@@ -521,7 +521,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.materialize()
 	_local holder << _self.selected_top_holder
 	_local dia << record_materialize_dialog.new_dialog(_self)
-	dia.set_holder(holder, _self.dataset_manager)
+	dia.set_source_holder(_self.workspace, holder)
 	dia.activate()
 	_return dia
 _endmethod
@@ -530,10 +530,10 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_join_view()
 	_local holder << _self.selected_top_holder
-	_self.ensure_collection_is_sw_collection(holder)
 	_local dia << sw_view_join_dialog.new_dialog(_self)
-	dia.set_holder(holder, _self.dataset_manager)
+	dia.set_source_holder(_self.workspace, holder)
 	dia.activate()
+	_return dia
 _endmethod
 $
 
@@ -574,7 +574,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_buffer_dialog()
 	_local holder << _self.selected_top_holder
 	_local dia << buffer_dialog.new_dialog(_self)
-	dia.set_source_holder(_self.workspace, _self.selected_holder)
+	dia.set_source_holder(_self.workspace, holder)
 	dia.activate()
 	_return dia
 _endmethod
@@ -772,74 +772,6 @@ _private _method construct_model.do_create_predicate_filter_dialog(holder, recor
 	dia.set_holder(_self.workspace, holder, record_holder, predicate)
 	dia.activate()
 	_return dia
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_model.selected_col_and_spatial()
-	_local holders << _self.selected_top_holders
-	_local holder, geom
-	_for i_holder _over holders.fast_elements()
-	_loop
-		_if i_holder.is_record_collection?
-		_then
-			holder << i_holder
-		_elif i_holder.is_spatial? _orif
-		      i_holder.is_area?
-		_then
-			geom << i_holder
-		_endif
-	_endloop
-	_return holder, geom
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_model.selected_col_and_col()
-	_local holders << _self.selected_top_holders
-	_local holder1, holder2
-	_for i_holder _over holders.fast_elements()
-	_loop
-		_if i_holder.is_record_collection?
-		_then
-			_if holder1 _is _unset
-			_then
-				holder1 << i_holder
-			_elif holder2 _is _unset
-			_then
-				holder2 << i_holder
-			_endif
-		_endif
-	_endloop
-	_return holder1, holder2
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_model.selected_spatial_and_spatial()
-	_local holders << _self.selected_top_holders
-	_local holder1, holder2
-	_for i_holder _over holders.fast_elements()
-	_loop
-		_if i_holder.is_spatial? _orif
-		    i_holder.is_area?
-		_then
-			_if holder1 _is _unset
-			_then
-				holder1 << i_holder
-			_elif holder2 _is _unset
-			_then
-				holder2 << i_holder
-			_endif
-		_endif
-	_endloop
-	_return holder1, holder2
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method construct_model.selected_spatial()
-	_return _self.selected_spatial_and_spatial()
 _endmethod
 $
 
