@@ -41,6 +41,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method report_grouping_and_calculation_dialog.init(_gather a)
 	.specs << rope.new()
+	.items << property_list.new()
 	_return _super.init(_scatter a)
 _endmethod
 $
@@ -55,7 +56,6 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method report_grouping_and_calculation_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
-	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:col_alignment, :fill,
 				:row_alignment, :fill,
@@ -71,11 +71,12 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method report_grouping_and_calculation_dialog.build_top_label(container)
-	sw_text_window.new(container, 4, 200, _unset,
-			:horizontal_scrollbar?, _false,
-			:editable?, _false,
-			:contents, _self.message(:top_label),
-			:col_alignment, :fill )
+	sw_text_window.new(container,
+			   :text, _self.message(:top_label),
+			   :min_width, 400,
+			   :col_alignment, :fill,
+			   :enable_horizontal_scrollbar?, _false,
+			   :editable?, _false)
 _endmethod
 $
 
@@ -111,6 +112,7 @@ _method report_grouping_and_calculation_dialog.on_activation()
 		.specs.add(grouping_element.new(:group, _unset))
 	_endif 
 	.items[:source_tree].renew()
+	_self.manage_actions()
 _endmethod
 $
 
@@ -297,16 +299,30 @@ $
 _pragma(classify_level=restricted)
 _private _method report_grouping_and_calculation_dialog.build_add_remove_buttons(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box )
-	.items[:add]    << image_button_item.new_safe(rc, _self.add_image,    _self, :|add()|,    :insensitive_image, _self.grey_add_image)
-	.items[:remove] << image_button_item.new_safe(rc, _self.remove_image, _self, :|remove()|, :insensitive_image, _self.grey_remove_image)
+	.items[:add]    << sw_button_item.new(rc,
+					      :image, {:add, _self.module_name},
+					      :model, _self,
+					      :selector, {:|perform_safely()|, :|add()|})
+	.items[:remove] << sw_button_item.new(rc,
+					      :image, {:remove, _self.module_name},
+					      :model, _self,
+					      :selector, {:|perform_safely()|, :|remove()|})
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method report_grouping_and_calculation_dialog.build_buttons(container) 
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
-	.items[:run]   << sw_button_item.new_safe(rc, _self.message(:run), _self, :|run()|, :min_width, 75)
-	.items[:close] << sw_button_item.new_safe(rc, _self.message(:close), _self, :|close()|, :min_width, 75)
+	.items[:run]   << sw_button_item.new(rc,
+					     :label, _self.message(:run),
+					     :model, _self,
+					     :selector, {:|perform_safely()|, :|run()|},
+					     :min_width, 75)
+	.items[:close] << sw_button_item.new(rc,
+					     :label, _self.message(:close),
+					     :model, _self,
+					     :selector, {:|perform_safely()|, :|close()|},
+					     :min_width, 75)
 _endmethod
 $
 
@@ -371,29 +387,5 @@ _private _method report_grouping_and_calculation_dialog.manage_actions()
 	_local sel? << .items[:source_tree].selection.empty?.not
 	.items[:add].enabled? << _true
 	.items[:remove].enabled? << sel? _andif (.specs.size>1)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method report_grouping_and_calculation_dialog.add_image
-	_return smallworld_product.get_raster_image(:add, _self.module_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method report_grouping_and_calculation_dialog.grey_add_image
-	_return smallworld_product.get_raster_image(:add_grey, _self.module_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method report_grouping_and_calculation_dialog.remove_image
-	_return smallworld_product.get_raster_image(:remove, _self.module_name)
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_private _method report_grouping_and_calculation_dialog.grey_remove_image
-	_return smallworld_product.get_raster_image(:remove_grey, _self.module_name)
 _endmethod
 $

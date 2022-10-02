@@ -22,7 +22,7 @@ $
 $
 
 _pragma(classify_level=basic, topic={analysis})
-## Siple reporter that writes the results of a grouping engine to a file.
+## Simple reporter that writes the results of a grouping engine to a file.
 def_slotted_exemplar(:grouping_reporter,
 	{})
 $
@@ -73,7 +73,8 @@ _private _method grouping_reporter.report_on_stream(report_struct, out, _optiona
 			out.write(_self.message(:all_records))
 		_endif
 		out.write(tab_char)
-		_local (value, unit) << i_elem.value_as_number_and_unit()
+		_local (split_value, unit) << i_elem.value_as_number_and_unit()
+		_local value << _self.localise_value(i_elem.field, split_value)
 		out.write(value, tab_char)
 		_if unit _isnt _unset
 		_then
@@ -89,6 +90,27 @@ _private _method grouping_reporter.report_on_stream(report_struct, out, _optiona
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_private _method grouping_reporter.localise_value(field, value)
+	_if value _is _unset
+	_then
+		_return ""
+	_endif 
+	_local type << field.type.phys_type
+	_if {:ds_float, :ds_double}.includes?(type)
+	_then
+		_return sw:float_format.new().format(value)
+	_elif {:ds_date}.includes?(type)
+	_then
+		_return date_time_format.new().format(value)
+	_elif {:ds_uint, :ds_int, :ds_byte, :ds_short, :ds_ushort, :ds_uint64}.includes?(type)
+	_then
+		_return write_string(value.rounded)
+	_else 
+		_return write_string(value)
+	_endif 
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method grouping_reporter.message(mess_id)

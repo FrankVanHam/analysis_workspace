@@ -20,3 +20,4 @@ dataset_plugin
 dataset_model
 highlight_model
 highlight_plugin
+analysis_ds_collection_proxy

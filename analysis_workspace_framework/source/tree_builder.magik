@@ -387,21 +387,20 @@ _method tree_builder.display_tree_for_area_operation_collection(col, source_col,
 _endmethod
 $
 
-
-
-
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_spatial_collection(col, source_col, geom_name)
-	##
-	_local sw_col << source_col.expose()
-	_local fd << sw_col.field(geom_name)
-	_local image << _self.sw_collection_image(sw_col)
-	_local field_image << _self.sw_geom_field_image(fd)
+_method tree_builder.display_tree_for_geometry_collection(col, geometry)
 	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, field_image)
-	_local child << _self.tree(source_col)
-	tree.add_child(child)
-	_return tree 
+	_if geometry.is_collection?
+	_then 
+		a_geom << geometry.an_element()
+	_else
+		a_geom << geometry
+	_endif
+	_if a_geom _isnt _unset
+	_then 
+		tree.styled_string << _self.styled_string(:image, a_geom.geom_category)
+	_endif 
+	_return tree
 _endmethod
 $
 
@@ -426,47 +425,8 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_area_collection(col, area)
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, :area)
-	_return tree
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_area_materialized_collection(col, source_col) 
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, {:materialize_spatial, _self.module_name},
-						  :image, :area)
-	
-	_local child << _self.tree(source_col)
-	tree.add_child(child)
-	_return tree
-_endmethod
-$
-
-
-_pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_geometry_collection(col, geometry)
-	_local tree << _self.display_tree(col)
-	_if geometry.is_collection?
-	_then 
-		a_geom << geometry.an_element()
-	_else
-		a_geom << geometry
-	_endif
-	_if a_geom _isnt _unset
-	_then 
-		tree.styled_string << _self.styled_string(:image, a_geom.geom_category)
-	_endif 
-	_return tree
-_endmethod
-$
-
-_pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_spatial_materialized_collection(col, source_col)
-	_local tree << _self.display_tree(col)
-	tree.styled_string << _self.styled_string(:image, {:materialize_spatial, _self.module_name})
+_method tree_builder.display_tree_for_materialized_geometry_collection(col, source_col)
+	_local tree << _self.display_tree_for(col, source_col, _unset, :materialize_spatial)
 	
 	_local base_tree << _self.tree(source_col)
 	tree.add_child(base_tree)

@@ -512,8 +512,8 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.materialize_spatial()
 	_local holder << _self.selected_top_holder
-	_local dia << spatial_materialize_dialog.new_dialog(_self)
-	dia.set_holder(holder, _self.dataset_manager)
+	_local dia << materialize_geometry_dialog.new_dialog(_self)
+	dia.set_source_holder(_self.workspace, holder)
 	dia.activate()
 	_return dia
 _endmethod

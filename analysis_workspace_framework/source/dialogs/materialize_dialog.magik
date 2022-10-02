@@ -18,7 +18,7 @@
 _package rwan
 $
 
-#remex(:record_materialize_dialog)
+#remex(:materialize_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
@@ -26,25 +26,25 @@ _pragma(classify_level=restricted, topic={analysis})
 ## collection. Uses a materialized_collection_creator to do
 ## so. The creator takes a structure as input that will guide
 ## it with new names and join aspect fields.
-def_slotted_exemplar(:record_materialize_dialog,
+def_slotted_exemplar(:materialize_dialog,
 	{
 		{:settings, _unset}
 	},
 	:base_materialize_dialog)
 $
 
-message_handler.new(:record_materialize_dialog).add_use(:base_materialize_dialog)
+message_handler.new(:materialize_dialog).add_use(:base_materialize_dialog)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_materialize_dialog.set_source_holder(workspace, source_holder)
+_method materialize_dialog.set_source_holder(workspace, source_holder)
 	.settings << materialization_settings.new(source_holder.collection.expose())
 	_return _super.set_source_holder(workspace, source_holder)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_materialize_dialog.activate_in(container)
+_method materialize_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:row_alignment, :fill,
@@ -61,7 +61,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.build_tree(container)
+_private _method materialize_dialog.build_tree(container)
 	.items[:tree] << tree_item.new(container,
 				       :model, _self,
 				       :distribute_spare_width, :always,
@@ -82,7 +82,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_materialize_dialog.field_name_changed(tree, value_id, new_value, old_value, editor)
+_method materialize_dialog.field_name_changed(tree, value_id, new_value, old_value, editor)
 	_if value_id _is :target_field
 	_then
 		_if new_value.size > 32
@@ -94,7 +94,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_materialize_dialog.toggled(tree)
+_method materialize_dialog.toggled(tree)
 	_if tree.key.is_key?
 	_then
 		_self.user_error(:can_not_disable_key, tree.key.name)
@@ -105,7 +105,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_materialize_dialog.get_tree()
+_method materialize_dialog.get_tree()
 	_local trees << rope.new()
 	_local sw_table << .source_holder.collection.expose().descriptor
 	_for i_field _over _self.collection_fields()
@@ -135,7 +135,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _iter _method record_materialize_dialog.collection_fields()
+_private _iter _method materialize_dialog.collection_fields()
 	_local sw_table << .source_holder.collection.expose().descriptor
 	_for i_field _over sw_table.key_fields.fast_elements()
 	_loop
@@ -153,7 +153,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.field_type(fd)
+_private _method materialize_dialog.field_type(fd)
 	>> _if fd.is_physical? _orif
 	       fd.is_derived?
 	   _then
@@ -173,7 +173,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.field_size(fd)
+_private _method materialize_dialog.field_size(fd)
 	>> _if fd.is_physical?  _orif
 	       fd.is_derived?
 	   _then
@@ -190,7 +190,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.field_img(fd)
+_private _method materialize_dialog.field_img(fd)
 	>> _if fd.is_key?
 	   _then >> {:key, :ui_resources}
 	   _elif fd.is_join?
@@ -202,7 +202,7 @@ $
 
 
 _pragma(classify_level=restricted)
-_method record_materialize_dialog.editor_required( a_tree, row_index, value_id, an_agent )
+_method materialize_dialog.editor_required( a_tree, row_index, value_id, an_agent )
 	_if value_id = :target_field
 	_then
 		an_editor << in_place_value_editor.new(an_agent)
@@ -218,7 +218,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted)
-_private _method record_materialize_dialog.join_aspect_editor(a_tree, row_index, value_id, an_agent)
+_private _method materialize_dialog.join_aspect_editor(a_tree, row_index, value_id, an_agent)
 	_local fd << a_tree.key
 	_local items << rope.new()
 	_for i_field _over _self.join_aspect_fields(fd)
@@ -236,7 +236,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted)
-_private _method record_materialize_dialog.join_aspect(fd)
+_private _method materialize_dialog.join_aspect(fd)
 	_if _self.is_for_aspect?(fd)
 	_then
 		aspect << fd.join_aspect
@@ -259,7 +259,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted)
-_private _iter _method record_materialize_dialog.join_aspect_fields(fd)
+_private _iter _method materialize_dialog.join_aspect_fields(fd)
 	_if _self.is_for_aspect?(fd)
 	_then
 		_local target << fd.result_table
@@ -281,7 +281,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted)
-_private _method record_materialize_dialog.is_for_aspect?(fd)
+_private _method materialize_dialog.is_for_aspect?(fd)
 	_return (fd.is_join?) _andif
 		(fd.join_type _isnt :text) _andif
 		fd.simple_result? _andif 
@@ -290,7 +290,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.new_name(field)
+_private _method materialize_dialog.new_name(field)
 	_local name << field.external_name
 	name << name.canonical
 	name << name.substitute_character(space_char, %_)
@@ -299,7 +299,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.validate()
+_private _method materialize_dialog.validate()
 	##
 	_self.validate_table_name()
 	_self.validate_table_unique()
@@ -308,7 +308,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.validate_table_name()
+_private _method materialize_dialog.validate_table_name()
 	_local tname << _self.new_table_name
 	_if tname.as_symbol().requires_escape?
 	_then
@@ -318,7 +318,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.validate_table_unique()
+_private _method materialize_dialog.validate_table_unique()
 	_local tname << _self.new_table_name
 	_local ds << .workspace.dsm.actual_dataset
 	_if ds.collections.includes_key?(tname)
@@ -329,7 +329,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.validate_join_aspect_set()
+_private _method materialize_dialog.validate_join_aspect_set()
 	_for i_fd, ext_name, join_aspect _over _self.field_elements()
 	_loop
 		_if _self.is_for_aspect?(i_fd)
@@ -344,7 +344,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.construct_materialized()
+_private _method materialize_dialog.construct_materialized()
 	_local settings << _self.creator_settings()
 	
 	_self.create_log_stream()
@@ -367,7 +367,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.creator_settings()
+_private _method materialize_dialog.creator_settings()
 	
 	_local (int_name, ext_name) << _self.new_table_name
 	.settings.reset()
@@ -379,13 +379,13 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.indexes()
+_private _method materialize_dialog.indexes()
 	_return {}
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.add_fields(settings)
+_private _method materialize_dialog.add_fields(settings)
 	_for i_field, ext_name, join_aspect _over _self.field_elements()
 	_loop
 		settings.add_field(i_field.name, ext_name, join_aspect)
@@ -394,13 +394,13 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.collection_name
+_private _method materialize_dialog.collection_name
 	_return .source_holder.collection.expose().external_name.copy()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method record_materialize_dialog.new_table_name
+_private _method materialize_dialog.new_table_name
 	_local external_name << .name.write_string
 	_local internal_name << external_name.convert_to_non_escape_string().as_symbol()
 	_return internal_name, external_name
@@ -408,7 +408,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _iter _method record_materialize_dialog.field_elements()
+_private _iter _method materialize_dialog.field_elements()
 	_for i_tree _over .items[:tree].tree_manager.children()
 	_loop
 		_local use? << i_tree.value(:use?)
@@ -425,7 +425,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method record_materialize_dialog.manage_actions()
+_method materialize_dialog.manage_actions()
 	_local has_name? << .name.default("") <> ""
 	.items[:ok].enabled? << .readonly?.not _andif has_name?
 	_super.manage_actions()

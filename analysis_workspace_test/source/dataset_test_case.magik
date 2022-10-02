@@ -179,11 +179,10 @@ _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_materialized_col()
 	_local hotel_col << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	
-	_local _constant forbidden << {:rwo_id, :ds!version, :meatball}
 	_local settings << materialization_settings.new(_self.hotel_collection)
 	_for i_field _over hotel_col.expose().physical_fields()
 	_loop
-		_if settings.field_allowed?(i_field)
+		_if settings.field_allowed?(i_field.name)
 		_then 
 			settings.add_field(i_field.name)
 		_endif 

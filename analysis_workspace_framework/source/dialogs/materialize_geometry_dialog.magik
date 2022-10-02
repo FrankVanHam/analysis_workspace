@@ -26,24 +26,23 @@ _pragma(classify_level=restricted, topic={analysis})
 ## copy of the results so the next time the results are
 ## required the collection is fast.
 ##
-def_slotted_exemplar(:spatial_materialize_dialog,
+def_slotted_exemplar(:materialize_geometry_dialog,
 	{},
 	:base_materialize_dialog)
 $
 
-message_handler.new(:spatial_materialize_dialog).add_use(:base_materialize_dialog)
+message_handler.new(:materialize_geometry_dialog).add_use(:base_materialize_dialog)
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
-_method spatial_materialize_dialog.activate_in(container)
+_method materialize_geometry_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
-	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:row_alignment, :fill,
 				:col_alignment, :fill)
 	_self.build_top_label(rc)
-	_self.build_tree(rc)
+	_self.build_source(rc)
+	_self.build_name(rc)
 	_self.build_progress(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
 	_self.build_buttons(rc)
@@ -51,37 +50,27 @@ _method spatial_materialize_dialog.activate_in(container)
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_materialize_dialog.build_tree(container)
+_private _method materialize_geometry_dialog.build_source(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
 	sw_label_item.new(rc, _self.message(:source_collection))
-	sw_label_item.new(rc, .holder.name)
+	sw_label_item.new(rc, .source_holder.name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_materialize_dialog.validate()
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_method spatial_materialize_dialog.materialize()
-	_local new_col << _self.construct_materialized()
-	.parent_model.add_collection(new_col)
-	_self.close()
+_private _method materialize_geometry_dialog.validate()
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method spatial_materialize_dialog.construct_materialized()
+_private _method materialize_geometry_dialog.construct_materialized()
 	_self.create_log_stream()
 	_protect
 		.workspace.dsm.add_dependent(_self)
 		_self.log(_self.message(:started_at, _unset, date_time_now()))
-		col << spatial_materialized_collection.new(.workspace.dsm,
-							   .holder.collection)
+		col << rwan:materialized_geometry_collection.new(.workspace.dsm,
+								 .source_holder.collection)
 		
 		_self.log(_self.message(:ended_at, _unset, date_time_now()))
 	_protection

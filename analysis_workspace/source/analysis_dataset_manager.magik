@@ -299,12 +299,18 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.geometry_collection(id)
+	_return .ds_view.collections[:geom_holder].all_at(id)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method analysis_dataset_manager.geometry_set(id)
 	## Retrieve the collection that was stored with materialize_spatial()
 	_local gs << geometry_set.new()
-	_local col << .ds_view.collections[:geom_holder]
+	_local col << _self.geometry_collection(id)
 	_local c << 0
-	_for i_rec _over col.all_at(id).fast_elements()
+	_for i_rec _over col.fast_elements()
 	_loop
 		gs.add_all(i_rec.geometries(_false))
 		c +<< 1

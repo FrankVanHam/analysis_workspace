@@ -2,7 +2,6 @@ base_dialog
 buffer_dialog
 object_control_dialog
 predicate_filter_dialog
-record_subtraction_dialog
 
 follow_join_dialog
 follow_method_dialog
@@ -14,11 +13,10 @@ trace_dialog
 spatial_dialog
 spatial_filter_dialog
 distance_filter_dialog
-spatial_subtraction_dialog
 
 base_materialize_dialog
-record_materialize_dialog
-spatial_materialize_dialog
+materialize_dialog
+materialize_geometry_dialog
 
 report_grouping_and_calculation_dialog
 sw/

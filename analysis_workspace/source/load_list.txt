@@ -1,18 +1,14 @@
 declare_package
-globals
-base_collection
-
-analysis_ds_collection_proxy
-
-materialized_collection_creator
 analysis_dataset_manager
-materialization_setting
+globals
+
+base_collection
 large_record_register
 geom_ref
 
 records/
-area/
-spatial/
+geometry/
+
 sw/
 workspace/
 grouping/

@@ -61,7 +61,6 @@ _method materialized_collection.ref_collections
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.actual_collection
 	_return .dsm.materialized_collection(.actual_table_name)
@@ -73,7 +72,6 @@ _method materialized_collection.expose()
 	_return _self.actual_collection
 _endmethod
 $
-
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.size_is_fast?
@@ -93,19 +91,17 @@ _method materialized_collection.includes?(rec)
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _method materialized_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. Otherwise set myself as the filter of my
 	## source_collection
 	#
-	_local str << _self.actual_collection.read_stream()
 	_if filter _isnt _unset
 	_then
-		_return filter.filter_stream(str)
+		_return filter.filter_stream_for_actual_collection(_self.actual_collection)
 	_else 
-		_return str
+		_return _self.actual_collection.read_stream()
 	_endif 
 _endmethod
 $

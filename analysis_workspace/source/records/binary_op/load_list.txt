@@ -1,6 +1,0 @@
-base_binary_op_collection
-intersection_collection
-subtraction_collection
-union_collection
-xor_collection
-streams/

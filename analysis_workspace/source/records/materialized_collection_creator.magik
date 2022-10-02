@@ -623,6 +623,8 @@ _private _method materialized_collection_creator.verify_key_match()
 			all_field_names.add(i_field.name)
 		_endif
 	_endloop
+	print(all_field_names)
+	print(key_field_names)
 	_if all_field_names.includes_all?(key_field_names).not
 	_then
 		condition.raise(:error, :string, "All keys should be included")

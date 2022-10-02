@@ -1,0 +1,84 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:materialized_geom_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using Materialized collection.
+##
+def_slotted_exemplar(:materialized_geom_col_test_case,
+	{
+		{:file_name, _unset},
+		{:ds,        _unset}
+	},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_geom_col_test_case.test_geometry_set()
+	_local area_col << _self.areas_collection(
+				   .ds, {bounding_box.new(0,0,100,100).coords,
+					 bounding_box.new(100,100,200,200).coords,
+					 bounding_box.new(200,200,300,300).coords})
+	_local mat_col << rwan:materialized_geometry_collection.new(.ds, area_col)
+	
+	_local gs << mat_col.geometry_set(:geometry)
+	_self.assert_equals(3, gs.size, "three areas should match")
+	_self.assert_not_unset(mat_col.goto_bounds)
+	_self.assert_true(mat_col.includes?(mat_col.an_element()), "Include should work")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialized_geom_col_test_case.set_up_dsm()
+	_local source_path << smallworld_product.get_resource_file(
+				      "analysis.ds",
+				      "data",
+				      rwan:analysis_dataset_manager.module_name)
+	_local target_path << system.temp_file_name("munit_analysis.ds")
+	system.file_copy(source_path, target_path)
+	.file_name << target_path
+	.ds << rwan:analysis_dataset_manager.open(:test, .file_name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_geom_col_test_case.set_up()
+	_self.set_up_dsm()
+	_return _super.set_up()
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialized_geom_col_test_case.tear_down_dsm()
+	.ds.discard()
+	system.unlink( .file_name, _true, _true)
+	.ds << .file_name << _unset 	 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_geom_col_test_case.tear_down()
+	_self.tear_down_dsm()
+	_return _super.tear_down()
+_endmethod
+$

@@ -1,5 +1,5 @@
-:record_materialize_dialog		Materialize
-:top_label				Materialize the source collection fast subsequent access. Any underlying analysis is performed once now and the resulting records are copied to the analysis dataset.
+:materialize_dialog			Materialize
+:top_label				Materialize the source collection for fast subsequent access. Any underlying analysis is performed once now and the resulting records are copied to the analysis dataset.
 :new_table_name				New Tablename
 :use?					Use?
 :img					Img
