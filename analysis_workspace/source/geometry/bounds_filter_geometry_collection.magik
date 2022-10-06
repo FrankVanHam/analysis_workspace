@@ -57,6 +57,12 @@ _method bounds_filter_geometry_collection.editable?
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method bounds_filter_geometry_collection.geom_category
+	_return .source_collection.geom_category
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={analysis})
 _method bounds_filter_geometry_collection.size_is_fast?
 	## no, size is generally not fast as it is spatially filtered.

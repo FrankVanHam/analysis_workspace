@@ -21,5 +21,5 @@ materialize_geometry_dialog
 report_grouping_and_calculation_dialog
 sw/
 
-area_binary_op_dialog
+binary_op_geometry_dialog
 binary_op_dialog

@@ -73,6 +73,13 @@ _method spatial_filter_geometry_collection.editable?
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_collection.geom_category
+	_return .source_collection.geom_category	
+_endmethod
+$
+
+
 
 
 #_pragma(classify_level=basic, topic={analysis})

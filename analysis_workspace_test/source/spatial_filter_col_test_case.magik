@@ -18,7 +18,7 @@
 _package rwan
 $
 
-#remex(:spatial_analysis_col_test_case)
+#remex(:spatial_filter_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
@@ -27,13 +27,13 @@ _pragma(classify_level=basic, topic={analysis})
 ## geometry-types, but rather to test each possible operator
 ## for one and two geometries.
 ## operators: :disjoint_from ,:interacting_with ,:touching ,:dividing ,:overlaying ,:overlapping ,:within ,:containing ,:equal_to
-def_slotted_exemplar(:spatial_analysis_col_test_case,
+def_slotted_exemplar(:spatial_filter_col_test_case,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_exposure()
+_method spatial_filter_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	# road analytic collection and area 
@@ -49,7 +49,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_disjoint()
+_method spatial_filter_col_test_case.test_disjoint()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -71,7 +71,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_interacting_with()
+_method spatial_filter_col_test_case.test_interacting_with()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -88,7 +88,7 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_touching()
+_method spatial_filter_col_test_case.test_touching()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_self.create_park("p2", {50000,50000,100000,50000,100000,100000,50000,100000,50000,50000})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
@@ -105,7 +105,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_dividing()
+_method spatial_filter_col_test_case.test_dividing()
 	_self.create_road("road 1", {0,0, 100000, 0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
@@ -121,7 +121,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_overlaying()
+_method spatial_filter_col_test_case.test_overlaying()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -143,7 +143,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_overlapping()
+_method spatial_filter_col_test_case.test_overlapping()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -160,7 +160,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_within()
+_method spatial_filter_col_test_case.test_within()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -177,7 +177,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_containing()
+_method spatial_filter_col_test_case.test_containing()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -195,7 +195,7 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_equals()
+_method spatial_filter_col_test_case.test_equals()
 	_self.create_road("road 1", {0,0, 100000, 0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
@@ -211,7 +211,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_area_collection()
+_method spatial_filter_col_test_case.test_area_collection()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -223,7 +223,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_sw_collection()
+_method spatial_filter_col_test_case.test_sw_collection()
 	_self.create_park("outside", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_self.create_park("inside", {25000, 25000, 40000, 25000, 40000, 40000, 25000, 40000, 25000, 25000})
 	
@@ -237,7 +237,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_test_case.test_geometry_set()
+_method spatial_filter_col_test_case.test_geometry_set()
 	_self.create_park("outside", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_self.create_park("inside", {25000, 25000, 40000, 25000, 40000, 40000, 25000, 40000, 25000, 25000})
 	

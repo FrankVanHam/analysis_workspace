@@ -320,7 +320,7 @@ $
 
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_builder.display_tree_for_area_binary_op_collection(col, source_col, source_geom_name,
+_method tree_builder.display_tree_for_binary_op_geometry_collection(col, source_col, source_geom_name,
 								operation, filter_col, filter_geom_name)
 
 	_local tree << _self.display_tree_for(col, source_col, source_geom_name, operation)
@@ -519,7 +519,7 @@ $
 #$
 #
 #_pragma(classify_level=advanced, topic={analysis})
-#_method area_binary_op_collection.display_tree_in(owner)
+#_method binary_op_geometry_collection.display_tree_in(owner)
 #	_return owner.display_tree_for_area_operation_collection(_self,_self.base_collection, _self.other_collection, .operation)
 #_endmethod
 #$

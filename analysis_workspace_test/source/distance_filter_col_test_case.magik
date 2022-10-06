@@ -18,19 +18,19 @@
 _package rwan
 $
 
-#remex(:filter_by_distance_col_test_case)
+#remex(:distance_filter_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Test distance filters.
 ##
-def_slotted_exemplar(:filter_by_distance_col_test_case,
+def_slotted_exemplar(:distance_filter_col_test_case,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method filter_by_distance_col_test_case.test_exposure()
+_method distance_filter_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	# road analytic collection and area 
@@ -46,7 +46,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method filter_by_distance_col_test_case.test_distance()
+_method distance_filter_col_test_case.test_distance()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -70,7 +70,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method filter_by_distance_col_test_case.test_area_collection()
+_method distance_filter_col_test_case.test_area_collection()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
@@ -82,7 +82,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method filter_by_distance_col_test_case.test_spatial_filter_collection()
+_method distance_filter_col_test_case.test_spatial_filter_collection()
 	## setup 2 parks, filter them on their bounds and check if parks
 	## are near by.
 	_self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
@@ -102,7 +102,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method filter_by_distance_col_test_case.test_geometry_set()
+_method distance_filter_col_test_case.test_geometry_set()
 	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)

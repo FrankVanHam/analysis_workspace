@@ -71,6 +71,13 @@ _method buffer_geometry_collection.editable?
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method buffer_geometry_collection.geom_category
+	_return :area
+_endmethod
+$
+
+
 _pragma(classify_level=basic, topic={analysis})
 _method buffer_geometry_collection.ref_collections
 	## return the collections I depend on

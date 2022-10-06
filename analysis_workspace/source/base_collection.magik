@@ -495,10 +495,9 @@ _method base_collection.message(id, _gather args)
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
-_method base_collection.area_binary_op(source_geom_name, operation, filter_collection, filter_geometry)
-	_return rwan:area_binary_op_collection.new(.dsm, _self, source_geom_name, operation, filter_collection, filter_geometry)
+_method base_collection.binary_op_geometry(source_geom_name, operation, filter_collection, filter_geometry)
+	_return rwan:binary_op_geometry_collection.new(.dsm, _self, source_geom_name, operation, filter_collection, filter_geometry)
 _endmethod
 $
 

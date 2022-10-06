@@ -177,6 +177,6 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.binary_op(operation, filter_collection)
-	_return rwan:binary_op_geometry_collection.new(.dsm, _self, operation, filter_collection)
+	_return rwan:binary_op_collection.new(.dsm, _self, operation, filter_collection)
 _endmethod
 $

@@ -95,7 +95,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method materialization_settings.add_field(field_name, _optional int_name, ext_name, join_aspect)
+_method materialization_settings.add_field(field_name, _optional ext_name, join_aspect)
 	_self.ensure_allowed(field_name)
 
 	_local fd << .collection.field(field_name)

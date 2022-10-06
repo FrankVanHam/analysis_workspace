@@ -18,22 +18,34 @@
 _package rwan
 $
 
-#remex(:where_analysis_test_case)
-$
+#remex(:spatial_analysis_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
-def_slotted_exemplar(:follow_analysis_test_case,
+##
+## Test using sw_collections
+#
+def_slotted_exemplar(:record_set_col_test_case,
 	{},
-	:base_analysis_test_case)
+	:base_analysis_db_test_case)
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method record_set_col_test_case.test_exposure()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local r1 << _self.create_road("GS1", {100, 200, 10000,200})
+	_local r2 << _self.create_road("GS2", {100, 100, 10000, 0})
+
+	_local road_col << rwan:record_set_collection.new(dsm, {r1,r2})
+	_self.assert_equals( _self.min_road_collection, road_col.expose(), "the core collection is still the road collection")
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis})
-_method follow_analysis_test_case.test_follow_x_to_0_join()
+_method record_set_col_test_case.test_basic_size()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
-	_local pcol << rwan:sw_collection.new(dsm, _self.supply_point_collection)
-	_local acol << pcol.follow_join(:customer)
-	
-	_self.assert_is(acol.size, 24, "There should be x customers in the set")
+
+	# road analytic collection and area 
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_self.assert_equals(_self.min_road_collection.size, acol.size, "sizes should match")
 _endmethod
 $

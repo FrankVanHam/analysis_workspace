@@ -33,6 +33,18 @@ def_slotted_exemplar(:materialized_geom_col_test_case,
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method materialized_geom_col_test_case.test_geom_category
+	_local area_col << _self.areas_collection(
+				   .ds, {bounding_box.new(0,0,100,100).coords,
+					 bounding_box.new(100,100,200,200).coords,
+					 bounding_box.new(200,200,300,300).coords})
+	_local mat_col << rwan:materialized_geometry_collection.new(.ds, area_col)
+	_self.assert_equals(:area, mat_col.geom_category, "Should be area")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method materialized_geom_col_test_case.test_geometry_set()
 	_local area_col << _self.areas_collection(
 				   .ds, {bounding_box.new(0,0,100,100).coords,

@@ -1,0 +1,66 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:bounds_filter_col_test_case)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using filtering by bounds
+##
+def_slotted_exemplar(:bounds_filter_col_test_case,
+	{},
+	:base_analysis_db_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method bounds_filter_col_test_case.test_exposure()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	# road analytic collection and area 
+	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local filter_col << acol.filter_by_bounds(:centre_line, bounding_box.new(0,0,100,100))
+	_self.assert_equals( _self.min_road_collection, filter_col.expose(), "the core collection is still the road collection")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method bounds_filter_col_test_case.test_overlapping()
+	_self.create_park("p1", {0,0,50000,0,50000,50000,0,50000,0,0})
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local fcol << acol.filter_by_bounds(:coverage, bounding_box.new(25000, 25000, 60000, 60000))
+	_self.assert_equals(1, fcol.size, "the park is overlapping the bounds")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method bounds_filter_col_test_case.test_geometry_set()
+	_self.create_park("outside", {0,0,50000,0,50000,50000,0,50000,0,0})
+	_self.create_park("inside", {25000, 25000, 40000, 25000, 40000, 40000, 25000, 40000, 25000, 25000})
+	
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local fcol << acol.filter_by_bounds(:coverage,
+					     bounding_box.new(0, 0, 50000, 50000))
+	_local gs << fcol.geometry_set(:coverage)
+	_self.assert_equals(2, gs.size, "2 element in bounds")
+	_self.assert_not_unset(fcol.goto_bounds)
+_endmethod
+$

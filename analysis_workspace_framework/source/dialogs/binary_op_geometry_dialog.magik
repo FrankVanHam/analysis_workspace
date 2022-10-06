@@ -18,7 +18,7 @@
 _package rwan
 $
 
-#remex(:area_binary_op_dialog)
+#remex(:binary_op_geometry_dialog)
 $
 
 _pragma(classify_level=basic, topic={analysis})
@@ -26,7 +26,7 @@ _pragma(classify_level=basic, topic={analysis})
 ## dialog to construct a topology collection to follow topology
 ## of the source collection.
 ##
-def_slotted_exemplar(:area_binary_op_dialog,
+def_slotted_exemplar(:binary_op_geometry_dialog,
 	{
 		{:operator, _unset}
 	},
@@ -34,14 +34,14 @@ def_slotted_exemplar(:area_binary_op_dialog,
 $
 
 _pragma(classify_level=basic, topic={analysis})
-area_binary_op_dialog.define_shared_constant(:defined_operators, {:intersection, :union, :xor, :subtraction}, :private)
+binary_op_geometry_dialog.define_shared_constant(:defined_operators, {:intersection, :union, :xor, :subtraction}, :private)
 $
 
-message_handler.new(:area_binary_op_dialog).add_uses(:model, :base_dialog) 
+message_handler.new(:binary_op_geometry_dialog).add_uses(:model, :base_dialog) 
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method area_binary_op_dialog.set_source_holder(workspace, source_holder, operator)
+_method binary_op_geometry_dialog.set_source_holder(workspace, source_holder, operator)
 	.workspace << workspace
 	.source_holder << source_holder
 	.operator << operator
@@ -49,7 +49,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method area_binary_op_dialog.set_holder(workspace,
+_method binary_op_geometry_dialog.set_holder(workspace,
 					 holder, source_holder, source_geom_name,
 					 operator, filter_holder, filter_geom_name)
 	.workspace << workspace
@@ -66,7 +66,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method area_binary_op_dialog.activate_in(container)
+_method binary_op_geometry_dialog.activate_in(container)
 	container.top_frame.modality << :primary_modal
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level,
 				:row_alignment, :fill,
@@ -81,7 +81,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_dialog.build_source_filter_and_operation_selection(container)
+_private _method binary_op_geometry_dialog.build_source_filter_and_operation_selection(container)
 	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested, :col_alignment, :fill)
 	_self.build_source_selection_rc(rc)
 	
@@ -98,7 +98,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method area_binary_op_dialog.on_activation()
+_method binary_op_geometry_dialog.on_activation()
 	_self.initialise_source_geometry_choice()
 	_self.initialise_filter_holder_choice()
 	_self.initialise_operator_choice()
@@ -108,7 +108,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_dialog.initialise_operator_choice()
+_private _method binary_op_geometry_dialog.initialise_operator_choice()
 	 _local choice << .items[:operation_choice]
 	 choice.text_items << items << _self.operation_items
 	 _local op << _if .operator _is _unset
@@ -122,21 +122,21 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method area_binary_op_dialog.operation_changed(value)
+_method binary_op_geometry_dialog.operation_changed(value)
 	.operator << value
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_dialog.construct_holder()
-	_local col << .source_holder.collection.area_binary_op(.source_geom_name, .operator,
+_private _method binary_op_geometry_dialog.construct_holder()
+	_local col << .source_holder.collection.binary_op_geometry(.source_geom_name, .operator,
 							       .filter_holder.collection, .filter_geom_name)
 	_return .parent_model.new_holder(col, .name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_dialog.operation_items
+_private _method binary_op_geometry_dialog.operation_items
 	_local ops <<  _self.defined_operators
 	_local items << rope.new()
 	_for i_key _over ops.fast_elements()
@@ -148,7 +148,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_dialog.geom_field_items_for(col)
+_private _method binary_op_geometry_dialog.geom_field_items_for(col)
 	_local items << rope.new()
 	_for i_ref _over col.geometry_refs.fast_elements()
 	_loop
@@ -165,7 +165,7 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method area_binary_op_dialog.manage_actions()
+_private _method binary_op_geometry_dialog.manage_actions()
 	_local has_name? << .name.default("") <> ""
 	.items[:ok].enabled? << .readonly?.not _andif has_name? _andif .source_geom_name _isnt _unset _andif .filter_geom_name _isnt _unset
 

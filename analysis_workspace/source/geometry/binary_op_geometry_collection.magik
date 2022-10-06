@@ -22,13 +22,22 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 ##
-## Collection that performs a spatial operator on a geometry
-## collection.
+## Collection that performs binary operations on analysis
+## collections, both the one that contain records and the ones
+## that contain geometry (areas).
+##
+## The collection is designed to be able to work on large
+## datasets without creating large memory area structures.
+# This effort makes this collection a lot complexer then it could
+# be if memory was no problem.
+#
 def_slotted_exemplar(:binary_op_geometry_collection,
 	{
 		{:source_collection, _unset},
+		{:source_geom_name,  _unset},
 		{:operator,          _unset},
-		{:filter_collection, _unset}
+		{:filter_collection, _unset},
+		{:filter_geom_name,  _unset}
 	}, :base_spatial_collection)
 $
 
@@ -40,41 +49,37 @@ binary_op_geometry_collection.define_shared_constant(:defined_operators, {:inter
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method binary_op_geometry_collection.new(dsm, source_col, operator, filter_col)
-	_return _clone.init(dsm, source_col, operator, filter_col)
+_method binary_op_geometry_collection.new(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
+	_return _clone.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method binary_op_geometry_collection.init(dsm, source_col, operator, filter_col)
+_private _method binary_op_geometry_collection.init(dsm, source_col, source_geom_name, operator, filter_col, filter_geom_name)
 	.source_collection << source_col
+	.source_geom_name << source_geom_name
 	.operator << operator
 	
 	_if _self.defined_operators.includes?(operator).not _then condition.raise(:error) _endif
 	
 	.filter_collection << filter_col
-	
-	_self.ensure_similar_collections()
-	
+	.filter_geom_name << filter_geom_name
+
+	# protect agains nonsense
+	.source_collection.assert_geom_name(.source_geom_name)
+	.filter_collection.assert_geom_name(.filter_geom_name)
+
 	_return _super.init(dsm)
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_private _method binary_op_geometry_collection.ensure_similar_collections()
-	_if .source_collection.compatible_with?(.filter_collection).not
-	_then
-		condition.raise(:error, :string, "Requires similar collections")
-	_endif
-_endmethod
-$
 
 _pragma(classify_level=basic, topic={analysis})
 _method binary_op_geometry_collection.activate_editor_in(dialog, holder)
-	_return dialog.edit_binary_op_dialog(holder,
-						  .source_collection,
+	_return dialog.edit_binary_op_geometry_dialog(holder,
+						  .source_collection, .source_geom_name,
 						  .operator,
-						  .filter_collection)
+						  .filter_collection, .filter_geom_name)
 _endmethod
 $
 
@@ -87,16 +92,11 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method binary_op_geometry_collection.geometry_refs
-	_return .source_collection.geometry_refs
+_method binary_op_geometry_collection.geom_category
+	_return .source_collection.geom_category
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method binary_op_geometry_collection.expose()
-	_return .source_collection.expose()
-_endmethod
-$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method binary_op_geometry_collection.size_is_fast?
@@ -110,44 +110,208 @@ _method binary_op_geometry_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. Otherwise set myself as the filter of my
 	## source_collection
-	#
-	_local source_str << .source_collection.read_stream(_self)
-	_local filter_str << .filter_collection.read_stream(_self)
-	_local bin_str << binary_op_stream.new(.source_collection, source_str,
-					       .operator,
-					       .filter_collection, filter_str)
+
+	# Start with a binary op collection that only returns elements
+	# from the source.
+	_local source_str << derived_geometry_read_stream.new(
+				     .source_collection.read_stream(),
+				     handler.new(_self, :|source_geometry()|))
+	
+	# If the operation is :union or :xor then we want to return the
+	# elements of the filter collection too that are not touching
+	# any of the source. Otherwise the set is incomplete.
+	_if {:union, :xor}.includes?(.operator)
+	_then
+		_local add_col << .filter_collection.filter_by_geometry(
+					  .filter_geom_name, :disjoint_from,
+					  .source_collection, .source_geom_name)
+		
+		_local add_str << derived_geometry_read_stream.new(
+				     add_col.read_stream(),
+				     handler.new(_self, :|filter_geometry()|))
+		
+		str << binary_op_stream.new(.source_collection, source_str,
+					    :union,
+					    add_col, add_str)
+	_else
+		str << source_str
+	_endif
 	_if filter _isnt _unset
 	_then
-		_return filter.filter_stream(bin_str)
-	_else
-		_return bin_str
+		str << filter.filter_stream(str)
 	_endif
+	_return str
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method binary_op_geometry_collection.geometry_for(rec, geom_name)
-	_return .source_collection.geometry_for(rec, geom_name)
+	_return rec
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method binary_op_geometry_collection.filter_stream(stream)
-	_return stream
+_method binary_op_geometry_collection.filter_geometry(filter_rec)
+	_return .filter_collection.geometry_for(filter_rec, .filter_geom_name)
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_method binary_op_geometry_collection.source_geometry(source_rec)
+	_local source_geom << .source_collection.geometry_for(source_rec, .source_geom_name)
+
+	_local b_col << .filter_collection.filter_by_bounds(.filter_geom_name, source_geom.bounds)
+	_local filter_gs << b_col.geometry_set(.filter_geom_name)
+
+	_if filter_gs.empty?.not
+	_then
+		_local methd << write_string(.operator+:|()|).as_symbol()
+		_local area << source_geom.perform(methd, filter_gs.areas_as_coverage())
+
+		_if (.operator _is :xor)
+		_then
+			substract_col << .source_collection.filter_by_bounds(.source_geom_name, filter_gs.bounds)
+			substract_gs << substract_col.geometry_set(.source_geom_name)
+			substract_gs.remove(source_geom)
+			_if substract_gs.empty?.not
+			_then 
+				area << area.subtraction(substract_gs.areas_as_coverage())
+			_endif 
+		_endif 
+		area.world << source_geom.world
+		_return area
+	_else
+		_if {:union, :xor, :subtraction}.includes?(.operator)
+		_then
+			_return source_geom
+		_else 
+			_return _unset
+		_endif 
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method binary_op_geometry_collection.the_area
+	_local source_gs << .source_collection.geometry_set(.source_geom_name)
+	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
+	
+	_local methd << write_string(.operator+:|()|).as_symbol()
+	
+	_local a << source_gs.areas_as_coverage().perform(methd, filter_gs.areas_as_coverage())
+	a.world << source_gs.an_element().world
+	_return a
+_endmethod
+$
+
+#_pragma(classify_level=restricted, topic={analysis})
+#_method binary_op_geometry_collection.filter_stream_for_actual_collection(actual_collection)
+#	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
+#
+#	# limit the source by the filter bounds to only look in that
+#	# bounds. Except for disjoint operation...
+#	_local bounds << _if .operator _isnt :disjoint_from
+#			 _then >> filter_gs.bounds
+#			 _else >> _unset 
+#			 _endif 
+#	_local source_stream << _self.source_rwo_stream(actual_collection, bounds)
+#	_return rwan:spatial_filter_read_stream.new(source_stream, .source_geom_name, .operator, filter_gs)
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method binary_op_geometry_collection.source_rwo_stream(actual_collection, bounds)
+#	_local source_gs << _self.source_geometry_set(actual_collection, bounds)
+#	_return gs_rwo_set.new(actual_collection.dataset,
+#			       property_list.new_with(
+#				       :data_source, source_gs)).read_stream()
+#_endmethod
+#$
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method binary_op_geometry_collection.source_geometry_set(actual_collection, bounds)
+#	# if the operator is restricting to the filter, then set the
+#	# bounds.
+#	_local world << actual_collection.record_exemplar.rwan_world_for(.source_geom_name)
+#	_return actual_collection.geometry_set(world, bounds, .source_geom_name)
+#_endmethod
+#$
+#
+_pragma(classify_level=restricted, topic={analysis})
+_method binary_op_geometry_collection.filter_stream(stream)
+	_return stream 
+#	_return need_geometry_read_stream.new(.source_collection, stream, .source_geom_name)
+_endmethod
+$
+#
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_method binary_op_geometry_collection.size
+#	_local geom << _self.need_geometry(.arg)
+#	_return _self.source_collection.size_filtered_by_geometry(.source_geom_name, .operator, geom)
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_method binary_op_geometry_collection.includes?(rec)
+#	_local geom << rec.geometry(.source_geom_name)
+#	_if geom _is _unset
+#	_then
+#		_return _false
+#	_endif
+#	_local rec_gs << geometry_set.new_with(geom)
+#	_local geom_arg << _self.need_geometry(.arg)
+#	_return rec_gs.select(.operator, geom_arg).empty?.not
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_iter _method binary_op_geometry_collection.fast_elements()
+#	_local geom << _self.need_geometry(.arg)
+#	_for i_rec _over _self.source_collection.fast_elements_filtered_by_geometry(.source_geom_name, .operator, geom)
+#	_loop
+#		_loopbody(i_rec)
+#	_endloop
+#_endmethod
+#$
+#
+#_pragma(classify_level=basic, topic={analysis, collections})
+#_method binary_op_geometry_collection.convert_to_geometry()
+#	_local geom << _self.need_geometry(.arg)
+#	_return _self.source_collection.convert_to_geometry_filtered_by_geometry(.source_geom_name, .operator, geom)
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=restricted, topic={analysis})
+#_private _method binary_op_geometry_collection.need_geometry(arg)
+#	_return arg.convert_to_geometry()
+#_endmethod
+#$
+#
+#
+#_pragma(classify_level=basic, topic={analysis})
+#_method binary_op_geometry_collection.description(translator)
+#	_local base_name << translator.name_for_collection(_self.source_collection)
+#	_local target_name << translator.name_for_collection(.arg)
+#	_return _self.message(:description, base_name, .source_geom_name,
+#			      .operator.write_string, target_name)
+#_endmethod
+#$
+
 
 _pragma(classify_level=advanced, topic={analysis})
 _method binary_op_geometry_collection.display_tree_in(owner)
 	_return owner.display_tree_for_binary_op_geometry_collection(
-			_self, .source_collection, .operator,
-			.filter_collection)
+			_self, .source_collection, .source_geom_name, .operator,
+			.filter_collection, .filter_geom_name)
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method binary_op_geometry_collection.discard()
-	.source_collection << .operator << .filter_collection << _unset 
+	.source_collection << .source_geom_name << .operator << .filter_collection << .filter_geom_name << _unset 
 	_super.discard()
 _endmethod
 $

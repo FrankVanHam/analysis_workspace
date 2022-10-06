@@ -153,15 +153,15 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_area_binary_op_col()
+_method dataset_test_case.test_binary_op_geometry_col()
 	_local acol1 << _self.area_collection(.ds, {0,0,100000,0,100000,100000,0,100000,0,0})
 	_local acol2 << _self.area_collection(.ds, {50000,50000,200000,50000,200000,200000,50000,200000,50000,50000})
 
-	_local bin_col << acol1.area_binary_op(:geometry, :union, acol2, :geometry)
+	_local bin_col << acol1.binary_op_geometry(:geometry, :union, acol2, :geometry)
 	_self.basic_storage_test(bin_col)
 
 	_local park_col << rwan:sw_collection.new(.ds, _self.park_collection)
-	bin_col << acol1.area_binary_op(:geometry, :union, park_col, :coverage)
+	bin_col << acol1.binary_op_geometry(:geometry, :union, park_col, :coverage)
 	_self.basic_storage_test(bin_col)
 _endmethod
 $

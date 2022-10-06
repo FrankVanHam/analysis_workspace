@@ -103,6 +103,13 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
+_method distance_filter_geometry_collection.geom_category
+	_return .source_collection.geom_category
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_geometry_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter
 	## filter my results. Otherwise set myself as the filter of my
@@ -163,7 +170,9 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_geometry_collection.filter_stream(stream)
 	_local filter_gs << .filter_collection.geometry_set(.filter_geom_name)
-	_return distance_filter_read_stream.new(stream, _self.world_distance, .is_inverse, filter_gs)
+	_return distance_filter_read_stream.new(
+			.source_collection, stream, :geometry,
+			_self.world_distance, .is_inverse, filter_gs)
 _endmethod
 $
 #

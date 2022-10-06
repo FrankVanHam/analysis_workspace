@@ -18,31 +18,31 @@
 _package rwan
 $
 
-#remex(:area_binary_op_col_test_case)
+#remex(:binary_op_geometry_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Test distance filters.
 ##
-def_slotted_exemplar(:area_binary_op_col_test_case,
+def_slotted_exemplar(:binary_op_geometry_col_test_case,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_col_test_case.test_exposure()
+_method binary_op_geometry_col_test_case.test_exposure()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	_local park_col << rwan:sw_collection.new(dsm, _self.park_collection)
 	_local area_col << _self.area_collection(dsm, {0,0,100,0,100,100,0,100,0,0})
 
-	_local op_col << park_col.area_binary_op(:coverage, :union, area_col, :geometry)
+	_local op_col << park_col.binary_op_geometry(:coverage, :union, area_col, :geometry)
 	_self.assert_unset(op_col.expose(), "expose should be unset")
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_col_test_case.test_simple()
+_method binary_op_geometry_col_test_case.test_simple()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	_local a1 << bounding_box.new(0,0,100000,100000)
@@ -52,7 +52,7 @@ _method area_binary_op_col_test_case.test_simple()
 	
 	_for i_op _over {:intersection, :union, :xor, :subtraction}.fast_elements()
 	_loop 
-		_local bin_col << acol1.area_binary_op(:geometry, i_op, acol2, :geometry)
+		_local bin_col << acol1.binary_op_geometry(:geometry, i_op, acol2, :geometry)
 		_local bin_gs << bin_col.geometry_set(:geometry)
 		_local correct_value << (pseudo_area.new(a1).perform(i_op+:|()|, pseudo_area.new(a2))).area
 		
@@ -62,7 +62,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_col_test_case.test_multi_areas()
+_method binary_op_geometry_col_test_case.test_multi_areas()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local acol1 << _self.areas_collection(dsm,
 					       {bounding_box.new_with_size(0,0,10000,10000).coords,
@@ -73,27 +73,27 @@ _method area_binary_op_col_test_case.test_multi_areas()
 						bounding_box.new_with_size(5000,-5000,10000,10000).coords,
 						bounding_box.new_with_size(3000,30000,10000,10000).coords})
 	
-	_local bin_col << acol1.area_binary_op(:geometry, :intersection, acol2, :geometry)
+	_local bin_col << acol1.binary_op_geometry(:geometry, :intersection, acol2, :geometry)
 	_local bin_gs << bin_col.geometry_set(:geometry)
 	_local bin_area << bin_gs.areas_as_coverage()
 	_local correct_value << (5000*5000)*3
 	_self.assert_equals(correct_value, bin_area.area, write_string("Intersection should match"), 1)
 	
-	bin_col << acol1.area_binary_op(:geometry, :union, acol2, :geometry)
+	bin_col << acol1.binary_op_geometry(:geometry, :union, acol2, :geometry)
 	bin_gs << bin_col.geometry_set(:geometry)
 	bin_area << bin_gs.areas_as_coverage()
 	correct_value << (5000*5000)*21
 	
 	_self.assert_equals(correct_value, bin_area.area, write_string("Union should match"), 1)
 	
-	bin_col << acol1.area_binary_op(:geometry, :xor, acol2, :geometry)
+	bin_col << acol1.binary_op_geometry(:geometry, :xor, acol2, :geometry)
 	bin_gs << bin_col.geometry_set(:geometry)
 	bin_area << bin_gs.areas_as_coverage()
 	correct_value << (5000*5000)*18
 	
 	_self.assert_equals(correct_value, bin_area.area, write_string("Xor should match"), 1)
 
-	bin_col << acol1.area_binary_op(:geometry, :subtraction, acol2, :geometry)
+	bin_col << acol1.binary_op_geometry(:geometry, :subtraction, acol2, :geometry)
 	bin_gs << bin_col.geometry_set(:geometry)
 	bin_area << bin_gs.areas_as_coverage()
 	correct_value << (5000*5000)*9
@@ -103,14 +103,14 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_col_test_case.test_area_collection()
+_method binary_op_geometry_col_test_case.test_area_collection()
 	_self.create_park("p1", bounding_box.new(50000,50000,200000,200000).coords)
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
 	
 	_local acol1 << _self.area_collection(dsm, bounding_box.new(0,0,100000,100000).coords)
 	_local acol2 << _self.area_collection(dsm, bounding_box.new(120000,0,200000,100000).coords)
-	_local bin_col << acol1.area_binary_op(:geometry, :union, acol2, :geometry)
+	_local bin_col << acol1.binary_op_geometry(:geometry, :union, acol2, :geometry)
 	
 	_local fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, bin_col, :geometry)
 	_self.assert_equals(1, fcol.size, "one park is within 1 meter of the area")
@@ -118,7 +118,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_col_test_case.test_spatial_filter_collection()
+_method binary_op_geometry_col_test_case.test_spatial_filter_collection()
 	## setup 2 parks, filter them on their bounds and check if parks
 	## are near by.
 	_self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
@@ -130,7 +130,7 @@ _method area_binary_op_col_test_case.test_spatial_filter_collection()
 	
 	_local acol1 << _self.area_collection(dsm, bounding_box.new(-10,-10,10010,20010).coords)
 	_local acol2 << _self.area_collection(dsm, bounding_box.new(10010,0,20010,20010).coords)
-	_local bin_col << acol1.area_binary_op(:geometry, :union, acol2, :geometry)
+	_local bin_col << acol1.binary_op_geometry(:geometry, :union, acol2, :geometry)
 
 	_local fcol << acol.filter_by_geometry(:coverage, :within, bin_col, :geometry)
 	_self.assert_equals(3, fcol.size, "3 parks in all")
@@ -141,14 +141,14 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method area_binary_op_col_test_case.test_geometry_set()
+_method binary_op_geometry_col_test_case.test_geometry_set()
 	_self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
 	_local dsm  << rwan:analysis_dataset_manager.new(:test)
 	_local acol << rwan:sw_collection.new(dsm, _self.park_collection)
 	
 	_local acol1 << _self.area_collection(dsm, bounding_box.new(-10,-10,10010,20010).coords)
 	_local acol2 << _self.area_collection(dsm, bounding_box.new(10010,0,20010,20010).coords)
-	_local bin_col << acol1.area_binary_op(:geometry, :union, acol2, :geometry)
+	_local bin_col << acol1.binary_op_geometry(:geometry, :union, acol2, :geometry)
 
 	_local fcol << acol.filter_by_distance(:coverage, length_value(1,:m), _false, bin_col, :geometry)
 	_local gs << fcol.geometry_set(:coverage)

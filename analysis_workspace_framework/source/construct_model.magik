@@ -414,7 +414,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_intersection()
-	_local dia << area_binary_op_dialog.new_dialog(_self)
+	_local dia << binary_op_geometry_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :intersection)
 	dia.activate()
 _endmethod
@@ -422,7 +422,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_union()
-	_local dia << area_binary_op_dialog.new_dialog(_self)
+	_local dia << binary_op_geometry_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :union)
 	dia.activate()
 _endmethod
@@ -430,7 +430,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_xor()
-	_local dia << area_binary_op_dialog.new_dialog(_self)
+	_local dia << binary_op_geometry_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :xor)
 	dia.activate()
 _endmethod
@@ -438,18 +438,18 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_model.create_subtraction()
-	_local dia << area_binary_op_dialog.new_dialog(_self)
+	_local dia << binary_op_geometry_dialog.new_dialog(_self)
 	dia.set_source_holder(_self.workspace, _self.selected_top_holder, :subtraction)
 	dia.activate()
 _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method construct_model.edit_area_binary_op_dialog(holder, source_col,
+_method construct_model.edit_binary_op_geometry_dialog(holder, source_col,
 						   operation, filter_col)
 	_local source_holder << _self.workspace.holder_for(source_col)
 	_local filter_holder << _self.workspace.holder_for(filter_col)
-	_local dia << area_binary_op_dialog.new_dialog(_self)
+	_local dia << binary_op_geometry_dialog.new_dialog(_self)
 	dia.set_holder(_self.workspace,
 		       holder, source_holder,
 		       operation, filter_holder)

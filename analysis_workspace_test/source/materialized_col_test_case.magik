@@ -43,18 +43,31 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.test_exposure()
+	_local road_col << _self.create_base_data()
+	_local settings << materialization_settings.new(_self.min_road_collection)
+	settings.set_name(:int_name, :ext_name)
+	settings.add_field(:min_road_id)
+	settings.add_field(:name, "New Ex Name", _unset)
+	
+	_local mat_col << rwan:materialized_collection.new(.ds, road_col, settings)
+	
+	_local mat_sw_col << mat_col.expose()
+	_self.assert_equals("New Ex Name", mat_sw_col.field(:name).external_name, "Externe name should match")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method materialized_col_test_case.test_rename_field()
 	_local road_col << _self.create_base_data()
 	_local settings << materialization_settings.new(_self.min_road_collection)
 	settings.set_name(:int_name, :ext_name)
 	settings.add_field(:min_road_id)
-	settings.add_field(:name, :new_name, "New Ex Name", _unset)
 	
 	_local mat_col << rwan:materialized_collection.new(.ds, road_col, settings)
 	
 	_local mat_sw_col << mat_col.expose()
-	_self.assert_not_unset(mat_sw_col.field(:new_name), "Field should exist")
-	_self.assert_equals("New Ex Name", mat_sw_col.field(:new_name).external_name, "Externe name should match")
+	_self.assert_not_unset(mat_sw_col.field(:min_road_id), "Expose contains field")
 _endmethod
 $
 

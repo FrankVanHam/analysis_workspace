@@ -18,33 +18,29 @@
 _package rwan
 $
 
-#remex(:spatial_analysis_col_test_case)
+#remex(:binary_op_geometry_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
-## Test using sw_collections
-#
-def_slotted_exemplar(:sw_collection_test_case,
+## Test filters.
+##
+def_slotted_exemplar(:spatial_filter_geometry_col_tc,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method sw_collection_test_case.test_exposure()
+_method spatial_filter_geometry_col_tc.test_geom_category
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local area_col << _self.area_collection(dsm, bounding_box.new_with_size(0,0,1000,1000).coords)
+	_local area_col2 << _self.area_collection(dsm, bounding_box.new_with_size(500,500,1500,1500).coords)
+	
+	_local filter_col << area_col.filter_by_geometry(:geometry, :interacting_with, area_col2, :geometry)
+	_self.assert_equals(:area, filter_col.geom_category, "Should be area")
 
-	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
-	_self.assert_equals(_self.min_road_collection, acol.expose(), "Expose should be a road")
+	_local line_col << _self.lines_collection(dsm, {{0,0,100,100}})
+	filter_col << line_col.filter_by_geometry(:geometry, :interacting_with, area_col2, :geometry)
+	_self.assert_equals(0, filter_col.size, "Should be empty")
+	_self.assert_equals(:linear, filter_col.geom_category, "Should be line, although empty")
 _endmethod
 $
-
-_pragma(classify_level=basic, topic={analysis})
-_method sw_collection_test_case.test_basic_size()
-	_local dsm << rwan:analysis_dataset_manager.new(:test)
-
-	# road analytic collection and area 
-	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
-	_self.assert_equals(_self.min_road_collection.size, acol.size, "sizes should match")
-_endmethod
-$
-

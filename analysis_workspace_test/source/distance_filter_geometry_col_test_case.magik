@@ -18,33 +18,30 @@
 _package rwan
 $
 
-#remex(:spatial_analysis_col_test_case)
+#remex(:binary_op_geometry_col_test_case)
 
 _pragma(classify_level=basic, topic={analysis})
 ##
-## Test using sw_collections
-#
-def_slotted_exemplar(:sw_collection_test_case,
+## Test distance filters.
+##
+def_slotted_exemplar(:distance_filter_geometry_col_tc,
 	{},
 	:base_analysis_db_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method sw_collection_test_case.test_exposure()
+_method distance_filter_geometry_col_tc.test_geom_category
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local area_col << _self.area_collection(dsm, bounding_box.new_with_size(0,0,1000,1000).coords)
+	_local area_col2 << _self.area_collection(dsm, bounding_box.new_with_size(500,500,1000,1000).coords)
+	_local filter_col << area_col.filter_by_distance(:geometry, length_value(10,:m), _false, area_col2, :geometry)
 
-	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
-	_self.assert_equals(_self.min_road_collection, acol.expose(), "Expose should be a road")
+	_self.assert_equals(1, filter_col.size, "Should be 1")
+	_self.assert_equals(:area, filter_col.geom_category, "Areas")
+
+	area_col2 << _self.area_collection(dsm, bounding_box.new_with_size(5000,5000,1000,1000).coords)
+	 filter_col << area_col.filter_by_distance(:geometry, length_value(10,:mm), _false, area_col2, :geometry)
+	_self.assert_equals(0, filter_col.size, "Should be 0")
+	_self.assert_equals(:area, filter_col.geom_category, "Areas")
 _endmethod
 $
-
-_pragma(classify_level=basic, topic={analysis})
-_method sw_collection_test_case.test_basic_size()
-	_local dsm << rwan:analysis_dataset_manager.new(:test)
-
-	# road analytic collection and area 
-	_local acol << rwan:sw_collection.new(dsm, _self.min_road_collection)
-	_self.assert_equals(_self.min_road_collection.size, acol.size, "sizes should match")
-_endmethod
-$
-
