@@ -44,3 +44,143 @@ _method spatial_filter_geometry_col_tc.test_geom_category
 	_self.assert_equals(:linear, filter_col.geom_category, "Should be line, although empty")
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_col_tc.test_dividing()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.lines_collection(dsm, {{0,0, 100000, 0}})
+	
+	_local pcol << _self.lines_collection(dsm, {{50000,50000, 50000, -10}})
+	_local fcol << acol.filter_by_geometry(:centre_line, :dividing, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "1 road is divided by the chain")
+	
+	pcol << _self.lines_collection(dsm, {{50000,50000, 50000, -10}, {100, 100, 200,100}})
+	fcol << acol.filter_by_geometry(:centre_line, :dividing, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "1 road is divided by one chain")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_col_tc.test_overlaying()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.areas_collection(dsm, {{0,0,50000,0,50000,50000,0,50000,0,0}})
+	
+	_local pcol << _self.areas_collection(dsm, {{25000,25000, 100000, 25000, 100000, 100000, 25000, 100000, 25000, 25000}})
+	_local fcol << acol.filter_by_geometry(:coverage, :overlaying, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "the park is overlaying the area")
+	
+	pcol << _self.points_collection(dsm, {{25000,25000, 100000, 25000, 100000, 100000, 25000, 100000, 25000, 25000},
+					      {25000,25000, 100000, 25000, 100000, 100000, 25000, 100000, 25000, 25000}})
+	fcol << acol.filter_by_geometry(:coverage, :interacting_with, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "still return one park although it overlays twice")
+	
+	pcol << _self.points_collection(dsm, {{25000,25000, 100000, 25000, 100000, 100000, 25000, 100000, 25000, 25000},
+					      {50010, 50010, 60000, 50010, 60000, 60000, 50010, 60000, 50010, 50010}})
+	fcol << acol.filter_by_geometry(:coverage, :interacting_with, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "still return one park although one does not overlay")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_col_tc.test_overlapping()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.areas_collection(dsm, {{0,0,50000,0,50000,50000,0,50000,0,0}})
+	
+	_local pcol << _self.areas_collection(dsm, {{25000, 25000, 60000, 25000, 60000, 60000, 25000, 60000, 25000, 25000}})
+	_local fcol << acol.filter_by_geometry(:coverage, :overlapping, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "the park is overlapping the area")
+	
+	pcol << _self.areas_collection(dsm, {{25000, 25000, 60000, 25000, 60000, 60000, 25000, 60000, 25000, 25000},
+					      {50010, 50010, 60000, 50010, 60000, 60000, 50010, 60000, 50010, 50010}})
+	fcol << acol.filter_by_geometry(:coverage, :overlapping, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "still return one park although one does not overlap")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_col_tc.test_within()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.areas_collection(dsm, {{0,0,50000,0,50000,50000,0,50000,0,0}})
+	
+	_local pcol << _self.areas_collection(dsm, {{-10, -10, 50010, -10, 50010, 50010, -10, 50010, -10, -10}})
+	_local fcol << acol.filter_by_geometry(:coverage, :within, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "the park is within the area")
+	
+	pcol << _self.areas_collection(dsm, {{-10, -10, 50010, -10, 50010, 50010, -10, 50010, -10, -10},
+					      {50010, 50010, 60000, 50010, 60000, 60000, 50010, 60000, 50010, 50010}})
+	fcol << acol.filter_by_geometry(:coverage, :within, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "still return one park although one is not overlapping")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_col_tc.test_containing()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.areas_collection(dsm, {{0,0,50000,0,50000,50000,0,50000,0,0}})
+	
+	_local pcol << _self.areas_collection(dsm, {{25000, 25000, 40000, 25000, 40000, 40000, 25000, 40000, 25000, 25000}})
+	_local fcol << acol.filter_by_geometry(:coverage, :containing, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "the park is containing the area")
+	
+	pcol << _self.areas_collection(dsm, {{25000, 25000, 40000, 25000, 40000, 40000, 25000, 40000, 25000, 25000},
+					     {50010, 50010, 60000, 50010, 60000, 60000, 50010, 60000, 50010, 50010}})
+	fcol << acol.filter_by_geometry(:coverage, :containing, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "still return one park although one is not contained")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_col_tc.test_equals()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.lines_collection(dsm, {{0,0, 100000, 0}})
+	
+	_local pcol << _self.lines_collection(dsm, {{0, 0, 100000, 0}})
+	_local fcol << acol.filter_by_geometry(:centre_line, :equal_to, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "1 road is equal to the chain")
+	
+	pcol << _self.lines_collection(dsm, {{0, 0, 100000, 0}, {100, 100, 200,100}})
+	fcol << acol.filter_by_geometry(:centre_line, :equal_to, pcol, :geometry)
+	_self.assert_equals(1, fcol.size, "1 road is equal to the chain")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_filter_geometry_col_tc.test_basic()
+	## Test includes?() and an_element() and size
+	## 
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+		
+	_local s1 << _self.sector_rope_from(bounding_box.new_with_size(0,100, 1000,1000).coords)
+	_local s2 << _self.sector_rope_from(bounding_box.new_with_size(1000,1000, 1000,1000).coords)
+	_local s3 << _self.sector_rope_from(bounding_box.new_with_size(2000,100, 1000,1000).coords)
+	
+	_local a1 << pseudo_area.new_for_world(s1, _self.gv.world)
+	_local a2 << pseudo_area.new_for_world(s2, _self.gv.world)
+	_local a3 << pseudo_area.new_for_world(s3, _self.gv.world)
+	
+	_local area_col << rwan:geometry_collection.new(dsm, geometry_set.new_with(a1,a2,a3))
+	_local p1 << _self.create_park("p3", bounding_box.new_with_size(0,0,3000,200).coords)
+	_local park_col << rwan:record_set_collection.new(dsm, {p1})
+		
+	_local fcol << area_col.filter_by_geometry(:geometry, :interacting_with, park_col, :coverage)
+
+	_self.assert_true(fcol.ref_collections.includes?(area_col), "Area is the base")
+	_self.assert_true(fcol.includes?(a1), "A1 should be includes")
+	_self.assert_false(fcol.includes?(a2), "A2 should not be includes")
+	
+	_local an << fcol.an_element()
+	_self.assert_true((a1 = an) _orif (a3 = an), "Should be one of 2")
+	_self.assert_equals(2, fcol.size, "Size = 2")
+	
+	# inverse if
+	fcol << area_col.filter_by_geometry(:geometry, :disjoint_from, park_col, :coverage)
+	_self.assert_true(fcol.includes?(a2), "A2 should be includes")
+	_self.assert_false(fcol.includes?(a1), "A1 should not be includes")
+	
+	an << fcol.an_element()
+	_self.assert_true((a2 = an), "Should be one really")
+	_self.assert_equals(1, fcol.size, "Size = 1")
+_endmethod
+$

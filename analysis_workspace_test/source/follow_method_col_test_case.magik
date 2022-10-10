@@ -46,7 +46,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method follow_method_col_test_case.test_basics()
+_method follow_method_col_test_case.test_follow_basics()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	_local r1 << _self.create_road("access1", {0,0,10000,0})
@@ -77,5 +77,25 @@ _method follow_method_col_test_case.test_geometry_set()
 	
 	_self.assert_equals(10, gs.size, "10 hotel locations")
 	_self.assert_not_unset(j_col.goto_bounds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_method_col_test_case.test_basic()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local r1 << _self.create_road("access_1", {0,0,10000,0})
+	_local r2 << _self.create_road("access_2", {0,0,10000,0})
+	_local r3 << _self.create_road("access_3", {0,0,10000,0})
+	
+	_local road_col << rwan:record_set_collection.new(dsm, {r1})
+	_local j_col << road_col.follow_method(:next)
+	
+	_local rec << j_col.an_element()
+	_self.assert_true(rec _isnt _unset, "Rec isnt unset")
+	_self.assert_true(rec = r2, "access_2 should be next")
+	_self.assert_true(j_col.ref_collections.includes?(road_col), "road is ref col")
+	_self.assert_true(j_col.includes?(r2), "rec should be included")
+	
+	_self.assert_equals(1, j_col.size, "Size = 1")
 _endmethod
 $

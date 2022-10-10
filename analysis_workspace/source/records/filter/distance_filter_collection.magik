@@ -28,13 +28,12 @@ _pragma(classify_level=basic, topic={analysis})
 ## large collection. If .arg is not, then you rather should use distance_area_filter_collection
 def_slotted_exemplar(:distance_filter_collection,
 	{
-		{:source_collection, _unset},
 		{:source_geom_name,  _unset},
 		{:distance,          _unset},
 		{:is_inverse,        _unset},
 		{:filter_collection, _unset},
 		{:filter_geom_name,  _unset}
-	}, :base_record_collection)
+	}, :base_filter_collection)
 $
 
 
@@ -46,7 +45,6 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method distance_filter_collection.init(dsm, source_col, source_geom_name, distance, is_inverse, filter_col, filter_geom_name)
-	.source_collection << source_col
 	.source_geom_name << source_geom_name
 	.distance << distance
 	.is_inverse << is_inverse
@@ -54,10 +52,10 @@ _private _method distance_filter_collection.init(dsm, source_col, source_geom_na
 	.filter_geom_name << filter_geom_name
 
 	# protect agains nonsense
-	.source_collection.assert_geom_name(.source_geom_name)
+	source_col.assert_geom_name(.source_geom_name)
 	.filter_collection.assert_geom_name(.filter_geom_name)
 
-	_return _super.init(dsm)
+	_return _super.init(dsm, source_col)
 _endmethod
 $
 
@@ -75,24 +73,6 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method distance_filter_collection.editable?
 	_return _true 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method distance_filter_collection.geometry_refs
-	_return .source_collection.geometry_refs
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method distance_filter_collection.expose()
-	_return .source_collection.expose()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_collection.geometry_for(rec, geom_name)
-	_return .source_collection.geometry_for(rec, geom_name)
 _endmethod
 $
 
@@ -115,31 +95,6 @@ $
 #	_return {_self.base_collection, .arg}
 #_endmethod
 #$
-
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_collection.size_is_fast?
-	## no, size is generally not fast as it is spatially filtered.
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method distance_filter_collection.read_stream(_optional filter)
-	## Return my read_stream. If filter is set, the let the filter
-	## filter my results. Otherwise set myself as the filter of my
-	## source_collection
-	#
-	_local str << .source_collection.read_stream(_self)
-	_if filter _isnt _unset
-	_then
-		_return filter.filter_stream(str)
-	_else 
-		_return str
-	_endif 
-_endmethod
-$
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_collection.world_distance

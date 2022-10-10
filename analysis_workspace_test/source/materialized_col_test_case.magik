@@ -133,6 +133,27 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method materialized_col_test_case.test_basic()
+	## Test includes?() and an_element() and size
+	_local road_col << _self.create_base_data()
+	_local settings << materialization_settings.new(_self.min_road_collection)
+	settings.set_name(:int_name, :ext_name)
+	settings.add_field(:min_road_id)
+	settings.add_field(:name, "New Ex Name", _unset)
+	
+	_local mat_col << rwan:materialized_collection.new(.ds, road_col, settings)
+
+	_local rec << mat_col.an_element()
+	_self.assert_true(rec _isnt _unset, "Rec isnt unset")
+	_self.assert_true(mat_col.ref_collections.includes?(road_col), "road is ref col")
+	_self.assert_true(mat_col.includes?(rec), "rec should be included")
+	
+	_self.assert_equals(3, mat_col.size, "Size = 3")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _private _method materialized_col_test_case.set_up_dsm()
 	_local source_path << smallworld_product.get_resource_file(
 				      "analysis.ds",

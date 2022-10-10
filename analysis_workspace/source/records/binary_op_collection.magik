@@ -94,15 +94,22 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method binary_op_collection.ref_collections
+	_return {.source_collection, .filter_collection}
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _method binary_op_collection.expose()
 	_return .source_collection.expose()
 _endmethod
 $
 
-_pragma(classify_level=restricted, topic={analysis})
-_method binary_op_collection.size_is_fast?
-	## no, size is generally not fast as it is spatially filtered.
-	_return _false 
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_collection.includes?(rec)
+	_return binary_op_filter.new(.source_collection,
+				     .operator,
+				     .filter_collection).includes?(rec)
 _endmethod
 $
 
@@ -112,8 +119,8 @@ _method binary_op_collection.read_stream(_optional filter)
 	## filter my results. Otherwise set myself as the filter of my
 	## source_collection
 	#
-	_local source_str << .source_collection.read_stream(_self)
-	_local filter_str << .filter_collection.read_stream(_self)
+	_local source_str << .source_collection.read_stream()
+	_local filter_str << .filter_collection.read_stream()
 	_local bin_str << binary_op_stream.new(.source_collection, source_str,
 					       .operator,
 					       .filter_collection, filter_str)
@@ -129,12 +136,6 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method binary_op_collection.geometry_for(rec, geom_name)
 	_return .source_collection.geometry_for(rec, geom_name)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method binary_op_collection.filter_stream(stream)
-	_return stream
 _endmethod
 $
 

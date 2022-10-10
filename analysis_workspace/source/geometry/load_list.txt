@@ -1,9 +1,6 @@
 base_spatial_collection
 geometry_collection
 materialized_geometry_collection
-spatial_filter_geometry_collection
-distance_filter_geometry_collection
 buffer_geometry_collection
 binary_op_geometry_collection
-bounds_filter_geometry_collection
-binary_op_geometry_collection
+filter/

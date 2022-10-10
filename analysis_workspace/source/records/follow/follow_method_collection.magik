@@ -80,6 +80,7 @@ _method follow_method_collection.read_stream(_optional filter)
 _endmethod
 $
 
+
 _pragma(classify_level=restricted, topic={analysis})
 _method follow_method_collection.actual_collection
 	_local (methd, args, external_name, target) << _self.method_data(.source_collection, .methd)

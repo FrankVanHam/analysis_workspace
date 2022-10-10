@@ -60,6 +60,25 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method materialized_geom_col_test_case.test_basic()
+	_local s1 << _self.sector_rope_from(bounding_box.new_with_size(0,0,100,100).coords)
+	_local a1 << pseudo_area.new_for_world(s1, _self.gv.world)
+	_local s2 << _self.sector_rope_from(bounding_box.new_with_size(200,200,100,100).coords)
+	_local a2 << pseudo_area.new_for_world(s2, _self.gv.world)
+	_local g_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(a1,a2))
+	
+	_local j_col << rwan:materialized_geometry_collection.new(.ds, g_col)
+	
+	_local rec << j_col.an_element()
+	_self.assert_true(rec _isnt _unset, "Rec isnt unset")
+	_self.assert_true(j_col.ref_collections.includes?(g_col), "includes geom col as ref")
+	_self.assert_true(j_col.includes?(rec), "rec should be included")
+	
+	_self.assert_equals(2, j_col.size, "Size = 2")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _private _method materialized_geom_col_test_case.set_up_dsm()
 	_local source_path << smallworld_product.get_resource_file(
 				      "analysis.ds",

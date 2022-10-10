@@ -74,12 +74,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method materialized_collection.size_is_fast?
-	_return _self.actual_collection.size_is_fast?
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.size
 	_return _self.actual_collection.size
 _endmethod

@@ -39,24 +39,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.geometry_set(geom_name)
-	## Defaults to retrieving the set by getting the geometries
-	## from the individual records.
-	## 
-	_local gs << geometry_set.new()
-	_for i_rec _over _self.fast_elements()
-	_loop
-		_local geom << _self.geometry_for(i_rec, geom_name)
-		_if geom _isnt _unset
-		_then
-			gs.add(geom)
-		_endif
-	_endloop
-	_return gs
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.compatible_with?(other)
 	_return other.is_record_collection? _andif
 		(_self.expose() _is other.expose())
@@ -75,7 +57,6 @@ _method base_record_collection.geometry_for(rec, geom_name)
 	_return rec.geometry(geom_name)
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method base_record_collection.goto_bounds

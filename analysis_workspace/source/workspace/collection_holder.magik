@@ -156,12 +156,6 @@ _method collection_holder.viewable?
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method collection_holder.has_geometry?
-	_return .collection.has_geometry?
-_endmethod
-$
-
 _pragma(classify_level=restricted, topic={analysis})
 _method collection_holder.collection
 	_return .collection

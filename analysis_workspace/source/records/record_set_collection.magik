@@ -108,12 +108,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method record_set_collection.size_is_fast?
-	_return _true  
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
 _method record_set_collection.includes?(rec)
 	_return .base_set.includes?(rec)
 _endmethod

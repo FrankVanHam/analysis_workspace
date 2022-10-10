@@ -1,8 +1,4 @@
 base_record_collection
-predicate_filter_collection
-spatial_filter_collection
-distance_filter_collection
-bounds_filter_collection
 record_set_collection
 sw_collection
 buffer_collection
@@ -13,3 +9,4 @@ materialization_setting
 materialized_collection_creator
 
 follow/
+filter/

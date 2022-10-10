@@ -1,0 +1,5 @@
+base_filter_collection
+predicate_filter_collection
+spatial_filter_collection
+distance_filter_collection
+bounds_filter_collection

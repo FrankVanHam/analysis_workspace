@@ -44,3 +44,30 @@ _method bounds_filter_geometry_col_tc.test_geom_category
 	_self.assert_equals(:linear, filter_col.geom_category, "Should be line")
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method bounds_filter_geometry_col_tc.test_basic()
+	## Test includes?() and an_element() and size
+	## 
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+		
+	_local s1 << _self.sector_rope_from(bounding_box.new_with_size(0,100, 1000,1000).coords)
+	_local s2 << _self.sector_rope_from(bounding_box.new_with_size(1000,1000, 1000,1000).coords)
+	_local s3 << _self.sector_rope_from(bounding_box.new_with_size(2000,100, 1000,1000).coords)
+	
+	_local p1 << pseudo_area.new_for_world(s1, _self.gv.world)
+	_local p2 << pseudo_area.new_for_world(s2, _self.gv.world)
+	_local p3 << pseudo_area.new_for_world(s3, _self.gv.world)
+	
+	_local park_col << rwan:geometry_collection.new(dsm, geometry_set.new_with(p1,p2,p3))
+	
+	_local bounds_col << park_col.filter_by_bounds(:coverage, bounding_box.new_with_size(0,0,3000,200))
+	_self.assert_true(bounds_col.ref_collections.includes?(park_col), "Road is the base")
+	_self.assert_true(bounds_col.includes?(p1), "P1 should be includes")
+	_self.assert_false(bounds_col.includes?(p2), "P2 should not be includes")
+	
+	_local an << bounds_col.an_element()
+	_self.assert_true((p1 = an) _orif (p3 = an), "Should be one of 2")
+	_self.assert_equals(2, bounds_col.size, "Size = 2")
+_endmethod
+$

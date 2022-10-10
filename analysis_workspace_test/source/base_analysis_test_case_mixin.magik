@@ -31,7 +31,6 @@ _method base_analysis_test_case_mixin.area_collection(dsm, oords)
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
 _method base_analysis_test_case_mixin.areas_collection(dsm, coord_sets)
 	_local gs << geometry_set.new()

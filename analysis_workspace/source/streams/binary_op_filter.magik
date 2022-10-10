@@ -1,0 +1,117 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:binary_op_filter)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+## stream that filters the sourcestream on spatial predicate.
+def_slotted_exemplar(:binary_op_filter,
+	{
+		{:source_collection, _unset},
+		{:operator,          _unset},
+		{:filter_collection, _unset}
+	}, :input_stream_with_unget_mixin)
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+binary_op_filter.define_shared_constant(
+	:supported_operations,
+	{:intersection, :union, :xor, :subtraction},
+	:private)
+$
+	
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_filter.new(source_col, operator, filter_col)
+	_return _clone.init(source_col, operator, filter_col)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_filter.init(source_col, operator,
+				       filter_col)
+	.source_collection << source_col
+	
+	_if _self.supported_operations.includes?(operator).not
+	_then
+		condition.raise(:error, :string, write_string("Operator ", operator, " is not supported"))
+	_endif
+	.operator  << operator
+	.filter_collection << filter_col
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_filter.includes?(rec)
+	_return _self.perform_private(write_string(:|includes_|, .operator, :|?()|).as_symbol(), rec)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_filter.includes_intersection?(rec)
+	##
+	## rec is both in source as in filter.
+	##
+	_return .source_collection.includes?(rec) _andif
+		.filter_collection.includes?(rec) 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_filter.includes_union?(rec)
+	## 
+	## rec is either in source or filter
+	_return .source_collection.includes?(rec) _orif
+		.filter_collection.includes?(rec)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_filter.includes_xor?(rec)
+	## 
+	## rec is either in source XOR in filter. Bot not both
+	_local s? << .source_collection.includes?(rec)
+	_local f? << .filter_collection.includes?(rec)
+	_return s? _xor f?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_private _method binary_op_filter.includes_subtraction?(rec)
+	## 
+	## rec is in source and NOT in filter.
+	_return .source_collection.includes?(rec) _orif
+		.filter_collection.includes?(rec).not
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_filter.close()
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method binary_op_filter.reset()
+	
+_endmethod
+$

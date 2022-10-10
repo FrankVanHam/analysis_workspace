@@ -1,0 +1,4 @@
+base_spatial_filter_collection
+bounds_filter_geometry_collection
+distance_filter_geometry_collection
+spatial_filter_geometry_collection

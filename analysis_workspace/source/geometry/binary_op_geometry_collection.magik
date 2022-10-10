@@ -97,14 +97,6 @@ _method binary_op_geometry_collection.geom_category
 _endmethod
 $
 
-
-_pragma(classify_level=restricted, topic={analysis})
-_method binary_op_geometry_collection.size_is_fast?
-	## no, size is generally not fast as it is spatially filtered.
-	_return _false 
-_endmethod
-$
-
 _pragma(classify_level=restricted, topic={analysis})
 _method binary_op_geometry_collection.read_stream(_optional filter)
 	## Return my read_stream. If filter is set, the let the filter

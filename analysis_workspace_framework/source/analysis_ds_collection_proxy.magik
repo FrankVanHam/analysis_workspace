@@ -80,12 +80,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method analysis_ds_collection_proxy.size_is_fast?
-	_return .collection.size_is_fast?
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method analysis_ds_collection_proxy.size
 	_return .collection.size
 _endmethod

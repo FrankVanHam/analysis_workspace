@@ -114,3 +114,37 @@ _method distance_filter_col_test_case.test_geometry_set()
 	_self.assert_not_unset(fcol.goto_bounds)
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method distance_filter_col_test_case.test_basic()
+	## Test includes?() and an_element() and size
+	## 
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local park_col << rwan:sw_collection.new(dsm, _self.park_collection)
+	
+	_local p1 << _self.create_park("p1", bounding_box.new_with_size(0,100, 1000,1000).coords)
+	_local p2 << _self.create_park("p2", bounding_box.new_with_size(1000,1000, 1000,1000).coords)
+	_local p3 << _self.create_park("p3", bounding_box.new_with_size(2000,100, 1000,1000).coords)
+	
+	_local line_col << _self.lines_collection(dsm, {{0,0,3000,0}})
+	_local fcol << park_col.filter_by_distance(:coverage, length_value(200,:mm), _false, line_col, :geometry)
+	
+	_self.assert_true(fcol.ref_collections.includes?(park_col), "Road is the base")
+	_self.assert_true(fcol.includes?(p1), "P1 should be includes")
+	_self.assert_false(fcol.includes?(p2), "P2 should not be includes")
+	
+	_local an << fcol.an_element()
+	_self.assert_true((p1 = an) _orif (p3 = an), "Should be one of 2")
+	_self.assert_equals(2, fcol.size, "Size = 2")
+	
+	# inverse if
+	_local b_col << park_col.filter_by_bounds(:coverage, bounding_box.new_with_size(0,0,3000,1000))
+	fcol << b_col.filter_by_distance(:coverage, length_value(200,:mm), _true, line_col, :geometry)
+	_self.assert_true(fcol.includes?(p2), "P2 should be includes")
+	_self.assert_false(fcol.includes?(p1), "P1 should not be includes")
+	
+	an << fcol.an_element()
+	_self.assert_true((p2 = an), "Should be one really")
+	_self.assert_equals(1, fcol.size, "Size = 1")
+_endmethod
+$

@@ -325,7 +325,6 @@ _private _method base_dialog.filter_holder_items()
 	_loop
 		_if i_holder _is .holder _then _continue _endif
 		_if i_holder _is .source_holder _then _continue _endif
-		_if i_holder.has_geometry?.not  _then _continue _endif
 		items.add({i_holder, i_holder.name})
 	_endloop
 	items << items.as_sorted_collection(_proc(a,b) >> a[2] _cf b[2] _endproc )

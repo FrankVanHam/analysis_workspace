@@ -61,6 +61,19 @@ $
 
 ###################################################################################################################
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_follow_collection.includes?(rec)
+	## 
+	## Answer if rec is part of self. This is a very inefficient
+	## method because we can not work back to the .source_collection
+	_for i_rec _over _self.fast_elements()
+	_loop
+		_if i_rec = rec _then _return _true _endif
+	_endloop
+	_return _false 
+_endmethod
+$
+
 _pragma(classify_level=restricted, topic={analysis})
 _method base_follow_collection.editable?
 	_return _true 

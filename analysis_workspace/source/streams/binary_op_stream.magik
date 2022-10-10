@@ -159,12 +159,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis, collections})
-_method binary_op_stream.size_is_fast?
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis, collections})
 _method binary_op_stream.close()
 	.source_stream.close()
 _endmethod

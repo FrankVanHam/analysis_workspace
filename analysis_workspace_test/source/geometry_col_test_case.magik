@@ -39,3 +39,23 @@ _method geometry_col_test_case.test_geom_category
 	_self.assert_equals(:linear, line_col.geom_category, "Should be line")
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method geometry_col_test_case.test_basic()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local s1 << _self.sector_rope_from(bounding_box.new_with_size(0,0,100,100).coords)
+	_local a1 << pseudo_area.new_for_world(s1, _self.gv.world)
+	_local s2 << _self.sector_rope_from(bounding_box.new_with_size(200,200,100,100).coords)
+	_local a2 << pseudo_area.new_for_world(s2, _self.gv.world)
+	
+	_local j_col << rwan:geometry_collection.new(dsm, geometry_set.new_with(a1,a2))
+	
+	_local rec << j_col.an_element()
+	_self.assert_true(rec _isnt _unset, "Rec isnt unset")
+	_self.assert_true((rec = a1) _orif (rec = a2), "access_2 should be next")
+	_self.assert_true(j_col.ref_collections.empty?, "no refs")
+	_self.assert_true(j_col.includes?(a2), "rec should be included")
+	
+	_self.assert_equals(2, j_col.size, "Size = 2")
+_endmethod
+$

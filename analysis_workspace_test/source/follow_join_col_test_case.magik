@@ -46,7 +46,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method follow_join_col_test_case.test_basics()
+_method follow_join_col_test_case.test_join_basics()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 
 	_local r1 << _self.create_road("access1", {0,0,10000,0})
@@ -97,5 +97,34 @@ _method follow_join_col_test_case.test_geometry_set()
 	
 	_self.assert_equals(3, gs.size, "3 lines")
 	_self.assert_not_unset(fcol.goto_bounds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_col_test_case.test_basic()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+
+	_local r1 << _self.create_road("access1", {0,0,10000,0})
+	_local r2 << _self.create_road("access2", {0,0,0,10000})
+	_local r3 << _self.create_road("access3", {0,0,0,-10000})
+
+	_local pub << _self.create_pub("The Drunk", {0,0})
+	pub.min_roads.add(r1)
+	pub.min_roads.add(r2)
+	_local pub1 << _self.create_pub("The Drunk2", {5000,0})
+	pub.min_roads.add(r3)
+	_local pub2 << _self.create_pub("The Drunk3", {10000,0})
+
+	_local roads << rwo_set.new_with(r1,r2,r3)
+	
+	_local road_col << rwan:record_set_collection.new(dsm, {pub, pub1})
+	_local j_col << road_col.follow_join(:min_roads)
+	
+	_local rec << j_col.an_element()
+	_self.assert_true(roads.includes?(rec), "Rec isnt unset")
+	_self.assert_true(j_col.ref_collections.includes?(road_col), "road is ref col")
+	_self.assert_true(j_col.includes?(r2), "rec should be included")
+	
+	_self.assert_equals(3, j_col.size, "Size = 3")
 _endmethod
 $

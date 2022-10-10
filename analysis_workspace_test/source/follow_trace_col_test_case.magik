@@ -50,10 +50,10 @@ _private _method follow_trace_col_test_case.create_basic_setup()
 	_local start << _self.create_hotel("start", {0, 0})
 	_local start2 << _self.create_hotel("h1", {40000, 0})
 	_self.create_hotel("h2", {0, 40000})
-	_self.create_road_works("stop1", {30000, 0})
-	_self.create_road_works("stop2", {0, 30000})
+	_local rw1 << _self.create_road_works("stop1", {30000, 0})
+	_local rw2 << _self.create_road_works("stop2", {0, 30000})
 	
-	_return start, start2
+	_return start, start2, rw1, rw2
 _endmethod
 $
 
@@ -133,5 +133,24 @@ _method follow_trace_col_test_case.test_geometry_set()
 	_local gs << h_col.geometry_set(:location)
 	_self.assert_equals(2, gs.size, "2 points")
 	_self.assert_not_unset(h_col.goto_bounds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_col_test_case.test_basic()
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	_local (start, start2, rw1, rw2) << _self.create_basic_setup()
+	_local start_col << rwan:record_set_collection.new(dsm, {start, start2})
+	_local f_col << start_col.follow_trace(:location, _self.road_works_collection,
+					       property_list.new(), length_value.new(50,:m))
+
+	_local road_works << rwo_set.new_with(rw1, rw2)
+	
+	_local rec << f_col.an_element()
+	_self.assert_true(road_works.includes?(rec), "result is part of roadworks")
+	_self.assert_true(f_col.ref_collections.includes?(start_col), "hotel is ref col")
+	_self.assert_true(f_col.includes?(rw2), "rec should be included")
+	
+	_self.assert_equals(2, f_col.size, "Size = 2")
 _endmethod
 $

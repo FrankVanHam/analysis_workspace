@@ -26,8 +26,23 @@ _pragma(classify_level=basic, topic={analysis})
 ## geometries.
 ##
 def_slotted_exemplar(:base_spatial_collection,
-	{},
+	{
+		{:geom_category, _unset}
+	},
 	:base_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_spatial_collection.init(_gather args)
+	## 
+	_super.init(_scatter args)
+
+	_local elem << _self.an_element()
+	.geom_category << _if elem _isnt _unset
+			  _then >> elem.geom_category
+			  _endif 
+	>> _self 
+_endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
@@ -39,10 +54,9 @@ _method base_spatial_collection.geometry_refs
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.geom_category
-	_return _self.an_element().geom_category
+	_return .geom_category
 _endmethod
 $
 
@@ -59,93 +73,12 @@ _method base_spatial_collection.compatible_with?(other)
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.goto_bounds
 	_return _self.geometry_set(:geometry).bounds
 _endmethod
 $
 
-
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.is_spatial?
-#	_return _true  
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_abstract _method base_spatial_collection.convert_to_spatial()
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_abstract _method base_spatial_collection.convert_to_geometry()
-#_endmethod
-#$
-#
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_iter _method base_spatial_collection.fast_geometries()
-#	_for i_geom _over _self.fast_elements()
-#	_loop
-#		_loopbody(i_geom)
-#	_endloop 
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_iter _method base_spatial_collection.fast_elements()
-#	_for e _over _self.fast_geometries()
-#	_loop
-#		_loopbody(e)
-#	_endloop 
-#_endmethod
-#$
-#
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.buffer(geom_name, distance, _optional corner_style, end_style)
-#	_return buffer_collection.new(.dsm, _self, geom_name, distance, corner_style, end_style)
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.spatial_operation(other, mthd)
-#	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, mthd)
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.xor(other)
-#	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :xor)
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.union(other)
-#	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :union)
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.subtraction(other)
-#	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :difference)
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.intersection(other)
-#	_return sw:get_global_value(@rwan:spatial_binary_op_collection).new(.dsm, _self, other, :intersection)
-#_endmethod
-#$
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method base_spatial_collection.description(translator)
-#	_return _self.message(:description)
-#_endmethod
-#$
-#
-#
 _pragma(classify_level=basic, topic={analysis})
 _method base_spatial_collection.buffer(source_geom_name, distance, corner_style, end_style)
 	_return rwan:buffer_geometry_collection.new(.dsm, _self,

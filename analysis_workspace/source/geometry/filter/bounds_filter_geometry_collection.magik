@@ -28,10 +28,10 @@ def_slotted_exemplar(:bounds_filter_geometry_collection,
 	{
 		{:source_collection, _unset},
 		{:bounds,            _unset}
-	}, :base_spatial_collection)
+	}, :base_spatial_filter_collection)
 $
 
-message_handler.new(:bounds_filter_geometry_collection).add_use(:base_spatial_collection)
+message_handler.new(:bounds_filter_geometry_collection).add_use(:base_spatial_filter_collection)
 $
 
 _pragma(classify_level=basic, topic={analysis})
@@ -42,10 +42,9 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method bounds_filter_geometry_collection.init(dsm, source_col, bounds)
-	.source_collection << source_col
 	.bounds << bounds
 	
-	_return _super.init(dsm)
+	_return _super.init(dsm, source_col)
 _endmethod
 $
 
@@ -58,37 +57,9 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method bounds_filter_geometry_collection.geom_category
-	_return .source_collection.geom_category
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method bounds_filter_geometry_collection.size_is_fast?
-	## no, size is generally not fast as it is spatially filtered.
-	_return _false 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method bounds_filter_geometry_collection.read_stream(_optional filter)
-	## Return my read_stream. If filter is set, the let the filter
-	## filter my results. Otherwise set myself as the filter of my
-	## source_collection
-	#
-	_local str << .source_collection.read_stream(_self)
-	_if filter _isnt _unset
-	_then
-		_return filter.filter_stream(str)
-	_else 
-		_return str
-	_endif 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method bounds_filter_geometry_collection.geometry_for(rec, geom_name)
-	_return .source_collection.geometry_for(rec, geom_name)	
+_method bounds_filter_geometry_collection.ref_collections
+	##
+	_return {.source_collection}
 _endmethod
 $
 
@@ -97,7 +68,6 @@ _method bounds_filter_geometry_collection.filter_stream(stream)
 	_return bounds_filter_read_stream.new(.source_collection, stream, :geometry, .bounds)
 _endmethod
 $
-
 
 _pragma(classify_level=advanced, topic={analysis})
 _method bounds_filter_geometry_collection.discard()

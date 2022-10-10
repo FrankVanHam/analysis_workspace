@@ -1,6 +1,3 @@
-#lazy_record_collection_extras
-#cached_record_collection_extras
-#polygon_acp_subs
 dd_enumerator_extras
 text_choice_item_extras
 ds_record_extras

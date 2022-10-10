@@ -88,22 +88,9 @@ _method sw_collection.geometry_set(geom_name)
 _endmethod
 $
 
-#
-#_pragma(classify_level=basic, topic={analysis})
-#_method sw_collection.has_geometry?
-#	_return _self.actual_collection.descriptor.has_geometry_fields?
-#_endmethod
-#$
-#
 _pragma(classify_level=basic, topic={analysis})
 _method sw_collection.geometry_refs
 	_return _self.geometry_refs_for(_self.expose())
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method sw_collection.size_is_fast?
-	_return _self.actual_collection.size_is_fast?
 _endmethod
 $
 
@@ -112,6 +99,16 @@ _method sw_collection.size
 	_return _self.actual_collection.size
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method sw_collection.includes?(rec)
+	_return rec _isnt _unset _andif
+		rec.is_valid? _andif
+		rec.is_detached?.not _andif 
+		rec.source _is _self.expose()
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method sw_collection.read_stream(_optional filter)

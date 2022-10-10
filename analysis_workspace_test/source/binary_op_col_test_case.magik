@@ -77,15 +77,21 @@ _method binary_op_col_test_case.test_simple_record()
 	
 	_local op_col << s1.binary_op(:intersection, s2)
 	_self.assert_equals(p2, op_col.an_element(), "Intersection")
+	_self.assert_true(op_col.includes?(p2), "should include (1)")
 
 	op_col << s1.binary_op(:union, s2)
 	_self.assert_equals(3, op_col.size, "Union")
+	_self.assert_true(op_col.includes?(p2), "should include (2)")
 
 	op_col << s1.binary_op(:xor, s2)
 	_self.assert_equals(2, op_col.size, "Xor")
+	_self.assert_true(op_col.includes?(p1), "should include (2)")
+	_self.assert_false(op_col.includes?(p2), "should not include (2)")
 
 	op_col << s1.binary_op(:subtraction, s2)
-	_self.assert_equals(p1, op_col.an_element(), "Subtraction") 
+	_self.assert_equals(p1, op_col.an_element(), "Subtraction")
+	_self.assert_true(op_col.includes?(p1), "should include(3)")
+	_self.assert_false(op_col.includes?(p3), "should not include(3)")
 _endmethod
 $
 
@@ -120,7 +126,6 @@ _pragma(classify_level=basic, topic={analysis})
 _method binary_op_col_test_case.test_geometry_set()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	
-	_self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
 	_local p1 << _self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
 	_local p2 << _self.create_park("p2", {0,0,10000,0,10000,10000,0,10000,0,0})
 	_local p3 << _self.create_park("p3", {0,0,10000,0,10000,10000,0,10000,0,0})
@@ -132,5 +137,31 @@ _method binary_op_col_test_case.test_geometry_set()
 	_local gs << op_col.geometry_set(:coverage)
 	_self.assert_equals(1, gs.size, "1 geometry")
 	_self.assert_not_unset(op_col.goto_bounds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_col_test_case.test_basic()
+	## Test includes?() and an_element() and size
+	## 
+	_local dsm  << rwan:analysis_dataset_manager.new(:test)
+	
+	_local p1 << _self.create_park("p1", {0,0,10000,0,10000,10000,0,10000,0,0})
+	_local p2 << _self.create_park("p2", {0,0,10000,0,10000,10000,0,10000,0,0})
+	_local p3 << _self.create_park("p3", {0,0,10000,0,10000,10000,0,10000,0,0})
+	
+	_local s1 << rwan:record_set_collection.new(dsm, {p1,p2})
+	_local s2 << rwan:record_set_collection.new(dsm, {p2,p3})
+	
+	_local op_col << s1.binary_op(:xor, s2)
+	
+	_self.assert_true(op_col.ref_collections.includes?(s1), "S1 is the base")
+	_self.assert_true(op_col.ref_collections.includes?(s2), "S2 is the base")
+	_self.assert_true(op_col.includes?(p1), "P1 should be included")
+	_self.assert_false(op_col.includes?(p2), "P2 should not be included")
+	
+	_local an << op_col.an_element()
+	_self.assert_true((p1 = an) _orif (p3 = an), "Should be one of 2")
+	_self.assert_equals(2, op_col.size, "Size = 2")
 _endmethod
 $

@@ -86,13 +86,6 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method buffer_geometry_collection.size_is_fast?
-	## 
-	_return .source_collection.size_is_fast?
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
 _method buffer_geometry_collection.size
 	_return .source_collection.size
 _endmethod

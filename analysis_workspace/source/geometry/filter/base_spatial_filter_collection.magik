@@ -1,0 +1,85 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+#remex(:base_spatial_filter_collection)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Collection that filters the geometry collection within the bounds.
+##
+def_slotted_exemplar(:base_spatial_filter_collection,
+	{
+		{:source_collection, _unset}
+	},
+	:base_spatial_collection)
+$
+
+message_handler.new(:base_spatial_filter_collection).add_use(:base_spatial_collection)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_spatial_filter_collection.init(dsm, source_col)
+	.source_collection << source_col
+	
+	_return _super.init(dsm)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_method base_spatial_filter_collection.includes?(rec)
+	_if .source_collection.includes?(rec).not _then _return _false _endif
+	
+	_local f_stream << _self.filter_stream(rwo_set.new_with(rec).read_stream())
+	_return f_stream.get() _isnt _unset
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={demo})
+_abstract _method base_spatial_filter_collection.filter_stream(stream)
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_spatial_filter_collection.geom_category
+	_return .source_collection.geom_category
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_spatial_filter_collection.geometry_for(rec, geom_name)
+	_return .source_collection.geometry_for(rec, geom_name)	
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_spatial_filter_collection.read_stream(_optional filter)
+	## Return my read_stream. If filter is set, the let the filter
+	## filter my results. Otherwise set myself as the filter of my
+	## source_collection
+	#
+	_local str << .source_collection.read_stream(_self)
+	_if filter _isnt _unset
+	_then
+		_return filter.filter_stream(str)
+	_else 
+		_return str
+	_endif 
+_endmethod
+$

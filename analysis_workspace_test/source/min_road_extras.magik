@@ -25,8 +25,25 @@ _method min_road.rwan_methods
 	_return property_list.new_with(
 			:a_hotel, {:|a_hotel()|, {}, "1 hotel", col},
 			:hotel_5, {:|nr_hotels()|, {5}, "5 hotels", col},
-			:hotel_10, {:|nr_hotels()|, {10}, "10 hotels", col}
+			:hotel_10, {:|nr_hotels()|, {10}, "10 hotels", col},
+			:next, {:|next_nr()|, {}, "find the next", _self.source}
 		)
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={roos,analytics})
+_method min_road.next_nr()
+	_local (name, idx) << (_scatter _self.name.write_string.split_by(%_))
+	idx << _if idx _isnt _unset _then >> idx.as_number().default(0) _else >> 0 _endif
+	_if idx = 0
+	_then
+		_return {_self}
+	_else
+		_return rope.new_from(
+				_self.source.select(predicate.eq(
+							    :name,
+							    write_string(name,"_",idx+1))))
+	_endif 
 _endmethod
 $
 
