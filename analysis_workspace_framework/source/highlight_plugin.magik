@@ -63,7 +63,10 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _private _method highlight_plugin.note_workspace_change(workspace)
-	_if workspace.empty?.not _andif _not .highlighting?
+	_if workspace _is _unset
+	_then
+		# pass
+	_elif workspace.empty?.not _andif _not .highlighting?
 	_then
 		# the new isnt empty, but the previous was. So start highlighting
 		_self.start_highlighting()

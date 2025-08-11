@@ -134,7 +134,7 @@ _private _method method_dialog.set_current_method(items)
 	_endif 
 	_if value _isnt _unset
 	_then
-		.items[:method_choice].value_with_notify << value
+		.items[:method_choice].anco_value_with_notify << value
 	_endif 
 _endmethod
 $

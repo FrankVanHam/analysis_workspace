@@ -21,3 +21,6 @@ dataset_plugin
 dataset_dialog
 highlight_dialog
 highlight_plugin
+
+
+sw/

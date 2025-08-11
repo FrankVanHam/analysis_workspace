@@ -139,7 +139,7 @@ _private _method spatial_filter_dialog.initialise_selector_choice()
 		      _else
 			      >> .selector
 		      _endif
-	 choice.value_with_notify << op
+	 choice.anco_value_with_notify << op
 _endmethod
 $
 
@@ -154,7 +154,7 @@ _private _method spatial_filter_dialog.initialise_geometry_choice()
 		     _else
 			     >> .record_holder.collection.expose().field(.geom_name)
 		     _endif
-	choice.value_with_notify << fd
+	choice.anco_value_with_notify << fd
 _endmethod
 $
 

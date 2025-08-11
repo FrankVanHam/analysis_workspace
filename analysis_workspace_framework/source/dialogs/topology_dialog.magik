@@ -116,10 +116,13 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.initialise_target_choice()
-	_local geom_field << .record_holder.collection.expose().field(.geom_name)
-	_local items << _self.topology_items(geom_field)
-	.items[:topology_choice].items << items
-	_self.set_current_target_collection(items)
+	_if .geom_name _isnt _unset
+	_then 
+		_local geom_field << .record_holder.collection.expose().field(.geom_name)
+		_local items << _self.topology_items(geom_field)
+		.items[:topology_choice].items << items
+		_self.set_current_target_collection(items)
+	_endif 
 _endmethod
 $
 
@@ -140,7 +143,7 @@ _private _method topology_dialog.set_current_target_collection(items)
 			_endif
 		_endloop
 	_endif
-	.items[:topology_choice].value_with_notify << value
+	.items[:topology_choice].anco_value_with_notify << value
 _endmethod
 $
 
@@ -172,8 +175,8 @@ _private _method topology_dialog.set_current_geom_field(items)
 		_endloop
 	_endif
 	_if value _isnt _unset
-	_then 
-		.items[:geometry_choice].value_with_notify << value
+	_then
+		.items[:geometry_choice].anco_value_with_notify << value
 	_endif
 _endmethod
 $
@@ -200,8 +203,11 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method topology_dialog.geometry_changed(geom_field)
-	.geom_name << geom_field.name
-	.items[:topology_choice].items << _self.topology_items(geom_field)
+	_if geom_field _isnt _unset
+	_then 
+		.geom_name << geom_field.name
+		.items[:topology_choice].items << _self.topology_items(geom_field)
+	_endif 
 _endmethod
 $
 

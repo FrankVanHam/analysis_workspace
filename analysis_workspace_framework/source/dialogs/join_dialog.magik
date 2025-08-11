@@ -129,7 +129,7 @@ _private _method join_dialog.set_current_join(items)
 	_endif 
 	_if value _isnt _unset
 	_then
-		.items[:join_choice].value_with_notify << value
+		.items[:join_choice].anco_value_with_notify << value
 	_endif 
 _endmethod
 $

@@ -173,9 +173,10 @@ _method workspace.can_move_down?(holder)
 	_return index <> top_holders.size 
 _endmethod
 $
+
 _pragma(classify_level=basic, topic={demo})
 _method workspace.top_holders
-	_return .holders
+	_return _self.top_holders(.holders)
 _endmethod
 $
 

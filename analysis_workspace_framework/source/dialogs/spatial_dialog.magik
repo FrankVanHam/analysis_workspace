@@ -80,7 +80,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_dialog.initialise_geometry_choice()
 	_local choice << .items[:geometry_choice]
 	choice.items << items << _self.geom_field_items
-	choice.value_with_notify << _self.most_likely_geom_field(items)
+	choice.anco_value_with_notify << _self.most_likely_geom_field(items)
 _endmethod
 $
 

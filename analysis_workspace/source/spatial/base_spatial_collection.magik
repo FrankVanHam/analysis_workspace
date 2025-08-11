@@ -46,10 +46,9 @@ _abstract _method base_spatial_collection.convert_to_geometry()
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
 _iter _method base_spatial_collection.fast_geometries()
-	_for i_geom _over _self.fast_elements()
+	_for i_geom _over _self.convert_to_geometry().fast_elements()
 	_loop
 		_loopbody(i_geom)
 	_endloop 

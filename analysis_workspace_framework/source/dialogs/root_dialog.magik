@@ -128,7 +128,7 @@ _private _method root_dialog.set_current_target_collection(items)
 			_endif
 		_endloop
 	_endif
-	.items[:root_choice].value_with_notify << value
+	.items[:root_choice].anco_value_with_notify << value
 _endmethod
 $
 

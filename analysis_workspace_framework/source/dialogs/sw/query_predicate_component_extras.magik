@@ -36,24 +36,27 @@ _private _method query_predicate_component.predicate_as_list_of_elements(p_predi
 	## recreate P_PREDICATE.
 	#
 	_local result << rope.new()
-	_local l << p_predicate.rwan_as_lineair_list()
-	_for i_pred _over l.fast_elements()
-	_loop
-		_if i_pred _is :or
-		_then
-			result.add({_unset,:or,_unset})
-		_else
-			_local field << .collection.field(i_pred.field)
-			_local operand << _self.browser_op_for_predicate(i_pred)
-			_if operand _isnt _unset
+	_if p_predicate _isnt _unset
+	_then 
+		_local l << p_predicate.rwan_as_lineair_list()
+		_for i_pred _over l.fast_elements()
+		_loop
+			_if i_pred _is :or
 			_then
-				result.add({field, operand, i_pred.datum})
-			_else 
-				condition.raise(:warning, :string,
-						"Could not handle predicate " + i_pred.write_string )
+				result.add({_unset,:or,_unset})
+			_else
+				_local field << .collection.field(i_pred.field)
+				_local operand << _self.browser_op_for_predicate(i_pred)
+				_if operand _isnt _unset
+				_then
+					result.add({field, operand, i_pred.datum})
+				_else 
+					condition.raise(:warning, :string,
+							"Could not handle predicate " + i_pred.write_string )
+				_endif 
 			_endif 
-		_endif 
-	_endloop
+		_endloop
+	_endif 
 	_return result
 _endmethod
 $

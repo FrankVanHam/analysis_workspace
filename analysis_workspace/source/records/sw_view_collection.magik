@@ -285,7 +285,7 @@ _method sw_view_collection.description(translator)
 		_then
 			str.write(" <-> ")
 		_endif
-		_local name << translator.name_for_collection(i_col)
+		_local name << i_col.external_name
 		str.write(name)
 	_endloop 
 	str.write( " )")

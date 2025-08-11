@@ -1,0 +1,25 @@
+_package sw
+$
+
+
+_method text_choice_item.anco_value_with_notify<< new_value
+	##
+	## Set the new value and send change notification (even when
+	## the current value is alread the same as new_value)
+	#
+	_self.value << new_value
+	_self.anco_value_changed(new_value)
+	_return _unset
+_endmethod
+$
+
+_method text_choice_item.anco_value_changed(value)
+	## send change notification (even when
+	## the current value is alread the same as new_value)
+	_if (_self.change_selector _isnt _unset)
+	_then
+		_self.change_selector.send_to(_self.model, value)
+	_endif 
+	_return _unset
+_endmethod
+$

@@ -100,9 +100,7 @@ _method analysis_dataset_manager.assign_coordinate_system(cs)
 		cs.transform_rec.clone_substructure_into(.ds_view)
 		cs << .ds_view.coordinate_system(cs.name)
 	_endtry 
-	
 	.ds_view.world.coordinate_system << cs
-	show(.ds_view.world.coordinate_system, cs)
 	.ds_view.commit()
 _endmethod
 $
@@ -128,6 +126,7 @@ _private _method analysis_dataset_manager.int!do_open(gv, filename, concurrency_
 	.ds_view << gv
 	.ds_view.view_name << .name
 	.ds_view.dataset_name << .name
+	gis_program_manager.cache_dataset(.name, .ds_view)
 _endmethod
 $
 
@@ -194,8 +193,9 @@ _method analysis_dataset_manager.discard()
 		.ds_view.discard()
 		_if ds_environment.views.includes?(.ds_view)
 		_then
-			write("nog really gone, is it?")
+			write("not really gone, is it?")
 		_endif 
+		gis_program_manager.uncache_dataset(.name)
 		.ds_view << _unset
 	_endif
 _endmethod

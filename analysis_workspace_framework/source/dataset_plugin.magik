@@ -106,7 +106,10 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method dataset_plugin.terminate()
-	_self.dialog.close()
+	_if _self.dialog _isnt _unset
+	_then 
+		_self.dialog.close()
+	_endif 
 	_super.terminate()
 _endmethod
 $

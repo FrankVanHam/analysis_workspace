@@ -48,7 +48,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _method buffer_dialog.activate_in(container)
 	container.modality << :primary_modal
 	.items << property_list.new()
-	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {100})
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true, :row_resize_values, {0,100,0,0})
 	_self.build_top_label(rc)
 	_self.build_buffer_options(rc)
 	panel_separator.new(rc, :col_alignment, :fill)
@@ -84,10 +84,12 @@ _private _method buffer_dialog.build_buffer_options(container)
 	ti.manager << unit_value_manager.new(unit_manager.unit(:m))
 	
 	label_item.new(rc, _self.message(:corner_style))
-	.items[:corner_style] << image_choice_item.new(rc, _unset, :items, _self.corner_style_items, :col_alignment, :fill)
+	.items[:corner_style] << image_choice_item.new(rc, _unset, :items, _self.corner_style_items)
+	.items[:corner_style].col_alignment << :fill
 	
 	label_item.new(rc, _self.message(:end_style))
-	.items[:end_style] << image_choice_item.new(rc, _unset, :items, _self.end_style_items, :col_alignment, :fill)
+	.items[:end_style] << image_choice_item.new(rc, _unset, :items, _self.end_style_items)
+	.items[:end_style].col_alignment << :fill
 _endmethod
 $
 
@@ -113,7 +115,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method buffer_dialog.initialise_geometry_choice()
 	_local choice << .items[:geometry_choice]
 	choice.items << items << _self.geom_field_items
-	choice.value_with_notify << _self.most_likely_geom_field(items)
+	choice.anco_value_with_notify << _self.most_likely_geom_field(items)
 _endmethod
 $
 
