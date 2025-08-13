@@ -246,7 +246,8 @@ _pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.manage_actions()
 	_local sel << _self.selected_holders
 	_local select? << sel.empty?.not
-	_local record_sel? << select? _andif
+	_local single_select? << sel.size = 1
+	_local record_sel? << single_select? _andif
 			      sel.an_element().is_record_collection?
 	
 	_local open? << _self.open?

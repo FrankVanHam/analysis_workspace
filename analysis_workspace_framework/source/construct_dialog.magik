@@ -885,13 +885,13 @@ _method construct_dialog.manage_actions()
 	.owner.action(:add_scrapbook).enabled? << open?
 	.owner.action(:spatial_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)
 	.owner.action(:distance_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr+areanr=1)
-	.owner.action(:predicate_filter).enabled? << open? _andif (reccolnr=1)
+	.owner.action(:predicate_filter).enabled? << open? _andif (reccolnr=1) _andif (spatialnr=0) _and (areanr=0)
 
-	.owner.action(:follow_topology).enabled? << open? _andif (reccolnr=1)
-	.owner.action(:follow_trace).enabled? << open? _andif (reccolnr=1)
-	.owner.action(:follow_join).enabled? << open?  _andif (reccolnr=1)
-	.owner.action(:follow_method).enabled? << open?  _andif (reccolnr=1)
-	.owner.action(:follow_root).enabled? << open?  _andif (reccolnr=1)
+	.owner.action(:follow_topology).enabled? << open? _andif (reccolnr=1) _andif (spatialnr=0) _and (areanr=0)
+	.owner.action(:follow_trace).enabled? << open? _andif (reccolnr=1) _andif (spatialnr=0) _and (areanr=0)
+	.owner.action(:follow_join).enabled? << open?  _andif (reccolnr=1) _andif (spatialnr=0) _and (areanr=0)
+	.owner.action(:follow_method).enabled? << open?  _andif (reccolnr=1) _andif (spatialnr=0) _and (areanr=0)
+	.owner.action(:follow_root).enabled? << open?  _andif (reccolnr=1) _andif (spatialnr=0) _and (areanr=0)
 
 	.owner.action(:create_spatial).enabled? << open? _andif (swcolnr=1) _and (colnr=1)
 	.owner.action(:create_buffer).enabled? << open?  _andif (colnr=1) _andif ((reccolnr=1) _orif (spatialnr=1) _orif (areanr=1))
@@ -901,10 +901,10 @@ _method construct_dialog.manage_actions()
 	.owner.action(:union).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
 	.owner.action(:xor).enabled? << open?  _andif ((reccolnr=2) _orif (spatialnr=2) _orif (areanr=2))
 
-	.owner.action(:view_by_join).enabled? << open? _andif (swcolnr=1)
-	.owner.action(:view_by_eq).enabled? << open? _andif (swcolnr=2)
-	.owner.action(:materialize).enabled? << open? _andif (reccolnr=1)
-	.owner.action(:materialize_spatial).enabled? << open? _andif ((spatialnr=1) _orif (areanr=1))
+	.owner.action(:view_by_join).enabled? << open? _andif (swcolnr=1) _andif (spatialnr=0) _and (areanr=0)
+	.owner.action(:view_by_eq).enabled? << open? _andif (swcolnr=2) _andif (spatialnr=0) _and (areanr=0)
+	.owner.action(:materialize).enabled? << open? _andif (reccolnr=1) _andif (spatialnr=0) _and (areanr=0)
+	.owner.action(:materialize_spatial).enabled? << open? _andif ((spatialnr=1) _orif (areanr=1)) _and (reccolnr=0)
 	
 	.owner.action(:edit).enabled? << open? _andif any_sel? _andif _self.selected_holder.editable?
 	.owner.action(:delete).enabled? << open? _andif any_top_sel?
