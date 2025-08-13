@@ -131,7 +131,7 @@ _method tree_builder.display_tree_for_distance_filter_collection(col, base_col, 
 	_local field_image << _self.sw_geom_field_image(fd)
 	_local tree << _self.display_tree(col)
 	tree.styled_string << _self.styled_string(:image, image,
-						  :image, {:distance, _self.module_name},
+						  :image, {:filter_distance, _self.module_name},
 						  :image, field_image)
 	
 	_local base_tree << _self.tree(base_col)
@@ -194,15 +194,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_topology_collection(col, base_col, target_col, geom_name)
 	_local tree << _self.display_tree(col)
 	_local image << _self.sw_collection_image(target_col)
-	tree.styled_string << _self.styled_string(:image, {:topology, _self.module_name}, :image, image)
-	
-#	_local sw_col << base_col.expose()
-#	_local operation_tree << display_tree.new(_unset)
-#	_local fd << sw_col.field(geom_name)
-#	_local field_image << _self.sw_geom_field_image(fd)
-#	
-#	operation_tree.styled_string << {:image, field_image, :black, fd.external_name, "By Topology"}
-#	tree.add_child(operation_tree)
+	tree.styled_string << _self.styled_string(:image, {:follow_topology, _self.module_name}, :image, image)
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
@@ -215,7 +207,7 @@ _pragma(classify_level=advanced, topic={analysis})
 _method tree_builder.display_tree_for_trace_collection(col, base_col, target_col, geom_name)
 	_local tree << _self.display_tree(col)
 	_local image << _self.sw_collection_image(target_col)
-	tree.styled_string << _self.styled_string(:image, {:trace, _self.module_name}, :image, image)
+	tree.styled_string << _self.styled_string(:image, {:follow_trace, _self.module_name}, :image, image)
 	
 #	_local sw_col << base_col.expose()
 #	_local operation_tree << display_tree.new(_unset)
@@ -253,7 +245,7 @@ _method tree_builder.display_tree_for_method_analysis(col, base_col, target_col,
 	
 	_local sw_col << base_col.expose()
 	_local operation_tree << display_tree.new(_unset)
-	operation_tree.styled_string << {:image, {:method, _self.module_name}, methd.write_string}
+	operation_tree.styled_string << {:image, {:filter_method, _self.module_name}, methd.write_string}
 	tree.add_child(operation_tree)
 	
 	_local base_tree << _self.tree(base_col)

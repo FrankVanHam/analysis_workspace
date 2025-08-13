@@ -72,7 +72,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method method_collection.serial_slots()
 	_local (keys, values) << _super.serial_slots()
-	keys.add_all_last({:method, :args})
+	keys.add_all_last({:filter_method, :args})
 	values.add_all_last({.methd, .args})
 	_return keys, values	
 _endmethod
