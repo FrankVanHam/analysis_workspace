@@ -126,9 +126,7 @@
     <action name="runner.goto_one"/>
     <action name="runner.excel"/>
     <action name="runner.access"/>
-    <action name="runner.calc"/>   
   </toolbar>
-  
   <dock name="top">
     <toolbar name="file"/>
     <toolbar name="add"/>

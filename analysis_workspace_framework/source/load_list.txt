@@ -5,7 +5,6 @@ base_model
 
 background_runner
 
-report_grouping_and_calculation_dialog
 runner_dialog
 runner_plugin
 
