@@ -142,7 +142,6 @@ _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds
 	_then
 		gs << geometry_set.new_with(gs)
 	_endif
-	#show(gs, col, gs.size)
 	_local clr << given_colour
 
 	_local thick << line_style.new_with_properties(
@@ -170,10 +169,9 @@ _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds
 			      fill)
 	sts.set_default_style(:chain,
 			      thick)
-
-	_local comp << composite_geometry_set.new({gs})
-	comp.style_system << sts
-	_return comp, clr
+	
+	gs.style_system << sts
+	_return gs, clr
 _endmethod
 $
 

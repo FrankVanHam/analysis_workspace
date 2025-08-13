@@ -122,35 +122,47 @@ _private _method framework_plugin.coordinate_system_for_internal_storage
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis}, usage={redefinable})
+_method framework_plugin.soc
+	##
+	## return the SOC. Deals with applications that either have a
+	## spatial_object_controller or a dataset.
+	
+	_local soc_or_database << _self.application.spatial_object_controller
+	_if soc_or_database.responds_to?(:initial_soc_name)
+	_then
+		_return gis_program_manager.spatial_object_controller(soc_or_database.initial_soc_name)
+	_else
+		_return soc_or_database
+	_endif
+_endmethod
+$
 
 
 _pragma(classify_level=basic, topic={analysis})
 _method framework_plugin.add_to_application(dsm)
-	
-#	## In the cst 4.3 there is no nice way to get a transaction
-#	## group. Those methods are added in later TSB, so for now we sys!slot.
-#	_local groups << _self.application.database.sys!slot(:transaction_groups)
-#	_if groups[dsm.name] _is _unset
-#	_then
-#		_local soc << spatial_object_controller.new(dsm.name)
-#		soc.add_dataset_manager(dsm)
-#		_self.application.database.add_transaction_group(soc)
-#		_self.re_evaluate_map_worlds()
-#	_endif
+	_local soc << _self.soc
+	_for a_soc_dsm _over soc.dataset_managers()
+	_loop
+		_if (a_soc_dsm.actual_dataset _is dsm.actual_dataset)
+		_then
+			_return
+		_endif
+	_endloop
+	soc.add_dataset_manager(dsm)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method framework_plugin.remove_from_application(dsm)
-#	## In the cst 4.3 there is no nice way to get a transaction
-#	## group. Those methods are added in later TSB, so for now we sys!slot.
-#	_local groups << _self.application.database.sys!slot(:transaction_groups)
-#	_local trg << groups[dsm.name]
-#	_if trg _isnt _unset
-#	_then
-#		_self.application.database.remove_transaction_group(trg)
-#		_self.re_evaluate_map_worlds()
-#	_endif
+	_local soc << _self.soc
+	_for a_soc_dsm _over soc.dataset_managers()
+	_loop
+		_if (a_soc_dsm.actual_dataset _is dsm.actual_dataset)
+		_then
+			soc.remove_dataset_manager(a_soc_dsm.name)
+		_endif
+	_endloop
 _endmethod
 $
 
