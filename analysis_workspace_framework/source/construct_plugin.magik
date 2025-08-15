@@ -88,19 +88,19 @@ _method construct_plugin.init_actions()
 				       :action_message, :|create_predicate_filter_dialog()|))
 	_self.add_action(sw_action.new(:intersection,
 				       :engine, _self.dialog,
-				       :image, {:set_intersection, _self.module_name},
+				       :image, {:binary_op_intersection, _self.module_name},
 				       :action_message, :|create_intersection()|))
 	_self.add_action(sw_action.new(:subtraction,
 				       :engine, _self.dialog,
-				       :image, {:set_subtraction, _self.module_name},
+				       :image, {:binary_op_subtraction, _self.module_name},
 				       :action_message, :|create_subtraction()|))
 	_self.add_action(sw_action.new(:union,
 				       :engine, _self.dialog,
-				       :image, {:set_union, _self.module_name},
+				       :image, {:binary_op_union, _self.module_name},
 				       :action_message, :|create_union()|))
 	_self.add_action(sw_action.new(:xor,
 				       :engine, _self.dialog,
-				       :image, {:set_xor, _self.module_name},
+				       :image, {:binary_op_xor, _self.module_name},
 				       :action_message, :|create_xor()|))
 	_self.add_action(sw_action.new(:follow_topology,
 				       :engine, _self.dialog,
