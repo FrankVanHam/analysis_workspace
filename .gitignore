@@ -8,3 +8,4 @@
 ~$Manual.docx
 ~$Manual.docx
 analysis_workspace_test/~$unit_test_matrix.xlsx
+*.magik#

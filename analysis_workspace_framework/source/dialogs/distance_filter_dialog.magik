@@ -221,7 +221,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.construct_distance_filter()
-	_local new_col << .record_holder.collection.distance_collection(.geom_name, .distance, .spatial_holder.collection, .inverse?)
+	_local new_col << .record_holder.collection.filter_by_distance(.geom_name, .distance, .spatial_holder.collection, .inverse?)
 	_return new_col
 _endmethod
 $

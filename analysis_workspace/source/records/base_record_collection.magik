@@ -48,7 +48,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.distance_collection(geom_name, distance, arg, inverse?)
+_method base_record_collection.filter_by_distance(geom_name, distance, arg, inverse?)
 	_if arg.convert_to_geometry_is_fast?
 	_then
 		_return sw:get_global_value(@rwan:distance_area_filter_collection).new(.dsm, _self, geom_name, distance, arg, inverse?)
@@ -90,7 +90,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_record_collection.root(table)
+_method base_record_collection.follow_root(table)
 	_return sw:get_global_value(@rwan:root_collection).new(.dsm, _self,table)
 _endmethod
 $
