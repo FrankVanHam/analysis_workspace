@@ -12,4 +12,3 @@ area/
 spatial/
 sw/
 workspace/
-grouping/
