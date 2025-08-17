@@ -18,6 +18,7 @@ construct_plugin
 construct_dialog
 dataset_plugin
 dataset_dialog
+modal_colour_palette_editor
 highlight_dialog
 highlight_plugin
 

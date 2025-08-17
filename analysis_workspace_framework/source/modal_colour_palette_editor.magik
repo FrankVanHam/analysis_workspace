@@ -1,0 +1,23 @@
+_package rwan
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+def_slotted_exemplar(:modal_colour_palette_editor,
+		      {},
+		      :colour_palette_editor)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+modal_colour_palette_editor.define_shared_constant(
+	:frame_class,
+	sw:dialog_frame,
+	:private)
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method modal_colour_palette_editor.build_frame(_gather p_args)
+	_local a_frame << _super.build_frame(_scatter p_args)
+	a_frame.modality << :system_modal
+	_return a_frame
+_endmethod
+$

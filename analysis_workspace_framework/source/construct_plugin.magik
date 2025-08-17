@@ -36,13 +36,11 @@ _pragma(classify_level=restricted, topic={analysis}, usage={subclass})
 construct_plugin.def_property(:runner_plugin_name, :type, :symbol)
 $
 
-
 _pragma(classify_level=restricted, topic={analysis}, usage={subclass})
 construct_plugin.define_shared_constant( :dialog_exemplar_name,
 	:construct_dialog,
 	:public )
 $
-
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_plugin.init_actions()

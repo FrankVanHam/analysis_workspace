@@ -58,6 +58,7 @@ _method tree_dialog.activate_in(container)
 			      :col_resize_values, {100,0,0},
 			      :column_widths, {100,30,30},
 			      :toggle_notifier, :|toggled()|,
+			      :double_click_notifier, :|double_clicked()|,
 			      :key_pressed_notifier, :|key_pressed()|,
 			      :editors, {{:name, in_place_value_editor}},
 			      :value_changed_notifier, :|name_changed()|,
@@ -107,6 +108,16 @@ _method tree_dialog.key_pressed(event)
 		_self.delete()
 	_endif 
 	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_dialog.double_clicked(p_display_tree, p_row, p_event, p_selection)
+	(x, x, x, x, x, x, x, column_index) << .tree_item.cell_info_at(p_event.x, p_event.y)
+	_if column_index = 2
+	_then
+		.owner.colour_double_clicked()
+	_endif 
 _endmethod
 $
 

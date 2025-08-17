@@ -32,9 +32,10 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method highlight_dialog.set_highlight_colour()
-	_local colour_editor << sw:colour_palette_editor.new(_self, :|set_colour()|,
-							     _self.message(:pick_highlight_colour))
-	colour_editor.activate()
+	_local colour_editor << modal_colour_palette_editor.new_dialog(_self,
+								       _self, :|set_colour()|,
+								       _self.message(:pick_highlight_colour))
+	colour_editor.activate_relative_to(_unset, .top_frame, 50, 50 )
 _endmethod
 $
 

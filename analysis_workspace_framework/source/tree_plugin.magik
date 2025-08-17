@@ -28,12 +28,16 @@ def_slotted_exemplar(:tree_plugin,
 	}, :base_plugin)
 $
 
+
+_pragma(classify_level=advanced, topic={analysis})
+tree_plugin.define_event_signature( :colour_double_clicked, "Colour was double clicked", {})
+$
+
 _pragma(classify_level=restricted, topic={analysis}, usage={subclass})
 tree_plugin.define_shared_constant( :dialog_exemplar_name,
 	:tree_dialog,
 	:public )
 $
-
 
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_plugin.tree_selected(_optional data)
@@ -44,5 +48,11 @@ $
 _pragma(classify_level=advanced, topic={analysis})
 _method tree_plugin.init_actions()
 	
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
+_method tree_plugin.colour_double_clicked()
+	_self.generate_event(:colour_double_clicked)
 _endmethod
 $

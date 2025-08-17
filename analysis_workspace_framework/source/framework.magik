@@ -92,17 +92,6 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method framework.set_holder()
-	_if .dsm _isnt _unset
-	_then 
-		_self.workspace_plugin.set_holder_from_dsm(.dsm)
-	_else
-		_self.workspace_plugin.create_new_holder()
-	_endif
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
 _method framework.activate(_gather args)
 	_local ok? << _false
 	_protect
@@ -115,6 +104,16 @@ _method framework.activate(_gather args)
 		_endif
 	_endprotect
 	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method framework.post_activation()
+	_self.plugin(:tree).add_event_handler(
+				   :colour_double_clicked,
+				   _self.plugin(:highlight).action(:colour), 
+				   :|execute_action()|)
+	_return _super.post_activation() 
 _endmethod
 $
 
