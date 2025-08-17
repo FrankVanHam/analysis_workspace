@@ -91,6 +91,13 @@ _method area_binary_op_collection.equals_in_details?(base_cols, op)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method area_binary_op_collection.area
+	_return _self.convert_to_geometry()
+_endmethod
+$
+
+
 _pragma(classify_level=basic, topic={analysis})
 _method area_binary_op_collection.convert_to_geometry()
 	_local area1 << _self.base_collection.convert_to_geometry()
@@ -107,8 +114,13 @@ _method area_binary_op_collection.convert_to_geometry()
 	_endif
 	
 	_local area_result << area1.perform(methd, area2)
-	area_result.world << area1.world
-	_return area_result
+	_if area_result _isnt _unset
+	_then 
+		area_result.world << area1.world
+		_return area_result
+	_else
+		_return _unset
+	_endif 
 _endmethod
 $
 

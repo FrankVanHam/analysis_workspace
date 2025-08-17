@@ -96,6 +96,13 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method area_materialized_collection.area
+	_return _self.convert_to_geometry()
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method area_materialized_collection.convert_to_geometry()
 	_return .dsm.area(.id)
 _endmethod

@@ -288,16 +288,24 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _iter _method base_record_collection.fast_elements_filtered_by_geometry(geom_name, selector, arg)
 	#show(_self, "Unoptimized fast_elements_filtered_by_geometry")
+	args << _if arg.is_collection?
+		_then >> arg
+		_else >> {arg}
+		_endif 
 	_for i_rec _over _self.fast_elements()
 	_loop
 		_local geom << i_rec.geometry(geom_name)
 		_if geom _is _unset _then _continue _endif
 		
 		_local gs << geometry_set.new_with(geom)
-		_if gs.select(selector, arg).empty?.not
-		_then
-			_loopbody(i_rec)
-		_endif 
+		_for i_arg _over args.fast_elements()
+		_loop 
+			_local select? << gs.select(selector, i_arg).empty?.not
+			_if select?
+			_then
+				_loopbody(i_rec)
+			_endif
+		_endloop 
 	_endloop
 _endmethod
 $

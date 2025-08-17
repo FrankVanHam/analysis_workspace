@@ -22,22 +22,13 @@ $
 _pragma(classify_level=basic, topic={analysis})
 ##
 ## Test using geometry filters.
-def_slotted_exemplar(:spatial_analysis_col_mix_test_case,
+def_slotted_exemplar(:filter_by_geometry_tc,
 	{},
 	:base_analysis_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_private _method spatial_analysis_col_mix_test_case.larger_area_surrounding_parkers_piece(dsm)
-	_local sectors << _self.drafting_sectors("test_on_spatial_analysis_col")
-	_local world << _self.hotel_collection.dataset.world
-	_local an_area << pseudo_area.new_for_world(sectors, world)
-	_return rwan:area_collection.new(dsm, an_area)
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_on_analysis_col()
+_method filter_by_geometry_tc.test_on_sw_col()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
 	_local area << _self.area_surrounding_parkers_piece(dsm)
@@ -47,7 +38,88 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_on_spatial_analysis_col()
+_method filter_by_geometry_tc.test_on_pred_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _super.predicated_b_road_collection(dsm)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local rcol << rcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rcol.size, 24, "There are 24 B-Roads in the area")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_spatial_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol  << _super.spatial_filter_road_collection(dsm)
+	_local area << _self.area_surrounding_parkers_piece(dsm)
+	_local rcol << rcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rcol.size, 4, "There are 4 Roads in the inner area {not #1}")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_view_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local vcol << _self.office_company_view_collection(dsm)
+	_local area << _self.area_surrounding_parkers_piece(dsm)
+	_local vcol << vcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(vcol.size, 2, "There are 2 offices in the inner area {not #1}")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.binary_op_road_collection(dsm)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local rcol << rcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rcol.size, 22, "There are 22 Roads in the area between larger and small area {not #1}")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_method_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.method_road_collection(dsm)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local rcol << rcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rcol.size, 26, "There are 26 Roads in the area between larger and small area {not #1}")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_join_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.join_road_collection(dsm)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local rcol << rcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rcol.size, 1, "There are 1 pub roads in the area between {not #1}")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_root_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.root_road_collection(dsm)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local rcol << rcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rcol.size, 3, "There are 3 pub roads in the area between {not #1}")
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_topology_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.topology_road_collection(dsm)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local rcol << rcol.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rcol.size, 3, "There are 3 pub roads in the area between {not #1}")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_spatial_analysis_col()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
 	_local larger_area << _self.larger_area_surrounding_parkers_piece(dsm)
@@ -61,7 +133,21 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_on_predicate_analysis_col()
+_method filter_by_geometry_tc.test_on_record_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rec_col << _self.record_road_collection(dsm)
+	
+	_local area << _self.area_surrounding_parkers_piece(dsm)
+	_local rcol << rec_col.filter_by_geometry(:centre_line, :within, area)
+	_self.assert_is(rec_col.size, 3, "There are 3 roads in the area between {not #1}")	
+_endmethod
+$
+
+
+####################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_on_predicate_analysis_col()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
 	_local pcol1 << pcol.filter_by_predicate(predicate.eq(:cuisine, "Chinese"))
@@ -77,12 +163,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_on_analysis_set()
+_method filter_by_geometry_tc.test_on_analysis_set()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
 	_local pcol1 << pcol.filter_by_predicate(predicate.eq(:cuisine, "Chinese"))
 	_local s << equality_set.new_from_iter( pcol1, :|fast_elements()|)
-	_local set << rwan:record_set.new(dsm, s)
+	_local set << rwan:record_collection.new(dsm, s)
 	_local area << _self.area_surrounding_parkers_piece(dsm)
 	_local pcol2 << set.filter_by_geometry(:location, :within, area) 
 	_self.assert_is(pcol2.size, 2, "2 Chinese near parkers. a")
@@ -90,7 +176,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_with_buffer_col()
+_method filter_by_geometry_tc.test_with_buffer_col()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
 	_local area << _self.area_surrounding_parkers_piece(dsm)
@@ -103,7 +189,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_with_buffer_col2()
+_method filter_by_geometry_tc.test_with_buffer_col2()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local sectors << _self.drafting_sectors("test_poi_in_buffer_around_road")
 	_local an_area << pseudo_area.new(sectors)
@@ -122,7 +208,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_hotels_interacting_with_road()
+_method filter_by_geometry_tc.test_hotels_interacting_with_road()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local area << _self.area_surrounding_parkers_piece(dsm)
@@ -142,10 +228,10 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_with_spatial_collection()
+_method filter_by_geometry_tc.test_with_spatial_collection()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local rec << _self.park_collection.select(predicate.eq(:name, "Downing Site")).an_element()
-	_local pset << rwan:record_set.new(dsm, {rec})
+	_local pset << rwan:record_collection.new(dsm, {rec})
 	_local pcol << rwan:sw_collection.new(dsm, _self.park_collection)
 	_local pcol1 << pcol.filter_by_predicate(predicate.wild(:name, "Parker*"))
 	_local combi << pset.union(pcol1)
@@ -158,7 +244,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_with_spatial_collection2()
+_method filter_by_geometry_tc.test_with_spatial_collection2()
 	# first select the park with more then 1 seat: Jesus
 	# Green. Then select all the *Midsummer Common* s common.
 	# do an or.
@@ -178,9 +264,8 @@ _method spatial_analysis_col_mix_test_case.test_with_spatial_collection2()
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
-_method spatial_analysis_col_mix_test_case.test_with_spatial_collection3()
+_method filter_by_geometry_tc.test_with_spatial_collection3()
 	# first select the park with more then 1 seat: Jesus
 	# Green. Then select all the *Midsummer Common* s common.
 	# do an or.
@@ -199,6 +284,67 @@ _method spatial_analysis_col_mix_test_case.test_with_spatial_collection3()
 	_local fcol1 << fcol.filter_by_geometry(:centre_line, :overlapping, union )
 	
 	_self.assert_is(fcol1.size, 12, "There are 12 footpaths crossing the Jesus green and Midsummer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.create_follow_collection()
+	##
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hroad << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local follow_road_col << hcol.follow_topology(:location, _self.min_road_collection)
+	_self.assert_equals(follow_road_col.size, 6, "There are 6 road connected")
+	
+	_local area << _self.area_surrounding_parkers_piece(dsm)
+	_return follow_road_col.filter_by_geometry(:centre_line, :within, area)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_follow_collection()
+	##
+	_local road_spatial << _self.create_follow_collection()
+	_self.assert_equals(road_spatial.size, 2, "There are 2 connected roads inside the area")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_root_collection()
+	##
+	_local road_spatial << _self.create_follow_collection()
+	_local hotel_root_col << road_spatial.follow_root(_self.hotel_collection)
+	_self.assert_equals(hotel_root_col.size, 2, "There are 2 hotels as the root of the connected roads inside the area")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_geometry_tc.test_basic_area_analysis()
+
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local col << _self.min_road_collection
+	_local acol << rwan:sw_collection.new(dsm, col)
+	
+	_self.assert_is(col.size, acol.size, "basic size should be the same")
+
+	_local sectors << _self.drafting_sectors("test_basic_area_analysis")
+	_local an_area << pseudo_area.new(sectors)
+	_local area_col << rwan:area_collection.new(dsm, an_area)
+	_local acol2 << acol.filter_by_geometry( :centre_line, :within, area_col )
+	_self.assert_is( acol2.size, 2, "There should be two roads within")
+	
+	acol2 << acol.filter_by_geometry( :centre_line, :overlapping, area_col )
+	_self.assert_is( acol2.size, 2, "There should be 2 road overlapping")
+	
+	acol2 << acol.filter_by_geometry( :centre_line, :overlaying, area_col )
+	_self.assert_is( acol2.size, 4, "There should be 4 roads overlaying")
+	
+	acol2 << acol.filter_by_geometry( :centre_line, :touching, area_col )
+	_self.assert_is( acol2.size, 1, "There should be one road touching")
+
+	_local geom_col << rwan:geometry_collection.new(dsm, geometry_set.new_with(sectors))
+	acol2 << acol.filter_by_geometry( :centre_line, :dividing,  geom_col)
+	_self.assert_is( acol2.size, 3, "There should be 3 roads dividing")
 _endmethod
 $
 

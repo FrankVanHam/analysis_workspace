@@ -34,7 +34,7 @@ _private _method base_analysis_test_case.drafting_sectors(text)
 								  _self.gv.world,
 								  box )
 	gs << gs.select(:interacting_with, box)
-	_return gs.an_element()
+	_return gs.an_element(), _self.gv.world
 _endmethod
 $
 
@@ -59,8 +59,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method base_analysis_test_case.area_surrounding_parkers_piece(dsm)
-	_local sectors << _self.drafting_sectors("test_finding_hotels_near_parks")
-	_local world << _self.hotel_collection.dataset.world
+	_local (sectors, world) << _self.drafting_sectors("test_finding_hotels_near_parks")
 	_local area <<  pseudo_area.new_for_world(sectors, world)
 	_return rwan:area_collection.new(dsm, area)
 _endmethod
@@ -164,13 +163,29 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.area_includes_all?(p_area_col, p_geoms)
+	_local area << p_area_col.convert_to_geometry()
+	_local all_inside? << _true
+	_for i_geom _over p_geoms.fast_elements()
+	_loop
+		_if i_geom.inside?(area).not
+		_then
+			all_inside? << _false
+			_leave
+		_endif
+	_endloop
+	_return all_inside?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _private _method base_analysis_test_case.haig_and_chesterton_set(dsm)
 	_local col << _self.min_road_collection
 	_local set << equality_set.new_with(
 			      col.select(predicate.eq(:name, "Haig Road")).an_element(),
 			      col.select(predicate.eq(:name, "Chesterton Road")).an_element())
 	
-	_return rwan:record_set.new(dsm, set)
+	_return rwan:record_collection.new(dsm, set)
 _endmethod
 $
 
@@ -178,9 +193,258 @@ _pragma(classify_level=basic, topic={analysis})
 _private _method base_analysis_test_case.chesterton_roundabout_roads_geometry_set(dsm)
 	_local col << _self.min_road_collection
 	_local rcol << rwan:sw_collection.new(dsm, col)
-	_local sectors << _self.drafting_sectors("test_topology_query")
-	_local an_area << pseudo_area.new(sectors)
+	_local (sectors, world) << _self.drafting_sectors("test_topology_query")
+	_local an_area << pseudo_area.new_for_world(sectors, world)
 	_local area_col << rwan:area_collection.new(dsm, an_area)
 	_return rcol.filter_by_geometry( :centre_line, :interacting_with, area_col)
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method base_analysis_test_case.larger_area_surrounding_parkers_piece(dsm)
+	_local (sectors, world) << _self.drafting_sectors("test_on_spatial_analysis_col")
+	_local an_area << pseudo_area.new_for_world(sectors, world)
+	_return rwan:area_collection.new(dsm, an_area)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.predicated_b_road_collection(dsm)
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local pred << predicate.eq(:road_type, "B-Road")
+	_return rcol.filter_by_predicate(pred)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.predicated_hotel_collection(dsm)
+	_local col << _self.hotel_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local pred << predicate.eq(:type, "Hotel")
+	_return rcol.filter_by_predicate(pred)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.spatial_filter_hotel_collection(dsm)
+	_local rcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_return rcol.filter_by_geometry(:location, :within, area)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.spatial_filter_road_collection(dsm)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_return rcol.filter_by_geometry(:centre_line, :within, area)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.distance_road_collection(dsm)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_return rcol.filter_by_distance(:centre_line, unit_value(10, :m), area, _false)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.distance_hotel_collection(dsm)
+	_local rcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_return rcol.filter_by_distance(:location, unit_value(10, :m), area, _false)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.office_company_view_collection(dsm)
+	_local off  << _self.office_collection
+	_local comp << _self.company_collection
+	_local col << rwan:sw_view_collection.new_eq(
+				   dsm,
+				   :office_company,
+				   "Office Company",
+				   {off,
+				    comp},
+				   {{off.field(:company_id), :|=|, comp.field(:id)}},
+				   {{:office, :name, :office_name},
+				    {:company, :company_name, :company_name},
+				    {:office, :location, :office_location}})
+	_return col
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.binary_op_road_collection(dsm)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local outer_area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local outer << rcol.filter_by_geometry(:centre_line, :within, outer_area)
+	_local inner_area << _self.area_surrounding_parkers_piece(dsm)
+	_local inner << rcol.filter_by_geometry(:centre_line, :within, inner_area)
+	_return outer.subtraction(inner)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.binary_op_hotel_collection(dsm)
+	_local rcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local outer_area << _self.larger_area_surrounding_parkers_piece(dsm)
+	_local outer << rcol.filter_by_geometry(:location, :within, outer_area)
+	_local inner_area << _self.area_surrounding_parkers_piece(dsm)
+	_local inner << rcol.filter_by_geometry(:location, :within, inner_area)
+	_return outer.subtraction(inner)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.method_hotel_collection(dsm)
+	_local rcol << rwan:record_collection.new(dsm, {_self.min_road_collection.an_element()})
+	_return rcol.follow_method(_self.hotel_collection, :|nr_hotels()|, {5})
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.method_road_collection(dsm)
+	_local rcol << rwan:record_collection.new(dsm, {_self.min_road_collection.an_element()})
+	_return rcol.follow_method(_self.min_road_collection, :|nr_roads()|, {1000})
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.join_road_collection(dsm)
+	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_return pcol.follow_join(:min_roads)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.join_pub_collection(dsm)
+	_local pcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_return pcol.follow_join(:pub_rests)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.root_hotel_collection(dsm)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hroad << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local follow_road_col << hcol.follow_topology(:location, _self.min_road_collection)
+	_return follow_road_col.follow_root(_self.hotel_collection)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.root_road_collection(dsm)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local follow_road_col << rcol.follow_topology(:centre_line, _self.hotel_collection)
+	_return follow_road_col.follow_root(_self.min_road_collection)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.topology_road_collection(dsm)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_return hcol.follow_topology(:location, _self.min_road_collection)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.topology_hotel_collection(dsm)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_return rcol.follow_topology(:centre_line, _self.hotel_collection)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.trace_road_collection(dsm)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_return hcol.follow_trace(:location, _self.min_road_collection, {}, unit_value(400,:m))
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.trace_hotel_collection(dsm)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local rcol << hcol.follow_topology(:location, _self.min_road_collection)
+	_return rcol.follow_trace(:centre_line, _self.hotel_collection, {}, unit_value(1000,:m))
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.area_binary_collection(dsm)
+	_local (sectors, world) << _self.drafting_sectors("xor1")
+	_local an_area1 << pseudo_area.new_for_world(sectors, world)
+	_local area_col1 << rwan:area_collection.new(dsm, an_area1)
+	sectors << _self.drafting_sectors("xor2")
+	_local an_area2 << pseudo_area.new_for_world(sectors, world)
+	_local area_col2 << rwan:area_collection.new(dsm, an_area2)
+	_return area_col1.union(area_col2)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.spatial_hotel_collection(dsm)
+	_local acol << _self.area_surrounding_parkers_piece(dsm)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local inside_col << hcol.filter_by_geometry(:location, :within, acol)
+	_local gcol << inside_col.spatial_collection(:location)
+	_return gcol, acol
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.spatial_binary_collection(dsm)
+	_local (sectors, world) << _self.drafting_sectors("xor1")
+	_local an_area << pseudo_area.new_for_world(sectors, world)
+	_local area_col << rwan:area_collection.new(dsm, an_area)
+	_local pr_col << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local filter_pr_col << pr_col.filter_by_geometry(:location, :within, area_col)
+	_local spat_col1 << filter_pr_col.spatial_collection(:location)
+
+	(sectors, world) << _self.drafting_sectors("xor2")
+	an_area << pseudo_area.new_for_world(sectors, world)
+	area_col << rwan:area_collection.new(dsm, an_area)
+	pr_col << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	filter_pr_col << pr_col.filter_by_geometry(:location, :within, area_col)
+	_local spat_col2 << filter_pr_col.spatial_collection(:location)
+	_return spat_col1.union(spat_col2), spat_col1, spat_col2
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.buffer_collection(dsm)
+	_return _self.area_surrounding_parkers_piece(dsm).buffer(_unset, unit_value(1,:m))	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.geometry_road_collection(dsm)
+	_local col << _self.min_road_collection
+	_local rec1 << col.select(predicate.eq(:name, "Park Terrace")).an_element()
+	_local rec2 << col.select(predicate.eq(:name, "Regent Street")).an_element()
+	_local gs << geometry_set.new_with(rec1.centre_line, rec2.centre_line)
+	_return rwan:geometry_collection.new(dsm, gs)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.record_road_collection(dsm)
+	_local col << _self.min_road_collection
+	_local rec1 << col.select(predicate.eq(:name, "Park Terrace")).an_element()
+	_local rec2 << col.select(predicate.eq(:name, "Regent Street")).an_element()
+	_local rec3 << col.select(predicate.eq(:name, "Lensfield Road")).an_element()
+	_return rwan:record_collection.new(dsm, {rec1, rec2, rec3})
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.record_hotel_collection(dsm)
+	_local col << _self.hotel_collection
+	_local rec1 << col.select(predicate.eq(:name, "Gonville Hotel")).an_element()
+	_local rec2 << col.select(predicate.eq(:name, "University Arms")).an_element()
+	_return rwan:record_collection.new(dsm, {rec1, rec2})
+_endmethod
+$
+

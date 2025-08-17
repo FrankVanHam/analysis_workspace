@@ -122,6 +122,13 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method geometry_collection.world
+	_return .geometry.an_element().world
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
 _method geometry_collection.convert_to_geometry(_optional bounds)
 	_if bounds _is _unset
 	_then 

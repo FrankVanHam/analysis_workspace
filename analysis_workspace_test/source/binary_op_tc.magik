@@ -1,0 +1,377 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:binary_op_tc,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_sw_col()
+	_local dsm << analysis_dataset_manager.new(:temp)
+	_local pcol1 << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local pcol2 << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local res << pcol1.subtraction(pcol2)
+	
+	_self.assert_equals(res.size, 0, "Subtraction leads to 0")
+	
+	res << pcol1.union(pcol2)
+	_self.assert_equals(res.size, pcol1.size, "Union should have the same number of elements")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_pred_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _super.predicated_hotel_collection(dsm)
+
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")	
+	res << hcol1.subtraction(hcol2)
+	_self.assert_equals(res.size, hcol1.size-hcol2.size, "Difference # should match (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_spatial_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2  << _super.spatial_filter_hotel_collection(dsm)
+
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_distance_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _self.distance_hotel_collection(dsm)
+
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_view_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local vcol << _self.office_company_view_collection(dsm)
+	
+	_local loc_col << vcol.spatial_collection(:location)
+	
+	_local touch_col << vcol.filter_by_geometry(:location, :interacting_with, loc_col)
+	_self.assert_equals(vcol.size, touch_col.size, "All offices are touching of their buffer (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _self.binary_op_hotel_collection(dsm)
+
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_method_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _self.method_hotel_collection(dsm)
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_join_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local hcol2 << _self.join_pub_collection(dsm)
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_root_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _self.root_hotel_collection(dsm)
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_topology_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _self.topology_hotel_collection(dsm)
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_trace_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _self.trace_hotel_collection(dsm)
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_spatial_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local sp_col1 << prcol1.spatial_collection(:location)
+	_local sp_col2 << prcol2.spatial_collection(:location)
+	_local diff << sp_col1.subtraction(sp_col2)
+	_self.assert_equals(diff.size, 1, "The difference should be 1 (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_spatial_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (sb_col, part1, part2) << _self.spatial_binary_collection(dsm)
+	
+	_local diff << sb_col.subtraction(part1)
+	_local int << part1.intersection(part2)
+	_self.assert_equals(diff.size + int.size, part2.size, "The difference should be the size of part2 + intersection (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_geometry_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local geom_col << _self.geometry_road_collection(dsm)
+	_local geom << geom_col.an_element()
+	_local sub_geom_col << rwan:geometry_collection.new(dsm, geometry_set.new_with(geom))
+
+	_local dif << geom_col.subtraction(sub_geom_col)
+	_self.assert_equals(dif.size, geom_col.size-1, "Subtraction size should be one less (not #1)")
+_endmethod
+$
+
+_pragma(follow_root_tc=basic, topic={analysis})
+_method binary_op_tc.test_on_record_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol1 << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol2 << _self.record_hotel_collection(dsm)
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+##################################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_spatial_analysis_col()
+	_local dsm << analysis_dataset_manager.new(:temp)
+	_local pcol << rwan:sw_collection.new(dsm, _self.park_collection)
+	_local area << _self.area_surrounding_parkers_piece(dsm)
+	_local pcol1 << pcol.filter_by_geometry(:coverage, :within, area)
+	_local geom << pcol1.spatial_collection(:coverage)
+	
+	_local mbcol << rwan:sw_collection.new(dsm, _self.map_feature)
+	_local touch_col << mbcol.filter_by_geometry(:building_area, :touching, geom)
+	_local overlay_col << mbcol.filter_by_geometry(:building_area, :overlaying, geom)
+	
+	_local and_col << touch_col.union(overlay_col)
+	_self.assert_is(and_col.size, 1, "There is one map feature adjecent to the park. 1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_on_predicate_analysis_col()
+	_local dsm << analysis_dataset_manager.new(:temp)
+	_local pcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local pred1 << predicate.eq(:type, "Restaurant")
+	_local pred2 << predicate.eq(:cuisine, "Chinese")
+	_local pcol1 << pcol.filter_by_predicate(pred1)
+	_local pcol2 << pcol.filter_by_predicate(pred2)
+	_local and_col << pcol1.intersection(pcol2)
+	_self.assert_is(and_col.size, 5, "There are 5 Chinese restaurants.a")
+	
+	_local pcol3 << pcol.filter_by_predicate(pred1 _and pred2)
+	_self.assert_is(pcol3.size, 5, "There are 5 Chinese restaurants.b")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_tc.the_two_collections(dsm)
+	_local sectors << _self.drafting_sectors("xor1")
+	_local an_area1 << pseudo_area.new(sectors)
+	_local area_col1 << rwan:area_collection.new(dsm, an_area1)
+	sectors << _self.drafting_sectors("xor2")
+	_local an_area2 << pseudo_area.new(sectors)
+	_local area_col2 << rwan:area_collection.new(dsm, an_area2)
+	
+	_local prcol << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local prcol1 << prcol.filter_by_geometry(:location, :within, area_col1)
+	_local prcol2 << prcol.filter_by_geometry(:location, :within, area_col2)
+	_return prcol, prcol1, prcol2, an_area1, an_area2
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method binary_op_tc.assert_pubs(results, _gather names)
+	_local s << equality_set.new_from(names)
+	_for i_rec _over results.fast_elements()
+	_loop
+		_if s.remove(i_rec.name).not
+		_then
+			_return _false
+		_endif 
+	_endloop
+	_return s.empty?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_xor()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)	
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.xor(prcol2)
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.xor(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 3, "There are 3 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_union()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)	
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.union(prcol2)
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn", "Cow and Calf")
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.union(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton", "County Arms", "Castle Inn", "Cow and Calf")
+	_self.assert_is(result.size, 4, "There are 4 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_intersection()	
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.intersection(prcol2)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Cow and Calf")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.intersection(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Cow and Calf")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_subtraction1()	
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol1.subtraction(prcol2)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area1.subtraction(an_area2)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "Sir Isaac Newton")
+	_self.assert_is(result.size, 1, "There are 1 pub/restaurants exclusive in the areas. d")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_subtraction2()	
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (prcol, prcol1, prcol2, an_area1, an_area2) << _self.the_two_collections(dsm)
+	_local result << prcol2.subtraction(prcol1)
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. a")
+	ok? << _self.assert_pubs(result, "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. b")
+	
+	_local an_area3 << an_area2.subtraction(an_area1)
+	_local area_col << rwan:area_collection.new(dsm, an_area3)
+	result << prcol.filter_by_geometry(:location, :within, area_col)
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. c")
+	ok? << _self.assert_pubs(result, "County Arms", "Castle Inn")
+	_self.assert_is(result.size, 2, "There are 2 pub/restaurants exclusive in the areas. d")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_composite_collections()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local rcol1 << rcol.filter_by_predicate(predicate.eq(:name, "Chesterton Road"))
+	_local rcol2 << rcol.filter_by_predicate(predicate.eq(:name, "Haig Road"))
+	_local ap_col << rcol1.union(rcol2)
+	_self.assert_is(ap_col.size, 2, "There are two roads")
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_method binary_op_tc.test_subtract_collections()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local all_four << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local pred << predicate.eq(:road_type, "A-Road")
+	_local rcol1 << rcol.filter_by_predicate(pred)
+	
+	_local sub_col << all_four.subtraction(rcol1)
+	_self.assert_is( sub_col.size, 1, "There is only 1 not A-Road at the roundabout")
+_endmethod
+$
+

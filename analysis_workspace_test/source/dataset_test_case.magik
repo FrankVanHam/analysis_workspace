@@ -117,7 +117,7 @@ _pragma(classify_level=basic, topic={analysis})
 _method dataset_test_case.test_root_analysis()
 	_local pcol << rwan:sw_collection.new(.ds, _self.pub_rest_collection)
 	_local acol << pcol.follow_join(:min_roads)
-	_local pcol1 << acol.root(_self.pub_rest_collection)
+	_local pcol1 << acol.follow_root(_self.pub_rest_collection)
 	
 	_self.basic_storage_test(pcol1)
 _endmethod

@@ -615,6 +615,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_collection_creator.verify_key_match()
 	_local key_field_names << .sw_collection.key_field_names
+	_if key_field_names.empty? _then _return _endif
 	_local all_field_names << rope.new()
 	_for i_field _over _self.field_elements()
 	_loop
@@ -622,9 +623,8 @@ _private _method materialized_collection_creator.verify_key_match()
 		_then
 			all_field_names.add(i_field.name)
 		_endif
-	_endloop
-	_local field_names << all_field_names.slice(1,key_field_names.size)
-	_if _not field_names.eq?(key_field_names)
+	_endloop 
+	_if _not all_field_names.includes_all?(key_field_names)
 	_then
 		condition.raise(:error, :string, "All keys should be included")
 	_endif 
@@ -666,7 +666,7 @@ _private _iter _method materialized_collection_creator.possible_enum_names(name)
 		_else
 			new_name << write_string(name, post_fix)
 		_endif
-		_loopbody(new_name)
+		_loopbody(new_name.as_symbol())
 		running_post_fix +<< 1
 	_endloop 
 _endmethod

@@ -1,0 +1,231 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:buffer_tc,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_sw_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_pred_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _super.predicated_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_spatial_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol  << _super.spatial_filter_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_distance_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.distance_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_view_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local vcol << _self.office_company_view_collection(dsm)
+	_local bcol << vcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << vcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(vcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.binary_op_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_method_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.method_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_join_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.join_pub_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the pubs
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_root_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.root_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_topology_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.topology_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_trace_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.trace_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_area_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.area_surrounding_parkers_piece(dsm)
+	_local bcol << acol.buffer(_unset, unit_value(1,:m))
+	_self.assert_true(bcol.convert_to_geometry().contains?(acol.convert_to_geometry()), "original should be contained by the buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_buffer_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.buffer_collection(dsm)
+	_local bcol << acol.buffer(_unset, unit_value(1,:m))
+	_self.assert_true(bcol.convert_to_geometry().contains?(acol.convert_to_geometry()), "original should be contained by the buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_area_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local acol << _self.area_binary_collection(dsm)
+	_local bcol << acol.buffer(_unset, unit_value(1,:m))
+	_self.assert_true(bcol.convert_to_geometry().contains?(acol.convert_to_geometry()), "original should be contained by the buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_spatial_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local (gcol, acol) << _self.spatial_filter_hotel_collection(dsm)
+	_local bcol << gcol.buffer(_unset, unit_value(1,:m))
+
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local fcol << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(fcol.size, gcol.size, "#1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_spatial_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local sb_col << _self.spatial_binary_collection(dsm)
+	_local bcol << sb_col.buffer(_unset, unit_value(1,:m))
+
+	_local pr_col << rwan:sw_collection.new(dsm, _self.pub_rest_collection)
+	_local fcol << pr_col.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(fcol.size, sb_col.size, "#1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method buffer_tc.test_on_geometry_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local geom_col << _self.geometry_road_collection(dsm)
+	_local bcol << geom_col.buffer(_unset, unit_value(1,:m))
+	_local inside? << _self.area_includes_all?(bcol, geom_col)
+	_self.assert_true(inside?, "The geometry should be inside its buffer")
+_endmethod
+$
+
+_pragma(follow_root_tc=basic, topic={analysis})
+_method buffer_tc.test_on_record_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.record_hotel_collection(dsm)
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$

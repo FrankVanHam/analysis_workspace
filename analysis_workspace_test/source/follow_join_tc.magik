@@ -1,0 +1,137 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:follow_join_tc,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_sw_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local wcol << hcol.follow_join(:walks)
+	_self.assert_is(wcol.size, 2, "There are only 2 walks connected to the roads")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_follow_x_to_0_join()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local pcol << rwan:sw_collection.new(dsm, _self.supply_point_collection)
+	_local acol << pcol.follow_join(:customer)
+	
+	_self.assert_is(acol.size, 24, "There should be x customers in the set")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_pred_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _super.predicated_b_road_collection(dsm)
+	_local wcol << rcol.follow_join(:walks)
+	_self.assert_equals(wcol.size, 1, "There are only 1 walk connected to the B roads")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_spatial_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol  << _super.spatial_filter_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 1, "There are only 1 pub connected to the B roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_distance_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.distance_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 4, "There are only 4 pub connected to the B roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.binary_op_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 1, "There are only 1 pub connected to roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_method_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.method_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 19, "There are 19 pubs connected to roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_join_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.join_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 19, "There are 19 pubs connected to roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_root_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.root_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 0, "There are no pubs connected to these roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_topology_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.topology_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 0, "There are no pubs connected to these roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_trace_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.trace_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 7, "There are 7 pubs connected to these roads (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_join_tc.test_on_record_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.record_road_collection(dsm)
+	_local wcol << rcol.follow_join(:pub_rests)
+	_self.assert_equals(wcol.size, 1, "There are 1 pubs connected to these roads (not #1)")
+_endmethod
+$

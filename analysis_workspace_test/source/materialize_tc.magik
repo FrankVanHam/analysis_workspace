@@ -1,0 +1,416 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:materialize_tc,
+	{},
+	:base_dsm_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_sw_col()
+	_local sw_col << _self.hotel_collection
+	_local hcol << rwan:sw_collection.new(.ds, sw_col)
+	_local settings << _self.hotel_settings(sw_col)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_pred_filter_col()
+	_local hcol << _super.predicated_hotel_collection(.ds)
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_spatial_filter_col()
+	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_distance_filter_col()
+	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_view_col()
+	_local vcol << _self.office_company_view_collection(.ds)
+	_local sw_col << vcol.actual_collection
+	_local settings << _self.office_settings(sw_col)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   vcol,
+							   settings)
+	_self.assert_equals(mat_col.size, vcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_binary_col()
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local hcol << _self.binary_op_hotel_collection(.ds)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_method_col()
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local hcol << _self.method_hotel_collection(.ds)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_join_col()
+	_local sw_col << _self.min_road_collection
+	_local settings << _self.road_settings(sw_col)
+	_local rcol << _self.join_road_collection(.ds)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   rcol,
+							   settings)
+	_self.assert_equals(mat_col.size, rcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_root_col()
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local hcol << _self.root_hotel_collection(.ds)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_topology_col()
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local hcol << _self.topology_hotel_collection(.ds)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_trace_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.trace_hotel_collection(dsm)	
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_area_col()
+	_local acol << _self.area_surrounding_parkers_piece(.ds)
+	_local mat_col << rwan:area_materialized_collection.new(.ds, acol)
+	_local dif_col << mat_col.subtraction(acol)
+	_self.assert_unset(dif_col.area, "The subtraction should be unset, degenerate")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_buffer_col()
+	_local acol << _self.buffer_collection(.ds)
+	_local mat_col << rwan:area_materialized_collection.new(.ds, acol)
+	_local dif_col << mat_col.subtraction(acol)
+	_self.assert_unset(dif_col.area, "The subtraction should be unset, degenerate")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_area_binary_col()
+	_local acol << _self.area_binary_collection(.ds)
+	_local mat_col << rwan:area_materialized_collection.new(.ds, acol)
+	_local dif_col << mat_col.subtraction(acol)
+	_self.assert_unset(dif_col.area, "The subtraction should be unset, degenerate")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_spatial_col()
+	_local gcol << _self.spatial_filter_hotel_collection(.ds)
+	_local mat_col << rwan:spatial_materialized_collection.new(.ds, gcol)
+	_self.assert_equals(gcol.size, mat_col.size, "The size should be equal (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_spatial_binary_col()
+	_local sb_col << _self.spatial_binary_collection(.ds)
+	_local mat_col << rwan:spatial_materialized_collection.new(.ds, sb_col)
+	_self.assert_equals(sb_col.size, mat_col.size, "The size should be equal (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_on_geometry_col()
+	_local sb_col << _self.geometry_road_collection(.ds)
+	_local mat_col << rwan:spatial_materialized_collection.new(.ds, sb_col)
+	_self.assert_equals(sb_col.size, mat_col.size, "The size should be equal (not #1)")
+_endmethod
+$
+
+_pragma(follow_root_tc=basic, topic={analysis})
+_method materialize_tc.test_on_record_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.record_hotel_collection(dsm)	
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
+_endmethod
+$
+
+##########################################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.hotel_materialized_collection()
+	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
+	_local sw_col << _self.hotel_collection
+	_local settings << _self.hotel_settings(sw_col)
+	_return rwan:materialized_collection.new(.ds,
+						 hcol,
+						 settings)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_filter_by_geometry()
+	_local hcol << _self.hotel_materialized_collection()
+	_local area << _self.area_surrounding_parkers_piece(.ds)
+	_local hcol << hcol.filter_by_geometry(:location, :within, area)
+	_self.assert_equals(hcol.size, 2, "There are 2 hotels in the inner area {not #1}")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_filter_by_predicate()
+	_local hcol << _self.hotel_materialized_collection()
+	_local res << hcol.filter_by_predicate( predicate.eq(:type, "Guest House"))
+	_self.assert_is(res.size, 8, "There are 8 guest houses, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_filter_by_distance()
+	_local hcol << _self.hotel_materialized_collection()
+	_local area << _self.larger_area_surrounding_parkers_piece(.ds)
+	_local hcol1 << hcol.filter_by_distance(:location, unit_value(0, :m), area, _false)
+	_self.assert_is(hcol1.size, 3, "There are 3 hotels in the area")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_buffer()
+	_local hcol << _self.hotel_materialized_collection()
+	_local bcol << hcol.buffer(:location, unit_value(1,:m))
+	
+	# the buffer should contain the hotels
+	_local inside_col << hcol.filter_by_geometry(:location, :within, bcol)
+	_self.assert_equals(hcol.size, inside_col.size, "All hotels are in the area of their buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_spatial()
+	_local hcol << _self.hotel_materialized_collection()
+	_local loc_col << hcol.spatial_collection(:location)
+	
+	_local touch_col << hcol.filter_by_geometry(:location, :interacting_with, loc_col)
+	_self.assert_equals(hcol.size, touch_col.size, "All hotels are touching of their buffer (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_binary_op()
+	_local hcol1 << _self.hotel_materialized_collection()
+	_local hcol2 << hcol1.filter_by_predicate( predicate.eq(:type, "Guest House"))
+	_local res << hcol1.union(hcol2)
+	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_materialize()
+	_local hcol << _self.hotel_materialized_collection()
+	_local settings << _self.hotel_settings(hcol.actual_collection)
+	_local mat_col << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_local res << hcol.union(mat_col)
+	_self.assert_equals(res.size, hcol.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialize_tc.hotel_settings(sw_col)
+	_local settings << materialization_settings.new(:int_name, :ext_name)
+	settings.add_field(sw_col.field(:name), :name, "Name", _unset)
+	settings.add_field(sw_col.field(:type), :type, "Type", _unset)
+	settings.add_field(sw_col.field(:location), :location, "Location", _unset)
+	_return settings
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialize_tc.road_settings(sw_col)
+	_local settings << materialization_settings.new(:int_name, :ext_name)
+	settings.add_field(sw_col.field(:min_road_id), :min_road_id, "ID", _unset)
+	settings.add_field(sw_col.field(:name), :name, "Name", _unset)
+	_return settings
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialize_tc.office_settings(sw_col)
+	_local settings << materialization_settings.new(:int_name, :ext_name)
+	settings.add_field(sw_col.field(:office_name), :name, "Name", _unset)
+	settings.add_field(sw_col.field(:company_name), :company_name, "Company Name", _unset)
+	settings.add_field(sw_col.field(:office_location), :location, "Location", _unset)
+	_return settings
+_endmethod
+$
+
+
+###################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.area_materialized_collection()
+	_local (sectors, world) << _self.drafting_sectors("xor1")
+	_local area1 << pseudo_area.new_for_world(sectors, world)
+
+	(sectors, world) << _self.drafting_sectors("test_finding_hotels_near_parks")
+	_local area2 <<  pseudo_area.new_for_world(sectors, world)
+
+	_local union_area << area1.union(area2)
+	union_area.world << world
+	_local acol << rwan:area_collection.new(.ds, union_area)
+	_local mat_col << rwan:area_materialized_collection.new(.ds, acol)
+	_return mat_col, acol
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_materialize_area_on_buffer_col()
+	_local (mat_col, org_col) << _self.area_materialized_collection()
+	_local bcol << mat_col.buffer(_unset, unit_value(1, :m))
+	_self.assert_true(bcol.area.contains?(mat_col.area), "original should be contained by the buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_materialize_area_on_binary_col()
+	_local (mat_col, org_col) << _self.area_materialized_collection()
+	_local dif_col << mat_col.subtraction(org_col)
+	_self.assert_unset(dif_col.area, "The subtraction should be unset, degenerate")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_materialize_area_on_materialize_col()
+	_local (mat_col, org_col) << _self.area_materialized_collection()
+	_local mat2_col << rwan:area_materialized_collection.new(.ds, mat_col)
+	_local dif_col << mat_col.subtraction(mat2_col)
+	_self.assert_unset(dif_col.area, "The subtraction should be unset, degenerate")
+_endmethod
+$
+
+###########################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.geometry_collection()
+	_local geom_col << _self.geometry_road_collection(.ds)
+	_local mat_col << rwan:spatial_materialized_collection.new(.ds, geom_col)
+	_return mat_col, geom_col
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_materialize_geometry_on_buffer_col()
+	_local mat_col << _self.geometry_collection()
+	_local bcol << mat_col.buffer(_unset, unit_value(1, :m))
+	_local inside? << _self.area_includes_all?(bcol, mat_col)
+	_self.assert_true(inside?, "original should be contained by the buffer")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_materialize_geometry_on_binary_col()
+	_local geom_col << _self.geometry_collection()
+	_local geom << geom_col.an_element()
+	_local sub_geom_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(geom))
+	_local dif << geom_col.subtraction(sub_geom_col)
+	_self.assert_equals(dif.size, geom_col.size-1, "Subtraction size should be one less (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.test_materialize_geometry_on_materialize_col()
+	_local mat_col << _self.geometry_collection()
+	_local mat2_col << rwan:spatial_materialized_collection.new(.ds, mat_col)
+	_self.assert_equals(mat_col.size, mat2_col.size, "The subtraction should be unset, degenerate")
+_endmethod
+$

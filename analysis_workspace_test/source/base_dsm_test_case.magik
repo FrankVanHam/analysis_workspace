@@ -18,22 +18,38 @@
 _package rwan
 $
 
-#remex(:where_analysis_test_case)
+#remex(:base_dsm_test_case)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-def_slotted_exemplar(:follow_analysis_test_case,
-	{},
+##
+## Test using geometry filters.
+def_slotted_exemplar(:base_dsm_test_case,
+	{
+		{:ds, _unset},
+		{:file_name, _unset}
+	},
 	:base_analysis_test_case)
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_dsm_test_case.set_up()
+	## 
+	_local source_path << smallworld_product.get_resource_file("analysis.ds",
+								  "data",
+								  rwan:analysis_dataset_manager.module_name)
+	_local target_path << system.temp_file_name("munit_analysis.ds")
+	system.file_copy(source_path, target_path)
+	.file_name << target_path
+	.ds << rwan:analysis_dataset_manager.open(:test, .file_name)
+_endmethod
+$
 
 _pragma(classify_level=basic, topic={analysis})
-_method follow_analysis_test_case.test_follow_x_to_0_join()
-	_local dsm << rwan:analysis_dataset_manager.new(:test)
-	_local pcol << rwan:sw_collection.new(dsm, _self.supply_point_collection)
-	_local acol << pcol.follow_join(:customer)
-	
-	_self.assert_is(acol.size, 24, "There should be x customers in the set")
+_method base_dsm_test_case.tear_down()
+	## 
+	##
+	.ds.discard()
+	system.unlink( .file_name, _true, _true)
 _endmethod
 $

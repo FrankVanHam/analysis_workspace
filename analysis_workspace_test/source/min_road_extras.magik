@@ -46,3 +46,11 @@ _method min_road.nr_hotels(nr)
 _endmethod
 $
 
+_pragma(classify_level=advanced, topic={roos,analytics})
+_method min_road.nr_roads(nr)
+	_local col << _self.dataset.collection(:min_road)
+	_local str << col.read_stream()
+	_return str.get_n(nr)
+_endmethod
+$
+

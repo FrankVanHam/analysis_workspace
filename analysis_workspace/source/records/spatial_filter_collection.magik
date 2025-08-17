@@ -127,7 +127,18 @@ _method spatial_filter_collection.includes?(rec)
 	_endif
 	_local rec_gs << geometry_set.new_with(geom)
 	_local geom_arg << _self.need_geometry(.arg)
-	_return rec_gs.select(.selector, geom_arg).empty?.not
+	_local geom_args << _if geom_arg.is_collection?
+			    _then >> geom_arg
+			    _else >> {geom_arg}
+			    _endif
+	_for i_geom_arg _over geom_args.fast_elements()
+	_loop 
+		_if rec_gs.select(.selector, i_geom_arg).empty?.not
+		_then
+			_return _true
+		_endif
+	_endloop
+	_return _false
 _endmethod
 $
 
@@ -155,7 +166,6 @@ _private _method spatial_filter_collection.need_geometry(arg)
 	_return arg.convert_to_geometry()
 _endmethod
 $
-
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_filter_collection.description(translator)

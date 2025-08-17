@@ -1,0 +1,197 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:follow_trace_tc,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_sw_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(400,:m))
+	_self.assert_equals(rwcol.size, 5, "There are 5 roadworks connected to hotels")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_pred_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _super.predicated_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(400,:m))
+	_self.assert_equals(rwcol.size, 3, "There are 3 roadworks connected to hotels of type 'Hotel' (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_spatial_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol  << _super.spatial_filter_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(400,:m))
+	_self.assert_equals(rwcol.size, 1, "There are 1 roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_distance_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.distance_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(400,:m))
+	_self.assert_equals(rwcol.size, 1, "There are 1 roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_view_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local vcol << _self.office_company_view_collection(dsm)
+	_local rwcol << vcol.follow_trace(:office_location, _self.road_works_collection, {}, unit_value(400,:m))
+	_self.assert_equals(rwcol.size, 4, "There are 4 roadworks connected to offices in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.binary_op_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(1000,:m))
+	_self.assert_equals(rwcol.size, 1, "There are 1 roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_method_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.method_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(1000,:m))
+	_self.assert_equals(rwcol.size, 5, "There are 5 roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_join_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.join_road_collection(dsm)
+	_local rwcol << hcol.follow_trace(:centre_line, _self.road_works_collection, {}, unit_value(100,:m))
+	_self.assert_equals(rwcol.size, 3, "There are 3 pub roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_root_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.root_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(100,:m))
+	_self.assert_equals(rwcol.size, 0, "There are 0 pub roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_topology_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.topology_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(100,:m))
+	_self.assert_equals(rwcol.size, 0, "There are 0 pub roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_trace_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.trace_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(100,:m))
+	_self.assert_equals(rwcol.size, 0, "There are 0 pub roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_on_record_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << _self.record_hotel_collection(dsm)
+	_local rwcol << hcol.follow_trace(:location, _self.road_works_collection, {}, unit_value(100,:m))
+	_self.assert_equals(rwcol.size, 0, "There are 0 pub roadworks connected to hotels in the area (not #1)")
+_endmethod
+$
+
+##############################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method follow_trace_tc.supply_point_basics()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local pcol << rwan:sw_collection.new(dsm, _self.supply_point_collection)
+	_local one_col << pcol.filter_by_predicate(predicate.eq(:id, "CAM-909169-SP"))
+	
+	_local link_table << gis_program_manager.databases[:electricity].collections[:substation_internals_link]
+	_return one_col, link_table
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_trace_from_supply_point_to_station()
+	_local (one_col, link_table) << _self.supply_point_basics()
+	_local trace_col << one_col.follow_trace(:location, link_table, _unset, _unset)
+	_self.assert_is(trace_col.size, 1, "There should be 1 substation link in the set")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_trace_from_supply_point_to_station_with_predicate_stop()
+	_local (one_col, link_table) << _self.supply_point_basics()
+
+	_local joint_col << gis_program_manager.databases[:electricity].collection(:joint)
+	_local stops << property_list.new_with(joint_col,_unset)
+	_local trace_col << one_col.follow_trace(:location, link_table, stops, _unset)
+	_self.assert_is(trace_col.size, 0, "There should be 0 substation link in the set because the trace stops at a joint")
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_trace_from_supply_point_to_station_with_predicate_false_stop()
+	_local (one_col, link_table) << _self.supply_point_basics()
+	
+	_local joint_col << gis_program_manager.databases[:electricity].collection(:joint)
+	_local stops << property_list.new_with(joint_col, predicate.lt(:id,0))
+	_local trace_col << one_col.follow_trace(:location, link_table, stops, _unset)
+	_self.assert_is(trace_col.size, 1, "There should be 1 substation link in the set because the stop condition is always false")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_trace_from_supply_point_to_station_with_unsufficient_max_length()
+	_local (one_col, link_table) << _self.supply_point_basics()
+	_local stops << _unset 
+	_local trace_col << one_col.follow_trace(:location, link_table, stops, length_value(1000,:mm))
+	_self.assert_is(trace_col.size, 0, "There should be 0 substation link in the set because the max length is too little")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method follow_trace_tc.test_trace_from_supply_point_to_station_with_sufficient_max_length()
+	_local (one_col, link_table) << _self.supply_point_basics()
+	_local stops << _unset 
+	_local trace_col << one_col.follow_trace(:location, link_table, stops, length_value(100000,:mm))
+	_self.assert_is(trace_col.size, 1, "There should be 1 substation link in the set because the max length is enough")
+_endmethod
+$

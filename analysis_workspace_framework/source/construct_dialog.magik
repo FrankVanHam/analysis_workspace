@@ -311,7 +311,7 @@ _method construct_dialog.do_add_explorer_content()
 			_then
 				col << rwan:sw_collection.new(dsm, i_set)
 			_else
-				col << rwan:record_set.new(dsm, i_set)
+				col << rwan:record_collection.new(dsm, i_set)
 			_endif
 			_self.add_collection(col, _unset)
 		_endloop 
@@ -331,7 +331,7 @@ _method construct_dialog.add_explorer_selection()
 	_if sel.is_records?
 	_then
 		set << rwo_set.new_from_iter(sel, :|records()|)
-		col << rwan:record_set.new(dsm, set)
+		col << rwan:record_collection.new(dsm, set)
 		_self.add_collection(col, _unset)
 	_else
 		_self.user_error(:please_select_records_in_explorer)
@@ -366,7 +366,7 @@ _method construct_dialog.do_add_scrapbook()
 		_endloop
 		_for set _over sel_by_table_name.fast_elements()
 		_loop
-			_local col << rwan:record_set.new(dsm, set)
+			_local col << rwan:record_collection.new(dsm, set)
 			_self.add_collection(col, _unset)
 		_endloop
 	_endloop

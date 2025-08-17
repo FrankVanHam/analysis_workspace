@@ -1,0 +1,253 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using predicate filters.
+def_slotted_exemplar(:filter_by_predicate_tc,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_sw_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
+	_local hcol << hcol.filter_by_predicate(predicate.eq(:type, "Guest House"))
+	_self.assert_equals(hcol.size, 8, "Guest houses.")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_pred_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _super.predicated_b_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 765, "There are 765 B-Roads Single Carriage in the area")
+	res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Double Carriage"))
+	_self.assert_is(res.size, 0, "There are no B-Roads Double Carriage in the area")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_distance_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.distance_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 52, "There are 52 Roads Single Carriage in the area (not #1)")
+	res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Double Carriage"))
+	_self.assert_is(res.size, 0, "There are no Roads Double Carriage in the area")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_spatial_filter_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol  << _super.spatial_filter_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 25, "There are 25 B-Roads Single Carriage in the area, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_view_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local vcol << _self.office_company_view_collection(dsm)
+	_local res << vcol.filter_by_predicate( predicate.wild(:office_name, "Smallworld*"))
+	_self.assert_is(res.size, 1, "There is 1 Smallworld office, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_binary_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.binary_op_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 22, "There are 22 B-Roads Single Carriage in the area, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_method_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.method_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 789, "There are 789 B-Roads Single Carriage in the method collection, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_join_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.join_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 17, "There are 17 Pub Roads Single Carriage in the method collection, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_root_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.root_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 2, "There are 2 Pub Roads Single Carriage in the root collection, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_topology_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.topology_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 2, "There are 2 Pub Roads Single Carriage in the root collection, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_trace_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.trace_road_collection(dsm)
+	_local res << rcol.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 80, "There are 80 Roads Single Carriage in the root collection, not (#1)")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_on_record_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rec_col << _self.record_road_collection(dsm)
+	_local res << rec_col.filter_by_predicate( predicate.eq(:carriage_type, "Single Carriage"))
+	_self.assert_is(res.size, 3, "There are 3 Roads Single Carriage in the record collection, not (#1)")	
+_endmethod
+$
+
+################################################################################
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method filter_by_predicate_tc.pred
+	_return predicate.eq(:road_type, "A-Road")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_join_and_pred()
+	# Test following the joins
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	_local annot_col << rcol.follow_join(:road_annotations)
+	_local rcol2 << annot_col.follow_join(:min_road)
+	_local rcol3 << rcol2.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol3.size, 2, "o) There are 2 A-Roads at the chesteron roundabout with labels")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_basic_pred()
+	# Test a global alfa predicate on the collection
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local col << _self.min_road_collection
+	_local rcol << rwan:sw_collection.new(dsm, col)
+	_local rcol1 << rcol.filter_by_predicate(_self.pred)
+	_local sel << col.select(_self.pred)
+	_self.assert_is( rcol1.size, sel.size, "both sizes should be equal")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_set_and_pred()
+	# Take a set and apply the predicate to it.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local aset << _self.haig_and_chesterton_set(dsm)
+	_local aset1 << aset.filter_by_predicate(_self.pred)
+	_self.assert_is( aset.size, aset1.size, "both sizes should be equal because haigh and chesterton are both A-roads")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_geometry_filter_and_pred()
+	# Take a geometry set and apply the predicate to it.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	_local rcol2 << rcol.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol2.size, 3, "a) There are 3 A-Roads at the chesteron roundabout")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_buffer_and_pred()
+	# Filter the roundabout collection for
+	# the Chesterton roundabout. Make a buffer around it and find
+	# the roads. Apply the predicate to these roads.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rbcol << rwan:sw_collection.new(dsm, _self.roundabout_collection)
+	_local rbcol1 << rbcol.filter_by_predicate(predicate.eq(:name, "Chesterton"))
+	_self.assert_is(rbcol1.size, 1, "There should be one")
+	_local rb_buffer << rbcol1.buffer( :location, length_value.new(10000,:mm) )
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local rcol1 << rcol.filter_by_geometry(:centre_line, :interacting_with, rb_buffer)
+	_self.assert_is(rcol1.size, 4, "There are 4 roads nearby the roundabout")
+	_local rcol2 << rcol1.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol2.size, 3, "b) There are 3 A-Roads at the chesteron roundabout")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_topology_and_pred()
+	# Take the Chesterton roundabout and find the connected
+	# roads. Then apply the predicate to it.
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rbcol << rwan:sw_collection.new(dsm, _self.roundabout_collection)
+	_local rbcol1 << rbcol.filter_by_predicate(predicate.eq(:name, "Chesterton"))
+	_local rcol << rbcol1.follow_topology(:location, _self.min_road_collection)
+	_self.assert_is(rcol.size, 4, "There are 4 roads connected to the roundabout")
+	_local rcol1 << rcol.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol1.size, 3, "c) There are 3 A-Roads at the chesteron roundabout")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_append_and_pred()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	_local rcol1 << rcol.filter_by_predicate(predicate.eq(:name, "Chesterton Road"))
+	_local rcol2 << rcol.filter_by_predicate(predicate.eq(:name, "Haig Road"))
+	_local ap_col << rcol1.union(rcol2)
+	
+	rcol << ap_col.filter_by_predicate(_self.pred)
+	
+	_self.assert_is( rcol.size, 2, "There are 2 A-Roads in this set")	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method filter_by_predicate_tc.test_subtract_and_pred()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local rcol << _self.chesterton_roundabout_roads_geometry_set(dsm)
+	_local subtract_col << rwan:sw_collection.new(dsm, _self.min_road_collection)
+	subtract_col << subtract_col.filter_by_predicate(predicate.eq(:carriage_type, "Single Carriage"))
+
+	_local rcol1 << rcol.subtraction(subtract_col)
+	_local rcol2 << rcol1.filter_by_predicate(_self.pred)
+	_self.assert_is( rcol2.size, 3, "There are 3 A-Roads that comply")
+_endmethod
+$

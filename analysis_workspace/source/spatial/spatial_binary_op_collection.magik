@@ -93,26 +93,30 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_binary_op_collection.convert_to_geometry()
-	_local gs << _self.base_collection.convert_to_geometry()
-	_local gs1 << _self.other_collection.convert_to_geometry()
+	_local gs1 << _self.base_collection.convert_to_geometry()
+	_local gs2 << _self.other_collection.convert_to_geometry()
 	_local methd << write_string(.operation+:|()|).as_symbol()
+
+	_local set1 << equality_set.new_from(gs1)
+	_local set2 << equality_set.new_from(gs2)
 	
-	_if _not gs.responds_to?(methd)
-	_then
-		gs << geometry_set.new_from(gs)
-	_endif 
-	_if _not gs1.responds_to?(methd)
-	_then
-		gs1 << geometry_set.new_from(gs1)
-	_endif 
-	_local gs_result << gs.perform(methd, gs1)
-	_if gs_result _is _unset
-	_then
-		gs_result << geometry_set.new()
-	_endif
-	_return gs_result
+	_local result << set1.perform(methd, set2)
+	_return geometry_set.new_from(result)
 _endmethod
 $
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_binary_op_collection.size
+	_local c << 0
+	_for e _over _self.fast_geometries()
+	_loop
+		c +<< 1
+	_endloop
+	_return c
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_binary_op_collection.description(translator)

@@ -276,7 +276,7 @@ _method tree_builder.display_tree_for_binary_op_collection(col, base_col, other_
 	_local tree << _self.display_tree(col)
 	_local sw_col << base_col.expose()
 	_local image << _self.sw_collection_image(sw_col)
-	tree.styled_string << _self.styled_string(:image, {op, _self.module_name}, :image, image)
+	tree.styled_string << _self.styled_string(:image, {:binary_op_+op, _self.module_name}, :image, image)
 	
 	_local base_tree << _self.tree(base_col)
 	tree.add_child(base_tree)
@@ -498,7 +498,7 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method record_set.display_tree_in(owner)
+_method record_collection.display_tree_in(owner)
 	_return owner.display_tree_for_set(_self, .base_set)
 _endmethod
 $
