@@ -112,8 +112,8 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
-_method tree_dialog.double_clicked(p_display_tree, p_row, p_event, p_selection)
-	(x, x, x, x, x, x, x, column_index) << .tree_item.cell_info_at(p_event.x, p_event.y)
+_method tree_dialog.double_clicked(display_tree, row, event, selection)
+	(x, x, x, x, x, x, x, column_index) << .tree_item.cell_info_at(event.x, event.y)
 	_if column_index = 2
 	_then
 		.owner.colour_double_clicked()

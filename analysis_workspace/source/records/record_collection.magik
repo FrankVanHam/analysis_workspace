@@ -49,14 +49,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method record_collection.origin_is_sw_collection?
-	## Answer if a smallworld collection is as the base of self.
-	_local ae << .base_set.an_element()
-	_if ae _isnt _unset
-	_then
-		_return ae.is_a_datastore_object?
-	_else
-		_return _false
-	_endif 
+	_return _false
 _endmethod
 $
 

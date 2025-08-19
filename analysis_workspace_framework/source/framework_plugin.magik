@@ -188,7 +188,7 @@ $
 
 
 _pragma(classify_level=restricted, topic={analysis})
-_method framework_plugin.deactivated(p_framework)
+_method framework_plugin.deactivated(framework)
 	## 
 	## 
 	

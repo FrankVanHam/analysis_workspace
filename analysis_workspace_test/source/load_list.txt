@@ -17,3 +17,6 @@ follow_root_tc
 filter_by_geometry_tc
 filter_by_predicate_tc
 follow_method_tc
+
+basic_property_tc
+basic_dsm_property_tc

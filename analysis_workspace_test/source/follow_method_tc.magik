@@ -33,7 +33,7 @@ _method follow_method_tc.test_on_sw_col()
 	_local rcol << rwan:sw_collection.new(dsm, _self.min_road_collection)
 	_local hcol << rcol.follow_method(_self.hotel_collection, :|a_hotel()|, _unset)
 	_self.assert_is(hcol.size, 1, "There is 1 hotel")
-	_local hcol << rcol.follow_method(_self.hotel_collection, :|nr_hotels()|, {5})
+	hcol << rcol.follow_method(_self.hotel_collection, :|nr_hotels()|, {5})
 	_self.assert_is(hcol.size, 5, "There is 5 hotels")
 _endmethod
 $

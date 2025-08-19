@@ -163,10 +163,10 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method base_analysis_test_case.area_includes_all?(p_area_col, p_geoms)
-	_local area << p_area_col.convert_to_geometry()
+_method base_analysis_test_case.area_includes_all?(area_col, geoms)
+	_local area << area_col.convert_to_geometry()
 	_local all_inside? << _true
-	_for i_geom _over p_geoms.fast_elements()
+	_for i_geom _over geoms.fast_elements()
 	_loop
 		_if i_geom.inside?(area).not
 		_then
@@ -448,3 +448,18 @@ _method base_analysis_test_case.record_hotel_collection(dsm)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method base_analysis_test_case.area_materialized_collection(dsm)
+	_local (sectors, world) << _self.drafting_sectors("xor1")
+	_local area1 << pseudo_area.new_for_world(sectors, world)
+
+	(sectors, world) << _self.drafting_sectors("test_finding_hotels_near_parks")
+	_local area2 <<  pseudo_area.new_for_world(sectors, world)
+
+	_local union_area << area1.union(area2)
+	union_area.world << world
+	_local acol << rwan:area_collection.new(dsm, union_area)
+	_local mat_col << rwan:area_materialized_collection.new(dsm, acol)
+	_return mat_col, acol
+_endmethod
+$

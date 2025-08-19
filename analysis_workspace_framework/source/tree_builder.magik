@@ -172,20 +172,20 @@ $
 
 
 
-_method tree_builder.custom_draw_highlight_colour(p_canvas, p_x, p_y,
+_method tree_builder.custom_draw_highlight_colour(canvas, x, y,
 					   p_text_style, p_cust_drw_rndr, p_display_tree)
 	# if the fill_style property is not set, use the colour property
 	# to generate one
-	l_fill_style << fill_style.new_with_properties(:foreground_colour,
+	a_fill_style << fill_style.new_with_properties(:foreground_colour,
 							p_display_tree.value(:colour))
-	_if l_fill_style _isnt _unset
+	_if a_fill_style _isnt _unset
 	_then 
 		# retrieve outline from .data slot
 		_local l_outline << p_cust_drw_rndr.data
 		# fill the outline with the area
-		p_canvas.fill_rline(l_fill_style, p_x + 1, p_y + 1, l_outline)
+		canvas.fill_rline(a_fill_style, x + 1, y + 1, l_outline)
 		# use the standard method to draw the outline
-		p_cust_drw_rndr.render_outline(p_canvas, p_x, p_y)
+		p_cust_drw_rndr.render_outline(canvas, x, y)
 	_endif 
 _endmethod
 

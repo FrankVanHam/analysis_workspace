@@ -78,13 +78,24 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_collection.size
-	_return _self.base_collection.size_for_geometry(.geom_name )
+	_return _self.base_collection.size_for_geometry(.geom_name)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_collection.convert_to_geometry()
-	_return _self.base_collection.convert_to_geometry(.geom_name )
+	_return _self.base_collection.convert_to_geometry(.geom_name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_collection.includes?(geom)
+	_if geom.geometry_descriptor.name = .geom_name
+	_then 
+		_return _self.base_collection.includes_geom?(.geom_name, geom)
+	_else
+		_return _false
+	_endif 
 _endmethod
 $
 

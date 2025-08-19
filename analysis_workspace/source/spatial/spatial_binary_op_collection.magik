@@ -91,6 +91,29 @@ _method spatial_binary_op_collection.equals_in_details?(base_cols, op)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_binary_op_collection.includes?(geom)
+	_if .operation = :intersection
+	_then
+		_return _self.base_collection.includes?(geom) _andif
+			_self.other_collection.includes?(geom)
+	_elif .operation = :difference
+	_then
+		_return _self.base_collection.includes?(geom) _andif
+			_not _self.other_collection.includes?(geom)
+	_elif .operation = :union
+	_then
+		_return _self.base_collection.includes?(geom) _orif 
+			_self.other_collection.includes?(geom)
+	_elif .operation = :xor
+	_then
+		_local base? << _self.base_collection.includes?(geom)
+		_local other? << _self.other_collection.includes?(geom)
+		_return (base? _and _not other?) _orif (other? _and _not base?)
+	_endif 
+_endmethod
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_binary_op_collection.convert_to_geometry()
 	_local gs1 << _self.base_collection.convert_to_geometry()

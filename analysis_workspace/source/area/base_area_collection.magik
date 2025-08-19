@@ -63,12 +63,18 @@ _iter _method base_area_collection.fast_elements()
 _endmethod
 $
 
-
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.size_is_fast?
 	_return _true 
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_area_collection.includes?(area)
+	_return _self.area = area
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_area_collection.convert_to_geometry()

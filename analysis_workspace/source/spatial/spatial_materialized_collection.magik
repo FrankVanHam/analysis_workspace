@@ -86,13 +86,25 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_materialized_collection.size
-	_return _self.convert_to_geometry().size
+	_return .dsm.geometry_set_size(.id)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_materialized_collection.size_is_fast?
+	_return _true 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_materialized_collection.convert_to_geometry()
 	_return .dsm.geometry_set(.id)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method spatial_materialized_collection.includes?(geom)
+	_return .dsm.includes_geometry_in_geometry_set?(geom, id)
 _endmethod
 $
 

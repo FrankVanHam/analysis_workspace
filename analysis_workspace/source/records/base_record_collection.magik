@@ -136,6 +136,18 @@ _abstract _method base_record_collection.includes?(rec)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method base_record_collection.includes_geom?(geom_name, geom)
+	_local rw << geom.rwo
+	_if rw _isnt _unset
+	_then
+		_return _self.includes?(rw)
+	_else
+		_return _false
+	_endif 
+_endmethod
+$
+
 _pragma(classify_level=basic, topic={analysis})
 _method base_record_collection.convert_to_geometry_filtered_by_geometry(geom_name, selector, args, _optional bounds)
 	## Subclasses should try to optimize this call to filter on

@@ -59,6 +59,12 @@ _iter _method union_collection.do!fast_elements(the_method, _gather args)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis, collections})
+_method union_collection.includes?(a_rec)
+	_return _self.base_collection.includes?(a_rec) _or
+		_self.other_collection.includes?(a_rec)
+_endmethod
+$
 
 #
 #_pragma(classify_level=restricted, topic={analysis, collections})

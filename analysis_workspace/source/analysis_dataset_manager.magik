@@ -109,6 +109,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method analysis_dataset_manager.int!do_open(gv, filename, concurrency_mode)
+	_dynamic !output! << internal_text_output_stream.new()
 	_local mode << concurrency_mode.default(:single_user)
 	gv.add_file(filename, :mode, :existing,
 		    :world, ds_world.new(1000),
@@ -209,6 +210,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method analysis_dataset_manager.materialize_collection(base_col, settings)
+	_dynamic !output! << internal_text_output_stream.new()
 	_local creator  << materialized_collection_creator.new(_self)
 	_local new_col << creator.create(base_col, settings)
 	_return new_col
@@ -317,6 +319,20 @@ _method analysis_dataset_manager.geometry_set(id)
 	_self.report( :processed, c)
 	
 	_return gs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.geometry_set_size(id)
+	_local col << .ds_view.collections[:geom_holder]
+	_return col.all_at(id).size
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.includes_geometry_in_geometry_set?(geom, id)
+	_local col << .ds_view.collections[:geom_holder]
+	_return col.includes?(geom.rwo)
 _endmethod
 $
 
@@ -452,6 +468,7 @@ $
 
 _pragma(classify_level=debug, topic={analysis})
 _private _method analysis_dataset_manager.create_geom_holder()
+	_dynamic !output! << internal_text_output_stream.new()
 	_local ds << .ds_view
 	ds.switch(:write)
 #	drop_rwo_table(ds, :geom_holder, _true,_true,_false)
@@ -483,6 +500,7 @@ _method analysis_dataset_manager.create_view(int_table_name,
 					     tables,
 					     eqs,
 					     result_fields)
+	_dynamic !output! << internal_text_output_stream.new()
 	## Create a view with the given basic parameters.
 	
 	_local creator << view_creator.new()

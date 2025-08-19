@@ -1,0 +1,90 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:base_dsm_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:basic_dsm_property_tc,
+	{},
+	:base_dsm_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method basic_dsm_property_tc.test_sw_col()
+	_local sw_col << _self.hotel_collection
+	_local hcol << rwan:sw_collection.new(.ds, sw_col)
+	_local settings << _self.hotel_settings(sw_col)
+	_local res << rwan:materialized_collection.new(.ds,
+							   hcol,
+							   settings)
+	_self.assert_true(res.includes?(res.an_element()), "Includes")
+	_self.assert_false(res.is_area?, "Is area")
+	_self.assert_false(res.is_spatial?, "Is spatial")
+	_self.assert_true(res.is_sw_collection?, "Is sw collection")
+	_self.assert_true(res.origin_is_sw_collection?, "is origin sw collection")
+	_self.assert_true(res.size_is_fast?, "size is fast?")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method basic_dsm_property_tc.test_area_materialized_col()
+	_local res << _self.area_materialized_col()
+	_self.assert_true(res.includes?(res.an_element()), "Includes")
+	_self.assert_true(res.is_area?, "Is area")
+	_self.assert_true(res.is_spatial?, "Is spatial")
+	_self.assert_false(res.is_sw_collection?, "Is sw collection")
+	_self.assert_false(res.origin_is_sw_collection?, "is origin sw collection")
+	_self.assert_true(res.size_is_fast?, "size is fast?")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method basic_dsm_property_tc.test_spatial_materialized_col()
+	_local geom_col << _self.geometry_road_collection(.ds)
+	_local res << rwan:spatial_materialized_collection.new(.ds, geom_col)
+	_self.assert_true(res.includes?(res.an_element()), "Includes")
+	_self.assert_false(res.is_area?, "Is area")
+	_self.assert_true(res.is_spatial?, "Is spatial")
+	_self.assert_false(res.is_sw_collection?, "Is sw collection")
+	_self.assert_false(res.origin_is_sw_collection?, "is origin sw collection")
+	_self.assert_true(res.size_is_fast?, "size is fast?")
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method basic_dsm_property_tc.area_materialized_col()
+	_return _super.area_materialized_collection(.ds)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method basic_dsm_property_tc.hotel_settings(sw_col)
+	_local settings << materialization_settings.new(:int_name, :ext_name)
+	settings.add_field(sw_col.field(:name), :name, "Name", _unset)
+	settings.add_field(sw_col.field(:type), :type, "Type", _unset)
+	settings.add_field(sw_col.field(:location), :location, "Location", _unset)
+	_return settings
+_endmethod
+$
+

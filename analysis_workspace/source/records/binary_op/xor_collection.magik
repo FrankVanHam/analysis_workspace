@@ -62,6 +62,15 @@ _iter _method xor_collection.do!fast_elements(the_method, _gather args)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis, collections})
+_method xor_collection.includes?(a_rec)
+	_local base_includes? << _self.base_collection.includes?(a_rec)
+	_local other_includes? << _self.other_collection.includes?(a_rec)
+	_return (base_includes? _and _not other_includes?) _orif
+		(other_includes? _and _not base_includes?)
+_endmethod
+$
+
 #
 #_pragma(classify_level=restricted, topic={analysis, collections})
 #_iter _method xor_collection.read_stream()

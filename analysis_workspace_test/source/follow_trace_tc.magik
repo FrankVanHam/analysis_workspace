@@ -160,13 +160,14 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method follow_trace_tc.test_trace_from_supply_point_to_station_with_predicate_stop()
 	_local (one_col, link_table) << _self.supply_point_basics()
-
 	_local joint_col << gis_program_manager.databases[:electricity].collection(:joint)
 	_local stops << property_list.new_with(joint_col,_unset)
 	_local trace_col << one_col.follow_trace(:location, link_table, stops, _unset)
+	
 	_self.assert_is(trace_col.size, 0, "There should be 0 substation link in the set because the trace stops at a joint")
 _endmethod
 $
+
 _pragma(classify_level=basic, topic={analysis})
 _method follow_trace_tc.test_trace_from_supply_point_to_station_with_predicate_false_stop()
 	_local (one_col, link_table) << _self.supply_point_basics()

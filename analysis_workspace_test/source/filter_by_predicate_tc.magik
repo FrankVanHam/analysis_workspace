@@ -31,7 +31,7 @@ _pragma(classify_level=basic, topic={analysis})
 _method filter_by_predicate_tc.test_on_sw_col()
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local hcol << rwan:sw_collection.new(dsm, _self.hotel_collection)
-	_local hcol << hcol.filter_by_predicate(predicate.eq(:type, "Guest House"))
+	hcol << hcol.filter_by_predicate(predicate.eq(:type, "Guest House"))
 	_self.assert_equals(hcol.size, 8, "Guest houses.")
 _endmethod
 $

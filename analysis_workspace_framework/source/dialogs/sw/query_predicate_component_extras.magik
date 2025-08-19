@@ -19,26 +19,26 @@ _package sw
 $
 
 _pragma(classify_level=restricted)
-_method query_predicate_component.set_predicate(p_predicate)
+_method query_predicate_component.set_predicate(predicate)
 	## 
-	## Fill the list with the compound P_PREDICATE. Note that there
+	## Fill the list with the compound predicate. Note that there
 	## can be many ands and ors in there.
 	#	
-	.predicate_elements << _self.predicate_as_list_of_elements(p_predicate)
+	.predicate_elements << _self.predicate_as_list_of_elements(predicate)
 	_self.changed( :predicate_elements, :renew )
 _endmethod
 $
 
 _pragma(classify_level=restricted)
-_private _method query_predicate_component.predicate_as_list_of_elements(p_predicate)
+_private _method query_predicate_component.predicate_as_list_of_elements(predicate)
 	##
 	## Convert the predicate into a list of elements that will
-	## recreate P_PREDICATE.
+	## recreate predicate.
 	#
 	_local result << rope.new()
-	_if p_predicate _isnt _unset
+	_if predicate _isnt _unset
 	_then 
-		_local l << p_predicate.rwan_as_lineair_list()
+		_local l << predicate.rwan_as_lineair_list()
 		_for i_pred _over l.fast_elements()
 		_loop
 			_if i_pred _is :or
@@ -62,15 +62,15 @@ _endmethod
 $
 
 _pragma(classify_level=restricted)
-_private _method query_predicate_component.browser_op_for_predicate(p_predicate)
+_private _method query_predicate_component.browser_op_for_predicate(predicate)
 	##
 	## Do a reverse lookup in the physical_operators and the
 	## operators to find out what browser operator could have
-	## created P_PREDICATE.
+	## created predicate.
 	#
-	_local (creation_method, neg?) << p_predicate.rwan_creation_method
+	_local (creation_method, neg?) << predicate.rwan_creation_method
 	
-	_local field << .collection.field(p_predicate.field)
+	_local field << .collection.field(predicate.field)
 	_local ops << _self.physical_operators_for(field)
 	_for i_browser_op _over ops.fast_elements()
 	_loop 

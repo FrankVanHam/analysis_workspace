@@ -227,7 +227,7 @@ $
 ##########################################################################
 
 _pragma(classify_level=basic, topic={analysis})
-_method materialize_tc.hotel_materialized_collection()
+_method materialize_tc.hotel_materialized_col()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
@@ -239,16 +239,16 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_filter_by_geometry()
-	_local hcol << _self.hotel_materialized_collection()
+	_local hcol << _self.hotel_materialized_col()
 	_local area << _self.area_surrounding_parkers_piece(.ds)
-	_local hcol << hcol.filter_by_geometry(:location, :within, area)
+	hcol << hcol.filter_by_geometry(:location, :within, area)
 	_self.assert_equals(hcol.size, 2, "There are 2 hotels in the inner area {not #1}")
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_filter_by_predicate()
-	_local hcol << _self.hotel_materialized_collection()
+	_local hcol << _self.hotel_materialized_col()
 	_local res << hcol.filter_by_predicate( predicate.eq(:type, "Guest House"))
 	_self.assert_is(res.size, 8, "There are 8 guest houses, not (#1)")
 _endmethod
@@ -256,7 +256,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_filter_by_distance()
-	_local hcol << _self.hotel_materialized_collection()
+	_local hcol << _self.hotel_materialized_col()
 	_local area << _self.larger_area_surrounding_parkers_piece(.ds)
 	_local hcol1 << hcol.filter_by_distance(:location, unit_value(0, :m), area, _false)
 	_self.assert_is(hcol1.size, 3, "There are 3 hotels in the area")
@@ -265,7 +265,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_buffer()
-	_local hcol << _self.hotel_materialized_collection()
+	_local hcol << _self.hotel_materialized_col()
 	_local bcol << hcol.buffer(:location, unit_value(1,:m))
 	
 	# the buffer should contain the hotels
@@ -276,7 +276,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_spatial()
-	_local hcol << _self.hotel_materialized_collection()
+	_local hcol << _self.hotel_materialized_col()
 	_local loc_col << hcol.spatial_collection(:location)
 	
 	_local touch_col << hcol.filter_by_geometry(:location, :interacting_with, loc_col)
@@ -286,7 +286,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_binary_op()
-	_local hcol1 << _self.hotel_materialized_collection()
+	_local hcol1 << _self.hotel_materialized_col()
 	_local hcol2 << hcol1.filter_by_predicate( predicate.eq(:type, "Guest House"))
 	_local res << hcol1.union(hcol2)
 	_self.assert_equals(res.size, hcol1.size, "Union should have the same number of elements as the orginal")
@@ -295,7 +295,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize()
-	_local hcol << _self.hotel_materialized_collection()
+	_local hcol << _self.hotel_materialized_col()
 	_local settings << _self.hotel_settings(hcol.actual_collection)
 	_local mat_col << rwan:materialized_collection.new(.ds,
 							   hcol,
@@ -337,33 +337,23 @@ $
 
 ###################################################
 
-_pragma(classify_level=basic, topic={analysis})
-_method materialize_tc.area_materialized_collection()
-	_local (sectors, world) << _self.drafting_sectors("xor1")
-	_local area1 << pseudo_area.new_for_world(sectors, world)
-
-	(sectors, world) << _self.drafting_sectors("test_finding_hotels_near_parks")
-	_local area2 <<  pseudo_area.new_for_world(sectors, world)
-
-	_local union_area << area1.union(area2)
-	union_area.world << world
-	_local acol << rwan:area_collection.new(.ds, union_area)
-	_local mat_col << rwan:area_materialized_collection.new(.ds, acol)
-	_return mat_col, acol
-_endmethod
-$
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize_area_on_buffer_col()
-	_local (mat_col, org_col) << _self.area_materialized_collection()
+	_local (mat_col, org_col) << _self.area_materialized_col()
 	_local bcol << mat_col.buffer(_unset, unit_value(1, :m))
 	_self.assert_true(bcol.area.contains?(mat_col.area), "original should be contained by the buffer")
+_endmethod
+$
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_tc.area_materialized_col()
+	_return _super.area_materialized_collection(.ds)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize_area_on_binary_col()
-	_local (mat_col, org_col) << _self.area_materialized_collection()
+	_local (mat_col, org_col) << _self.area_materialized_col()
 	_local dif_col << mat_col.subtraction(org_col)
 	_self.assert_unset(dif_col.area, "The subtraction should be unset, degenerate")
 _endmethod
@@ -371,7 +361,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize_area_on_materialize_col()
-	_local (mat_col, org_col) << _self.area_materialized_collection()
+	_local (mat_col, org_col) << _self.area_materialized_col()
 	_local mat2_col << rwan:area_materialized_collection.new(.ds, mat_col)
 	_local dif_col << mat_col.subtraction(mat2_col)
 	_self.assert_unset(dif_col.area, "The subtraction should be unset, degenerate")
@@ -381,7 +371,7 @@ $
 ###########################################################
 
 _pragma(classify_level=basic, topic={analysis})
-_method materialize_tc.geometry_collection()
+_method materialize_tc.geometry_col()
 	_local geom_col << _self.geometry_road_collection(.ds)
 	_local mat_col << rwan:spatial_materialized_collection.new(.ds, geom_col)
 	_return mat_col, geom_col
@@ -390,7 +380,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize_geometry_on_buffer_col()
-	_local mat_col << _self.geometry_collection()
+	_local mat_col << _self.geometry_col()
 	_local bcol << mat_col.buffer(_unset, unit_value(1, :m))
 	_local inside? << _self.area_includes_all?(bcol, mat_col)
 	_self.assert_true(inside?, "original should be contained by the buffer")
@@ -399,7 +389,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize_geometry_on_binary_col()
-	_local geom_col << _self.geometry_collection()
+	_local geom_col << _self.geometry_col()
 	_local geom << geom_col.an_element()
 	_local sub_geom_col << rwan:geometry_collection.new(.ds, geometry_set.new_with(geom))
 	_local dif << geom_col.subtraction(sub_geom_col)
@@ -409,7 +399,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize_geometry_on_materialize_col()
-	_local mat_col << _self.geometry_collection()
+	_local mat_col << _self.geometry_col()
 	_local mat2_col << rwan:spatial_materialized_collection.new(.ds, mat_col)
 	_self.assert_equals(mat_col.size, mat2_col.size, "The subtraction should be unset, degenerate")
 _endmethod

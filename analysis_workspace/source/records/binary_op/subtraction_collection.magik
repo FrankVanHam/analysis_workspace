@@ -51,6 +51,13 @@ _iter _method subtraction_collection.do!fast_elements(the_method, _gather args)
 	_endloop
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis, collections})
+_method subtraction_collection.includes?(a_rec)
+	_return _self.base_collection.includes?(a_rec) _andif
+		_not _self.other_collection.includes?(a_rec)
+_endmethod
+$
 #
 #_pragma(classify_level=restricted, topic={analysis, collections})
 #_iter _method subtraction_collection.read_stream()

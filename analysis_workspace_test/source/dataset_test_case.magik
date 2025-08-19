@@ -58,14 +58,14 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_analysis_collection()
+_method dataset_test_case.test_analysis_col()
 	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
 	_return _self.basic_storage_test(rcol)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_geometry_collection()
+_method dataset_test_case.test_geometry_col()
 	_local area_col << _self.area_surrounding_parkers_piece(.ds)
 	_local area << area_col.area
 	_local gs << geometry_set.new_with(area)
@@ -75,7 +75,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_area_collection()
+_method dataset_test_case.test_area_col()
 	_local area_col << _self.area_surrounding_parkers_piece(.ds)
 	_local retrieved_area << _self.basic_storage_test(area_col)
 	
@@ -85,7 +85,7 @@ $
 
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_spatial_analysis_collection()
+_method dataset_test_case.test_spatial_analysis_col()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local area_col << _self.area_surrounding_parkers_piece(.ds)
 	_local area << area_col.area
@@ -164,7 +164,7 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method dataset_test_case.test_spatial_collection()
+_method dataset_test_case.test_spatial_col()
 	_local rcol << rwan:sw_collection.new(.ds, _self.min_road_collection)
 	_local rgeom << rcol.spatial_collection(:centre_line)
 	_self.basic_storage_test(rgeom)

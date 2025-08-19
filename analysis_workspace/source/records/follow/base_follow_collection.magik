@@ -41,7 +41,6 @@ _method base_follow_collection.new()
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _private _method base_follow_collection.init(dsm, base_col, target_col)
 	.target_ds_name << target_col.dataset.original_dataset_name
@@ -87,6 +86,19 @@ _method base_follow_collection.equals_in_details?(base_cols, target_ds_name, tar
 	_return _super.equals_in_details?(base_cols) _andif
 		.target_ds_name = target_ds_name _andif
 		.target_table_name = target_table_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method base_follow_collection.includes?(rec)
+	_for i_rec _over _self.fast_elements()
+	_loop
+		_if i_rec = rec
+		_then
+			_return _true
+		_endif
+	_endloop
+	_return _false 
 _endmethod
 $
 
