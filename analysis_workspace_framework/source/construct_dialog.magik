@@ -491,6 +491,7 @@ _method construct_dialog.create_eq_view()
 	_local holders << _self.selected_top_holders
 	_self.ensure_collection_is_sw_collection(holders[1])
 	_self.ensure_collection_is_sw_collection(holders[2])
+	_self.ensure_both_in_same_dataset(holders)
 	_local dia << sw_view_eq_dialog.new_dialog(_self)
 	dia.set_holder(holders[1], holders[2], _self.dataset_manager)
 	dia.activate()
@@ -506,6 +507,17 @@ _private _method construct_dialog.ensure_collection_is_sw_collection(holder)
 	_endif
 _endmethod
 $
+
+_pragma(classify_level=advanced, topic={analysis})
+_private _method construct_dialog.ensure_both_in_same_dataset(holder)
+	 _if holder[1].collection.expose().dataset <> holder[2].collection.expose().dataset
+	     
+	_then
+		_self.user_error(:view_only_possible_on_same_dataset)
+	_endif
+_endmethod
+$
+
 
 
 _pragma(classify_level=advanced, topic={analysis})
