@@ -167,7 +167,10 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method predicate_filter_dialog.index_items
 	_local items << rope.new()
 	_local sw_col << .record_holder.collection.expose()
-	_local indexes << sw_col.all_index_names
+	_local indexes << _if sw_col.responds_to?(:all_index_names)
+			  _then >> sw_col.all_index_names
+			  _else >> {}
+			  _endif 
 	_for i_vec _over indexes.fast_elements()
 	_loop
 		_if i_vec.size = 1 _andif i_vec[1] _is :rwo_id _then _continue _endif 
