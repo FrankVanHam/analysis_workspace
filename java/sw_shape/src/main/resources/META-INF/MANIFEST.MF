@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Created-By: Apache Maven Bundle Plugin
+Tool: Bnd-0.0.238
+Bnd-LastModified: 1757072434745
+Export-Package: rwan.geotools.shape
+Import-Package: com.gesmallworld.magik.commons.interop.annotations,com.g
+ esmallworld.magik.interop
+Bundle-Name: RW Analytics Shape tool
+Bundle-Activator: com.gesmallworld.magik.interop.JavaToMagikActivator
+Bundle-SymbolicName: rwan.geotools.shape
+Bundle-Version: 0.0.2.SNAPSHOT
+Built-By: frnkv
+Build-Jdk: 17
+

@@ -104,7 +104,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method spatial_materialized_collection.includes?(geom)
-	_return .dsm.includes_geometry_in_geometry_set?(geom, id)
+	_return .dsm.includes_geometry_in_geometry_set?(geom, .id)
 _endmethod
 $
 

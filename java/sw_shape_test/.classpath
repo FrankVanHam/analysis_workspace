@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="/sw_shape"/>
+	<classpathentry kind="lib" path="/sw_shape/target/shape-0.0.2-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/SW530/core/libs/com.gesmallworld.magik.commons-5.3.0.0-490.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="magik"/>
+			<attribute name="maven.artifactId" value="commons"/>
+			<attribute name="maven.version" value="0.0.0"/>
+			<attribute name="maven.scope" value="system"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="D:/SW530/core/libs/com.gesmallworld.magik.interop-5.3.0.0-490.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="magik"/>
+			<attribute name="maven.artifactId" value="interop"/>
+			<attribute name="maven.version" value="0.0.0"/>
+			<attribute name="maven.scope" value="system"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

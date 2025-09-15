@@ -1,0 +1,236 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:shape_tc)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:shape_tc,
+	{},
+	:base_analysis_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_tc.test_point()
+	_local atts << {{"name",     20,     "String"}}
+	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
+	_local data << {"Frank"}
+	_local id << writer.write(geom, data)
+	_local file_name << _self.temp_file("point.shp")
+	writer.save(file_name)
+	_local (id, result_geom, result_attr) << _self.read_file(file_name)
+	_self.assert_true(geom.equal_to?(result_geom), "Geometry should be same")
+	_self.compare_data(result_attr, data)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_tc.test_line()
+	_local atts << {{"name",     20,     "String"}}
+	_local writer << shape_writer.new("the_geom", "LineString", atts)
+	_local coords << _self.coords({0.0 ,0.0, 10.0, 0.0})
+	_local geom << pseudo_chain.new(coords)
+	_local data << {"Frank"}
+	writer.write(geom, data)
+	_local file_name << _self.temp_file("line.shp")
+	writer.save(file_name)
+	_local (id, result_geom, result_attr) << _self.read_file(file_name)
+	_self.assert_true(geom.equal_to?(result_geom), "Geometry should be same")
+	_self.compare_data(result_attr, data)	
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_tc.test_polygon()
+	_local atts << {{"name", 20, "String"}}
+	_local writer << shape_writer.new("the_geom", "Polygon", atts)
+	_local coords << _self.coords({0, 0, 0, 10, 10, 10, 10, 0, 0, 0})
+	_local geom << pseudo_area.new(coords)
+	_local data << {"Frank"}
+	writer.write(geom, data)
+	_local file_name << _self.temp_file("polygon.shp")
+	show(file_name)
+	writer.save(file_name)
+	_local (id, result_geom, result_attr) << _self.read_file(file_name)
+	_self.assert_true(geom.equal_to?(result_geom), "Geometry should be same")
+	_self.compare_data(result_attr, data)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_tc.test_polygon_with_holes()
+	_local atts << {{"name", 20, "String"}}
+	_local writer << shape_writer.new("the_geom", "Polygon", atts)
+	_local outer_coords << _self.coords({0,0,0,100,100,100,100,0,0,0})
+	_local hole_coords << {_self.coords({10,10,20,10,20,20,10,20,10,10}),
+			       _self.coords({50,50,60,50,60,60,50,60,50,50})}
+	_local geom << pseudo_area.new(outer_coords)
+	_for i _over range(1, hole_coords.size)
+	_loop
+		geom.add_hole(hole_coords[i])
+	_endloop 
+	_local data << {"Frank"}
+	writer.write(geom, data)
+	_local file_name << _self.temp_file("polygon_with_holes.shp")
+	writer.save(file_name)
+	_local (id, result_geom, result_attr) << _self.read_file(file_name)
+	_self.assert_true(geom.equal_to?(result_geom), "Geometry should be same")
+	_self.compare_data(result_attr, data)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_tc.test_multi_polygon_with_holes()
+	_local atts << {{"name", 20, "String"}}
+	_local writer << shape_writer.new("the_geom", "MultiPolygon", atts)
+	_local outer_coords << _self.coords({0,0,0,100,100,100,100,0,0,0})
+	_local hole_coords << _self.coords({10,10,20,10,20,20,10,20,10,10})
+	_local geom1 << pseudo_polygon.new(outer_coords)
+	geom1.add_hole(hole_coords)
+	outer_coords << _self.coords({150,150,150,160,160,160,160,150,150,150})
+	_local geom2 << pseudo_polygon.new(outer_coords)
+	_local geom << pseudo_area.new_from_polygons({geom1, geom2})
+	_local data << {"Frank"}
+	writer.write(geom, data)
+	_local file_name << _self.temp_file("multi_polygon_with_holes.shp")
+	writer.save(file_name)
+	_local (id, result_geom, result_attr) << _self.read_file(file_name)
+	_self.assert_true(geom.equal_to?(result_geom), "Geometry should be same")
+	_self.compare_data(result_attr, data)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_tc.test_attribute()
+	_local atts << {{"aString",   20,"String"},
+			{"anInteger", 1, "Integer"},
+			{"aDouble",   1, "Double"},
+			{"aBoolean",  1, "Boolean"},
+			{"aDate",     1, "Date"}}
+	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
+	_local data << {"Frank", 20, 1.13, _false, date.now()}
+	writer.write(geom, data)
+	_local file_name << _self.temp_file("attr.shp")
+	writer.save(file_name)
+	_local (id, result_geom, result_attr) << _self.read_file(file_name)
+	_self.assert_true(geom.equal_to?(result_geom), "Geometry should be same")
+	_self.compare_data(result_attr, data)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.read_file(file_name)
+	_local reader << shape_reader.new(file_name)
+	_protect 
+		(id, geom, attrs) << reader.get()
+		_local final_result << reader.get()
+		_self.assert_equals(final_result, _unset, "there should be only one record in the shape file")
+	_protection
+		reader.dispose()
+	_endprotect 
+	_return id, geom, attrs
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.compare_points(p1, p2)
+	_local c1 << p1.get_coordinate()
+	_local c2 << p2.get_coordinate()
+	_local same? << ((c1.get_x() = c2.get_x()) _and (c1.get_y() = c2.get_y()))
+	_self.assert_true(same?, "The points are not same")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.compare_data(java_values, magik_values)
+	_for i _over range(1, java_values.size)
+	_loop
+		_local e1 << java_values[i]
+		_local e2 << magik_values[i]
+		_self.assert_equals(e1, e2, "Values should be the same, not #1")	
+	_endloop
+	_return _true
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.compare_lines(multi_l1, l2)
+	_local l1 << multi_l1.get(0)
+	_local cs1 << l1.get_coordinates()
+	_local cs2 << l2.get_coordinates()
+	_self.compare_coordinate_lists(cs1, cs2)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.compare_polygons(p1, p2)
+	_local cs1 << p1.get_outer_coordinates()
+	_local cs2 << p2.get_outer_coordinates()
+	_self.compare_coordinate_lists(cs1, cs2)
+	
+	_self.assert_equals(p1.hole_size(), p2.hole_size(), "Nr of holes should be the same")
+	_for i _over range(0, p1.hole_size()-1)
+	_loop
+		_local h1 << p1.hole_get(i)
+		_local h2 << p2.hole_get(i)
+		_self.compare_coordinate_lists(h1, h2)
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.compare_coordinate_lists(cs1, cs2)
+	##
+	_self.assert_equals(cs1.size(), cs2.size(), "Nr of coordinates should be same")
+	_for i _over range(0, cs1.size()-1)
+	_loop
+		_local c1 << cs1.get(i)
+		_local c2 << cs2.get(i)
+		_local same? << ((c1.get_x() = c2.get_x()) _and (c1.get_y() = c2.get_y()))
+		_self.assert_true(same?, "The coordinate is not the same")
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.compare_multi_polygons(multi_p1, multi_p2)
+	_self.assert_equals(multi_p1.size(), multi_p2.size(), "Nr of polygons should be same")
+	_for i _over range(0, multi_p1.size()-1)
+	_loop
+		_self.compare_polygons(multi_p1.get(i), multi_p2.get(i))
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.coords(args)
+	_return sector_rope.new_with(sector.new_with_xy(_scatter args))
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_tc.temp_file(file_name)
+	##
+	_return system.temp_file_name(file_name)
+_endmethod
+$

@@ -1,0 +1,193 @@
+#
+#  This file is part of Analyis Workshop.
+#
+#  Analyis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analyis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analyis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+#remex(:shape_reader)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:shape_reader,
+	{
+		{:file_name,       _unset},
+		{:attribute_defs,  _unset},
+		{:gt_shape_reader, _unset},
+		{:geom_type,       _unset}
+	})
+$
+shape_reader.define_shared_constant(:date_format, "#Y-#m-#d", :private)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_reader.new(file_name)
+	##
+	_return _clone.init(file_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.init(file_name)
+	##
+	.file_name << file_name
+	.gt_shape_reader << geotools_shape_reader.new(file_name)
+	.geom_type << .gt_shape_reader.geometry_type()
+	.attribute_defs << .gt_shape_reader.attribute_defs()
+	>> _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_reader.get()
+	##
+	_if .gt_shape_reader _is _unset _then _return _unset, _unset, _unset _endif
+	
+	_local result << .gt_shape_reader.get()
+	_if result _isnt _unset
+	_then
+		_local id << result.get_id()
+		_local geom << _self.convert_to_magik_geometry(result.get_geometry())
+		_local values << _self.convert_to_magik_values(result.get_attribute_values())
+		_return id, geom, values
+	_else
+		_return _unset, _unset, _unset
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_reader.dispose()
+	##
+	.gt_shape_reader.dispose()
+	.gt_shape_reader << _unset 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_to_magik_geometry(sh_geometry)
+	##
+	_if .geom_type = "Point"
+	_then
+		_return _self.convert_sh_point_to_point(sh_geometry)
+	_elif .geom_type = "MultiPoint"
+	_then
+		_return _self.convert_sh_multi_point_to_point(sh_geometry)
+	_elif .geom_type = "MultiLineString"
+	_then 
+		_return _self.convert_sh_multi_line_string_to_chain(sh_geometry)
+	_elif .geom_type = "MultiPolygon"
+	_then
+		_return _self.convert_sh_multi_polygon_to_area(sh_geometry)
+	_else
+		condition.raise(:error, :string, write_string( "unknow ", geom_type) )
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_sh_point_to_point(sh_point)
+	##
+	_local sh_coord << sh_point.get_coordinate()
+	_local coord << coordinate.new(sh_coord.get_x(), sh_coord.get_y())
+	_return pseudo_point.new(coord)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_sh_multi_point_to_point(sh_mpoint)
+	##
+	_return _self.convert_sh_point_to_point(sh_mpoint.get(0))
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_sh_line_string_to_chain(sh_line_string)
+	##
+	_local sh_coords << sh_line_string.get_coordinates()
+	_local sr << _self.sector_rope(sh_coords)
+	_return pseudo_chain.new(sr)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_sh_multi_line_string_to_chain(sh_mline_string)
+	##
+	_return _self.convert_sh_line_string_to_chain(sh_mline_string.get(0))
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_sh_polygon_to_polygon(sh_poly)
+	##
+	_local sh_coords << sh_poly.get_outer_coordinates()
+	_local sr << _self.sector_rope(sh_coords)
+	_local poly << pseudo_polygon.new(sr)
+	_for i _over range(0, sh_poly.hole_size()-1)
+	_loop
+		_local sh_hole_coords << sh_poly.hole_get(i)
+		_local hole_sr << _self.sector_rope(sh_hole_coords)
+		poly.add_hole(hole_sr)
+	_endloop
+	_return poly
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_sh_multi_polygon_to_area(sh_mpoly)
+	##
+	_local polygons << simple_vector.new(sh_mpoly.size())
+	_for i _over range(1, sh_mpoly.size())
+	_loop
+		polygons[i] << _self.convert_sh_polygon_to_polygon(sh_mpoly.get(i-1))
+	_endloop 
+	_return pseudo_area.new_from_polygons(polygons)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.sector_rope(sh_coords)
+	##
+	_local coords << simple_vector.new(sh_coords.size())
+	_for i _over range(1, coords.size)
+	_loop
+		_local sh_coord << sh_coords.get(i-1)
+		coords[i] << coordinate.new(
+				     sh_coord.get_x(),
+				     sh_coord.get_y())
+	_endloop
+	_local sec << sector.new_from(coords)
+	_return sector_rope.new_with(sec).bucket_split()
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_reader.convert_to_magik_values(sh_values)
+	##
+	_local result << simple_vector.new(sh_values.size)
+	_for i _over range(1, result.size)
+	_loop
+		_local value << sh_values[i]
+		_local def << .attribute_defs[i]
+		_if (def[3] = "Date") _andif (value _isnt _unset)
+		_then
+			value << date.new_from_string(value, _self.date_format)
+		_endif
+		result[i] << value 
+	_endloop
+	_return result
+_endmethod
+$

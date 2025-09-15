@@ -20,3 +20,4 @@ follow_method_tc
 
 basic_property_tc
 basic_dsm_property_tc
+shape_tc

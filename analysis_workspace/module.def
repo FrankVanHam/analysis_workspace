@@ -6,4 +6,7 @@ end
 requires
 	lazy_record_collection
 end
+requires_java
+	rwan.geotools.shape
+end
 

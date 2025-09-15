@@ -1,0 +1,250 @@
+#
+#  This file is part of Analyis Workshop.
+#
+#  Analyis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analyis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analyis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+#remex(:shape_writer)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+def_slotted_exemplar(:shape_writer,
+	{
+		{:attribute_defs,  _unset},
+		{:gt_shape_writer, _unset},
+		{:geom_type,       _unset}
+	})
+$
+shape_writer.define_shared_constant(:allowed_geom_types, equality_set.new_with("Point", "LineString", "Polygon", "MultiPolygon"), :private)
+$
+
+shape_writer.define_shared_constant(:allowed_attr_types, equality_set.new_with("String", "Integer", "Double", "Boolean", "Date", "Point", "LineString", "Polygon", "MultiPolygon"), :private)
+$
+
+shape_writer.define_shared_constant(:date_format, sw:date_time_format.new(:date_format_string, "#Y-#m-#d"), :private)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_writer.new(geom_name, geom_type, attribute_defs)
+	##
+	_return _clone.init(geom_name, geom_type, attribute_defs)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_writer.init(geom_name, geom_type, attribute_defs)
+	##
+	_self.validate_geom(geom_name, geom_type)
+	_self.validate_attribute_defs(attribute_defs)
+	.geom_type << geom_type
+	.attribute_defs << attribute_defs
+	.gt_shape_writer << geotools_shape_writer.new(geom_name, geom_type, attribute_defs)
+	>> _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_writer.validate_geom(geom_name, geom_type)
+	_if _self.allowed_geom_types.includes?(geom_type).not
+	_then
+		condition.raise(:error, :string, write_string("Unknow geomentry type ", geom_type))
+	_endif 
+	_local name_len << geom_name.size
+	_local ok << (name_len > 0) _andif (name_len <= 10)
+	_if (_not ok)
+	_then
+		condition.raise(:error, :string, write_string("Geometry name ", geom_name, " length should be between 0 and 10"))
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_writer.write(geometry, attributes)
+	_local shape_geom << _self.convert_to_shape_geometry(geometry)
+	_local shape_values << _self.convert_to_shape_values(attributes)
+	.gt_shape_writer.add_data(shape_geom, shape_values)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_writer.save(file_name) 
+	.gt_shape_writer.save_to_file(file_name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.convert_to_shape_geometry(geometry)
+	##
+	_if .geom_type = "Point"
+	_then
+		_return _self.convert_to_shape_point(geometry)
+	_elif .geom_type = "LineString"
+	_then
+		_return _self.convert_to_shape_line_string(geometry)
+	_elif .geom_type = "Polygon"
+	_then
+		_return _self.convert_area_to_shape_polygon(geometry)
+	_elif .geom_type = "MultiPolygon"
+	_then
+		_return _self.convert_to_shape_multi_polygon(geometry)
+	_else
+		condition.raise(:error, :string, "Unknown geom type")
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.convert_to_shape_point(pointy)
+	##
+	_local coord << pointy.coordinate
+	_local sh_coord << geotools_shape_coordinate.new(float.check_type(coord.x), float.check_type(coord.y))
+	_return geotools_shape_point.new(sh_coord)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.convert_to_shape_line_string(liney)
+	## 
+	_local coords << simple_vector.new_from(liney.sectors.faceted(5).as_coords_vec())
+	_local sh_coords << _self.sh_coords(coords)
+	_return geotools_shape_line_string.new(sh_coords)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.convert_area_to_shape_polygon(an_area)
+	##
+	_local poly << an_area.a_polygon
+	_return _self.convert_to_shape_polygon(poly)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.convert_to_shape_polygon(poly)
+	##
+	_local outer_coords << poly.sectors.faceted(5).as_coords_vec()
+	_local sh_outer_coords << _self.sh_coords(outer_coords)
+
+	_local inner << simple_vector.new(poly.nholes)
+	_for i _over range(1, poly.nholes)
+	_loop
+		_local inner_coords << poly.hole(i).sectors.faceted(5).as_coords_vec()
+		inner[i] << _self.sh_coords(inner_coords)
+	_endloop 
+	_return geotools_shape_polygon.new(sh_outer_coords, inner)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.convert_to_shape_multi_polygon(mpoly)
+	##
+	_local polys << simple_vector.new(mpoly.npolygons)
+	_for i _over range(1, mpoly.npolygons)
+	_loop
+		polys[i] << _self.convert_to_shape_polygon(mpoly.polygon(i))
+	_endloop 
+	_return geotools_shape_multi_polygon.new(polys)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.sh_coords(coords)
+	_return simple_vector.new_from(coords).
+		map(
+			_proc(c) >> geotools_shape_coordinate.new(
+					    float.check_type(c.x),
+					    float.check_type(c.y))
+			_endproc)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_writer.validate_attribute_defs(defs)
+	##
+	_if defs.size = 0 _then condition.raise(:error, :string, "Can not provide an empty attribute definition") _endif 
+	_self.validate_name_lengths(defs)
+	_self.validate_length_property_set_for_strings(defs)
+	_self.validate_allowed_attribute_types(defs)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_writer.validate_name_lengths(defs)
+	_for i_index, i_vec _over defs.fast_keys_and_elements()
+	_loop
+		_local length << i_vec[1].size
+		_if length = 0 _orif
+		    length > 10
+		_then
+			condition.raise(:error, :string, "The length of a attribute should be an integer between 0 and 10")
+		_endif 
+	_endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_writer.validate_length_property_set_for_strings(defs)
+	##
+	_for i_index, i_vec _over defs.fast_keys_and_elements()
+	_loop
+		_if i_vec[3] = "String"
+		_then
+			_local length << i_vec[2]
+			_if length.is_class_of?(integer).not _orif
+			    length = 0 _orif
+			    length > 255
+			_then
+				condition.raise(:error, :string, "The length of a string should be an integer between 0 and 255")
+			_endif 
+		_endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_writer.validate_allowed_attribute_types(defs)
+	## 
+	_for i_index, i_vec _over defs.fast_keys_and_elements()
+	_loop
+		_if _self.allowed_attr_types.includes?(i_vec[3]).not
+		_then
+			condition.raise(:error, :string, write_string("The type ", i_vec[3], " is not allowed"))
+		_endif
+	_endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_writer.convert_to_shape_values(values)
+	##
+	_local result << simple_vector.new(values.size)
+	_for i _over range(1, result.size)
+	_loop
+		_local value << values[i]
+		_local def << .attribute_defs[i]
+		_if (def[3] = "Date") _andif (value _isnt _unset)
+		_then
+			value << _self.date_format.format(value)
+		_endif
+		result[i] << value 
+	_endloop
+	_return result
+_endmethod
+$

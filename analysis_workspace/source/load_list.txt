@@ -12,3 +12,4 @@ area/
 spatial/
 sw/
 workspace/
+shape/
