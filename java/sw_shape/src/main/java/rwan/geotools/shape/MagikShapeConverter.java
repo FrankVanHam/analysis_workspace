@@ -56,10 +56,12 @@ public class MagikShapeConverter {
 			return MagikJavaConverter.toMagikString((String) obj);
 		case "Integer":
 			return MagikJavaConverter.toMagikInteger((Integer) obj);
+		case "Long":
+			return MagikJavaConverter.toMagikInteger((Long) obj);
 		case "Double":
 			return MagikJavaConverter.toMagikDouble((Double) obj);
 		case "Boolean":
-			return MagikJavaConverter.toMagikBoolean((boolean) obj);
+			return MagikJavaConverter.toMagikBoolean((Boolean) obj);
 		case "Date":
 			return MagikJavaConverter.toMagikDate((Date) obj);
 		case "Point":

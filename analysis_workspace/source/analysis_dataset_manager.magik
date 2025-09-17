@@ -267,7 +267,7 @@ _method analysis_dataset_manager.materialize_spatial(spatial_col)
 	## geometries. Return the id that should be used to retrieve
 	## the collection with the method geometry_set(id).
 	
-	# bacially the geometries will be inserted in the :geom_holder table.
+	# basically the geometries will be inserted in the :geom_holder table.
 	_handling self_intersecting, warning, information _with _proc() _endproc
 
 	_self.report(:converting_to_geometry)

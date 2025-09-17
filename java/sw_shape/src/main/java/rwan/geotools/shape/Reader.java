@@ -22,11 +22,12 @@ public class Reader {
 	private FeatureIterator<SimpleFeature> _iterator;
 	private final AttributeDef[] _attributeDefs;
 	private final String _geomType;
+	private final String _geomName;
 	private final MagikShapeConverter _shapeConverter;
 
 	public Reader() {
 		_fileName = null; _source = null; _attributeDefs = null; _iterator = null;
-		_geomType = null; _shapeConverter = null;
+		_geomType = null; _shapeConverter = null; _geomName = null;
 	}
 	
 	public Reader(String fileName, SimpleFeatureSource source, AttributeDef[] attributeDefs) throws IOException {
@@ -34,6 +35,7 @@ public class Reader {
         _source = source;
         _attributeDefs = attributeDefs;
         _shapeConverter = new MagikShapeConverter(null);
+        _geomName = _source.getSchema().getGeometryDescriptor().getName().toString();
         _geomType = _source.getSchema().getGeometryDescriptor().getType().getName().toString();
         _iterator = null;
 	}
@@ -41,6 +43,11 @@ public class Reader {
 	@MagikMethod("geometry_type()")
 	public final Object geometryType() throws Exception {
 		return MagikJavaConverter.toMagikString(_geomType);
+	}
+	
+	@MagikMethod("geometry_name()")
+	public final Object geometryName() throws Exception {
+		return MagikJavaConverter.toMagikString(_geomName);
 	}
 	
 	@MagikMethod("file_name()")

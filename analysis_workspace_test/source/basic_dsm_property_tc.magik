@@ -34,15 +34,21 @@ _method basic_dsm_property_tc.test_sw_col()
 	_local sw_col << _self.hotel_collection
 	_local hcol << rwan:sw_collection.new(.ds, sw_col)
 	_local settings << _self.hotel_settings(sw_col)
-	_local res << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local res << _self.materialized_collection(hcol,settings)
 	_self.assert_true(res.includes?(res.an_element()), "Includes")
 	_self.assert_false(res.is_area?, "Is area")
 	_self.assert_false(res.is_spatial?, "Is spatial")
 	_self.assert_true(res.is_sw_collection?, "Is sw collection")
 	_self.assert_true(res.origin_is_sw_collection?, "is origin sw collection")
 	_self.assert_true(res.size_is_fast?, "size is fast?")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method basic_dsm_property_tc.materialized_collection(base_col, settings)
+	_local creator << materialized_collection_creator.new(.ds)
+	_local mat_col << creator.create(base_col, settings)
+	_return rwan:materialized_collection.new(.ds, base_col, mat_col.name)
 _endmethod
 $
 

@@ -1,0 +1,660 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+
+#remex(:shape_import_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Dialog to create a materialized collection from a shape
+## file. The user can select the attributes to include and the
+## scale factor to use. Often Smallworld uses a mm resultion
+## while the shape file is in meters. In that case the scale
+## factor should be 1000.
+##
+## 
+def_slotted_exemplar(:shape_import_dialog,
+	{
+		{:file_name,       _unset},
+		{:scale,           _unset},
+		{:shape_geom_name, _unset},
+		{:shape_geom_type, _unset},
+		# definitions of the shape attributes with the geometry
+		# definition added.
+		{:shape_defs,      _unset},
+		{:source_fields,   _unset},
+		{:source_table,    _unset},
+		{:linked_table,    _unset},
+		{:linked_fields,   _unset},
+		# definitions chosen by the user to be included in the new
+		# materialized table. The list is increased-decreased as the
+		# users clicks on the checkboxes.
+		{:result_defs,     _unset}
+	},
+	:base_materialize_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+message_handler.new(:shape_import_dialog).add_use(:base_materialize_dialog)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Map the shape types to Smallworld types.
+##
+shape_import_dialog.define_shared_constant(
+	:type_map,
+	equality_hash_table.new_with(
+		"String", :ds_char16_vec,
+		"Integer", :ds_int,
+		"Long", :ds_int64,
+		"Double", :ds_double,
+		"Boolean", :ds_bool,
+		"Date", :ds_date,
+		"Point", :simple_point,
+		"MultiPoint", :simple_point,
+		"MultiLineString", :simple_chain,
+		"LineString", :simple_chain,
+		"Polygon", :area,
+		"MultiPolygon", :area),
+	:private )
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.set_dataset(dsm)
+	.analysis_dsm << dsm
+	_local world << .analysis_dsm.ds_view.world
+	.scale << sw:unit_manager.unit(:m).factor/world.unit.factor
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.activate_in(container)
+	container.modality << :primary_modal
+	container.min_width << 900
+	.shape_defs << rope.new()
+	.linked_fields << rope.new()
+	.result_defs << rope.new()
+	.items << property_list.new()
+	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true,
+				:row_resize_values, {0, 100, 0, 0, 0})
+	_self.build_top_label(rc)
+	_self.build_trees(rc)
+	_self.build_progress(rc)
+	panel_separator.new(rc, :col_alignment, :fill)
+	_self.build_buttons(rc)
+	_return rc
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.open_file()
+	_local dia << file_dialog.new(_self, :|open_shape_file()|, _unset,
+				      :operation, :open,
+				      :title, _self.message(:open_file_title),
+				      :do_existence_check?, _true,
+				      :filter, {"Shape file (*.shp)", "*.shp"})
+	dia.activate()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.open_shape_file(file_name)
+	.file_name << file_name
+	.items[:file_name].value << .file_name
+
+	_local reader << shape_reader.new(.file_name)
+	_protect 
+		_self.update_from_reader(reader)
+	_protection
+		reader.dispose()
+	_endprotect
+	_self.update_shape_tree()
+	_self.update_result_tree()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.update_from_reader(reader)
+	.shape_geom_type << reader.geom_type
+	.shape_geom_name << reader.geom_name
+	.shape_defs << rope.new()
+	.shape_defs.add(
+		property_list.new_with(
+			:name, .shape_geom_name,
+			:geom?, _true,
+			:length, 0,
+			:type, .shape_geom_type))
+	_for i_vec _over reader.attribute_defs.fast_elements()
+	_loop
+		.shape_defs.add(
+			property_list.new_with(
+				:name, i_vec[1],
+				:geom?, _false,
+				:length,i_vec[2],
+				:type, i_vec[3]))
+	_endloop 
+	.result_defs << rope.new()
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.build_trees(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill,
+				:col_resize_values, {50, 50},
+				:row_alignment, :fill)
+	
+	_self.build_shape_tree(rc)
+	_self.build_result_tree(rc)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.build_shape_tree(container)
+	_local rc << rowcol.new(container, _unset , 1, _unset, :style, :nested,
+				:col_alignment, :fill, :row_alignment, :fill)
+	_self.build_file(rc)
+	.items[:shape_tree] << tree_item.new(rc,
+					      :model, _self,
+					      :distribute_spare_width, :always,
+					      :select_notifier, :|shape_field_selected()|,
+					      :data_selector, :|get_shape_tree()|,
+					      :aspect, :shape,
+					      :column_allow_sort?, _false,
+					      :column_heading_ids, {:use?, :img, :shape_field, :shape_length, :shape_type},
+					      :col_resize_values, {0,0, 40, 40, 40},
+					      :column_widths, {35,30, 50, 100, 100},
+					      :toggle_notifier, {:|perform_safely()|, :|toggled_shape()|},
+					      :col_alignment, :fill,
+					      :row_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.build_file(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill, :col_resize_values, {100,0})
+	.items[:file_name] << text_item.new(rc, _self.message(:file_name),
+					    :editable?, _false,
+					    :col_alignment, :fill)
+	.items[:file_open] << image_button_item.new(rc, _self.file_open_image, _self, :|open_file()|,
+						    :insensitive_image, _self.file_open_grey_image,
+						    :col_alignment, :left)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.build_result_tree(container)
+	_local rc << rowcol.new(container, _unset , 1, _unset, :style, :nested,
+				:col_alignment, :fill,
+				:row_alignment, :fill, :row_resize_values, {0,100})
+	_self.build_target(rc)
+	.items[:result_tree] << tree_item.new(rc,
+				       :model, _self,
+				       :distribute_spare_width, :always,
+				       :select_notifier, :|result_field_selected()|,
+				       :data_selector, :|get_result_tree()|,
+				       :aspect, :result,
+				       :column_allow_sort?, _false,
+				       :column_heading_ids, {:img, :shape_field, :target_field,
+							     :shape_length, :shape_type},
+				       :col_resize_values, {0, 40, 40, 40, 40},
+				       :column_widths, {30, 100, 100, 40, 40},
+				       :editors, {{:name, in_place_value_editor}},
+				       :value_changed_notifier, :|name_changed()|,
+				       :edit_on_click?, _true,
+				       :col_alignment, :fill,
+				       :row_alignment, :fill)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.build_target(container)
+	 _local rc << rowcol.new(container, 1, _unset , _unset, :style, :nested,
+				:col_alignment, :fill, :col_resize_values, {100,0}, :row_alignment, :fill)
+	.items[:result_table] << text_item.new(rc, _self.message(:table_name),
+					       :model, _self, 
+					       :incremental_change_selector, :|manage_actions()|,
+					       :col_alignment, :fill)
+	.items[:scale] << text_item.new(rc, _self.message(:scale),
+					       :model, _self,
+					       :value, .scale.rounded.write_string,
+					       :display_length, 7,
+					       :incremental_change_selector, :|manage_actions()|,
+					       :col_alignment, :fill)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.update_shape_tree()
+	##
+	_self.changed(:shape, :refresh)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.update_result_tree()
+	##
+	_self.changed(:result, :refresh)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.build_buttons(container) 
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :button_box, :col_alignment, :right)
+	.items[:ok]     << button_item.new_safe(rc, _self.message(:ok), _self, :|ok()|, :min_width, 75)
+	.items[:cancel] << button_item.new_safe(rc, _self.message(:cancel), _self, :|cancel()|, :min_width, 75)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.shape_field_selected()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.result_field_selected()
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.toggled_shape(tree)
+	_self.toggled_tree(tree)
+	_self.manage_actions()
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.toggled_tree(tree)
+	_local add? << _not tree.value(:use?)
+	tree.value(:use?) << add?
+	_if add?
+	_then
+		_self.add_result_field(tree.key)
+	_else
+		_self.remove_result_field(tree.key)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.shape_attribute(name)
+	_for i_prop _over .shape_defs.fast_elements()
+	_loop
+		_if i_prop[:name] = name _then _return i_prop _endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.add_result_field(name)
+	_local prop << _self.shape_attribute(name)
+	_local new_prop << property_list.new_with(:shape_name, prop[:name],
+						  :geom?, prop[:geom?],
+						  :name, prop[:name],
+						  :length, prop[:length],
+						  :type, prop[:type])
+	.result_defs.add(new_prop)
+	_self.update_result_tree()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.remove_result_field(name)
+	_local (uses?, the_prop) << _self.uses?(name)
+	.result_defs.remove(the_prop)
+	_self.update_result_tree()		
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.uses?(name)
+	_for i_prop _over .result_defs.fast_elements()
+	_loop
+		_if i_prop[:shape_name] = name
+		_then
+			_return _true, i_prop
+		_endif
+	_endloop
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.update_result_tree()
+	_self.changed(:result, :refresh)
+	_self.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.get_result_tree()
+	_local trees << rope.new()
+	_for i_prop _over .result_defs.fast_elements()
+	_loop
+		_local shape_name << i_prop[:shape_name]
+		_local name << i_prop[:name]
+		_local length << i_prop[:length]
+		_local type << i_prop[:type]
+		_local value  << property_list.new_with(:name, name)
+		_local tree << display_tree.new(shape_name, value)
+		_local img << sw:sw_basic_field.icon_scheme
+		tree.styled_string << {:image, img, :tab,
+				       shape_name, :tab,
+				       :value, :name, :tab,
+				       length, :tab,
+				       type, :tab}
+		trees.add(tree)
+	_endloop
+	_return trees 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.name_changed(tree, key, new_name)
+	_local (uses?, prop) << _self.uses?(tree.key)
+	prop[:name] << _if new_name = ""
+		       _then >> prop[:shape_name]
+		       _elif new_name.size > 32
+		       _then >> new_name.slice(1,32)
+		       _else >> new_name
+		       _endif
+	_self.update_result_tree()			
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.construct_materialized()
+	_local settings << _self.creator_settings()
+	_self.create_log_stream()
+	_protect
+		.analysis_dsm.add_dependent(_self)
+		_self.log(_self.message(:started_at, _unset, date_time_now()))
+		
+		_local creator << materialized_shape_creator.new(.analysis_dsm)
+		_local mat_col << creator.create(.file_name, settings, _self.transform())
+		col << rwan:materialized_collection.new(.analysis_dsm, _unset, mat_col.name)
+		
+		_self.log(_self.message(:ended_at, _unset, date_time_now()))
+	_protection
+		.analysis_dsm.remove_dependent(_self)
+		_self.close_log_stream()
+	_endprotect
+	_self.open_log()
+	_return col
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.transform()
+	 _local scale  << .items[:scale].value.as_number()
+	 _return transform.scale(scale)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.creator_settings()
+	_local (int_name, ext_name) << _self.new_table_name
+	_local settings << materialization_shape_settings.new(int_name, ext_name)
+	settings.add_id_field(:fid, "FeatureID")
+	_self.add_fields(settings)
+	_return settings
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.add_fields(settings)
+	_for i_prop _over .result_defs.fast_elements()
+	_loop
+		_local shape_name << i_prop[:shape_name]
+		_local int_name << i_prop[:name].convert_to_non_escape_string().as_symbol()
+		_local ext_name << i_prop[:name]
+		_local geom? << i_prop[:geom?]
+		_local length << i_prop[:length]
+		_local type << _self.type_map[i_prop[:type]]
+		show(type, i_prop[:type])
+		_if type _is _unset _then condition.raise(:error, :string, "Unknown type") _endif
+		_if geom?
+		_then
+			settings.add_geom_field(shape_name, int_name, ext_name, type)
+		_else 
+			settings.add_field(shape_name, int_name, ext_name, type)
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.validate()
+	_self.validate_table_name()
+	_self.validate_table_unique()
+	_self.validate_any()
+	_self.validate_single_names()
+	_self.validate_field_names()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.validate_table_name()
+	_local tname << _self.new_table_name
+	_if tname.empty?
+	_then
+		_self.user_error(:please_enter_table_name)
+	_endif 
+	_if tname.as_symbol().requires_escape?
+	_then
+		_self.user_error(:table_name_invalid, _unset, tname)
+	_endif
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.validate_table_unique()
+	_local tname << _self.new_table_name
+	_local ds << .analysis_dsm.ds_view
+	_if ds.collections.includes_key?(tname)
+	_then
+		_self.user_error(:table_name_exists, _unset, tname)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.validate_any()
+	_if .result_defs.empty?
+	_then
+		_self.user_error(:please_add_result_defs)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.validate_single_names()
+	_local names << equality_set.new()
+	_for i_prop _over .result_defs.fast_elements()
+	_loop
+		_local name << i_prop[:name]
+		int_name << _self.ext_to_int(name)
+		_if names.includes?(int_name)
+		_then
+			_self.user_error(:no_double_names, _unset, name)
+		_endif
+		names.add(int_name)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.validate_field_names()
+	_for i_vec _over .result_defs.fast_elements()
+	_loop
+		(fd,name) << (_scatter i_vec)
+		int_name << _self.ext_to_int(name)
+		_if int_name.as_symbol().requires_escape?
+		_then
+			_self.user_error(:field_name_invalid, _unset, fd.external_name, int_name)
+		_endif 
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.field_specs()
+	_local field_specs << rope.new()
+	_for i_vec _over .result_defs.fast_elements()
+	_loop
+		_local (fd, ext_name) << (_scatter i_vec)
+		_local int_name << _self.ext_to_int(ext_name)
+		field_specs.add({fd.owner.name, fd.name, int_name, ext_name})
+	_endloop
+	_return field_specs
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.cancel()
+	_self.close()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.unlink()
+	_local changed? << _false 
+	_for i_fd _over .linked_fields.fast_elements()
+	_loop
+		_local (used?, v)  << _self.uses?(i_fd)
+		_if used?
+		_then
+			changed? << _true 
+			.result_defs.remove(v)
+		_endif 
+	_endloop
+	_if changed?
+	_then 
+		_self.changed(:result, :refresh)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.move_up()
+	_local fds << .items[:result_tree].selection.keys
+	_for i_fd _over fds.fast_elements()
+	_loop
+		_local (uses?, v) << _self.uses?(i_fd)
+		_local idx << .result_defs.index_of(v)
+		_if idx <> 1
+		_then
+			.result_defs.remove(v)
+			.result_defs.add_nth(v, idx-1)
+		_endif
+	_endloop
+	_self.changed(:result, :refresh)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.move_down()
+	_local fds << .items[:result_tree].selection.keys
+	_for i_fd _over fds.fast_elements()
+	_loop
+		_local (uses?, v) << _self.uses?(i_fd)
+		_local idx << .result_defs.index_of(v)
+		_if idx <> .result_defs.size
+		_then
+			.result_defs.remove(v)
+			.result_defs.add_nth(v, idx+1)
+		_endif
+	_endloop
+	_self.changed(:result, :refresh)
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.get_shape_tree()
+	_local trees << rope.new()
+	_for i_prop _over .shape_defs.default({}).fast_elements()
+	_loop
+		_local name << i_prop[:name]
+		_local length << i_prop[:length]
+		_local type << i_prop[:type]
+		_local used?  << _self.uses?(name)
+		_local value  << property_list.new_with(:use?, used?)
+		_local tree << display_tree.new(name, value)
+		_local img << sw:sw_basic_field.icon_scheme
+		tree.styled_string << {:toggle, :use?, :tab,
+				       :image, img, :tab,
+				       name, :tab,
+				       length, :tab,
+				       type}
+		trees.add(tree)
+	_endloop
+	_return trees 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.new_table_name
+	_local external_name << .items[:result_table].value.write_string
+	_local internal_name << _self.ext_to_int(external_name)
+	_return internal_name, external_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.ext_to_int(str)
+	_return str.write_string.convert_to_non_escape_string().as_symbol()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_import_dialog.manage_actions()
+	_local a_table? << .items[:result_table].value.default("") <> ""
+	_local scale?  << .items[:scale].value.as_number().default(0) <> 0
+	_local shape? << .shape_defs.size > 0
+	_local result? << .result_defs.size > 0
+	
+	.items[:ok].enabled? << a_table? _and shape? _and result? _and scale?
+	_super.manage_actions()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.file_open_image
+	_return smallworld_product.get_raster_image(:open, :ui_resources)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_import_dialog.file_open_grey_image
+	_return smallworld_product.get_raster_image(:open_grey, :ui_resources)
+_endmethod
+$

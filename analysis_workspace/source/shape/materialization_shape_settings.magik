@@ -1,0 +1,97 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:materialization_shape_settings)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Holder for the settings that are required to create a 
+## shape materialization.
+## Note that the ID field and geometry field are added seperately.
+##
+def_slotted_exemplar(:materialization_shape_settings,
+	{
+		{:int_name, _unset},
+		{:ext_name, _unset},
+		{:fields,   _unset}
+	})
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.new(int_name, ext_name)
+	_return _clone.init(int_name, ext_name)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialization_shape_settings.init(int_name, ext_name)
+	.int_name << symbol.check_type(int_name)
+	.ext_name << ext_name
+	.fields   << rope.new()
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.add_field(shape_name, int_name, ext_name, type)
+	_self.do_add_field(shape_name, int_name, ext_name, :alfa, type)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.add_geom_field(shape_name, int_name, ext_name, type)
+	_self.do_add_field(shape_name, int_name, ext_name, :geom, type)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.add_id_field(int_name, ext_name)
+	_self.do_add_field(int_name, int_name, ext_name, :id, :ds_uint)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.do_add_field(shape_name, int_name, ext_name, meta, type)
+	_if meta _is _unset _then condition.raise(:error, :string, "Meta is mandatory") _endif 
+	.fields.add({shape_name, symbol.check_type(int_name), ext_name, meta, type})
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_iter _method materialization_shape_settings.field_properties()
+	_for i_vec _over .fields.fast_elements()
+	_loop
+		_loopbody(_scatter i_vec)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.internal_name
+	_return .int_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.external_name
+	_return .ext_name
+_endmethod
+$

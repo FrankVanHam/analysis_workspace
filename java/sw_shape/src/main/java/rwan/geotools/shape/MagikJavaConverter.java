@@ -16,7 +16,11 @@ public class MagikJavaConverter {
 	}
 	
 	static Object toMagikString(String str) {
-		return MagikInteropUtils.toMagikString(str);
+		if (str != null) {
+			return MagikInteropUtils.toMagikString(str);
+		} else {
+			return null;
+		}
 	}
 
 	static Integer fromMagikInteger(java.lang.Object obj) {
@@ -28,9 +32,20 @@ public class MagikJavaConverter {
 	}
 	
 	static Object toMagikInteger(Integer it) {
-		return MagikInteropUtils.toMagikInteger(it);
+		if (it != null) {
+			return MagikInteropUtils.toMagikInteger(it);
+		} else {
+			return null;
+		}
 	}
-
+	
+	static Object toMagikInteger(Long lng) {
+		if (lng != null) {
+			return MagikInteropUtils.toMagikInteger(lng);
+		} else {
+			return null;
+		}
+	}
 	static Double fromMagikDouble(java.lang.Object obj) {
 		if (obj != null) {
 			return MagikInteropUtils.fromMagikDouble(obj);
@@ -40,7 +55,11 @@ public class MagikJavaConverter {
 	}
 	
 	static Object toMagikDouble(Double dbl) {
-		return MagikInteropUtils.toMagikDouble(dbl);
+		if (dbl != null) {
+			return MagikInteropUtils.toMagikDouble(dbl);
+		} else {
+			return null;
+		}
 	}
 	
 	static Date fromMagikDate(java.lang.Object obj) {
@@ -73,7 +92,11 @@ public class MagikJavaConverter {
 		}
 	}
 	
-	static Object toMagikBoolean(boolean bool) {
-		return MagikInteropUtils.toMagikBoolean(bool);
+	static Object toMagikBoolean(Boolean bool) {
+		if (bool != null) {
+			return MagikInteropUtils.toMagikBoolean(bool);
+		} else {
+			return null;
+		}
 	}
 }

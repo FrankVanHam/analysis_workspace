@@ -1,2 +1,4 @@
 shape_reader
 shape_writer
+materialization_shape_settings
+materialized_shape_creator

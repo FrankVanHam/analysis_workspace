@@ -21,12 +21,32 @@ $
 $
 
 _pragma(classify_level=basic, topic={analysis})
+##
+## Reads a shape file using the GeoTools java library.
+## Use get() to read the attributes, the ID and the geometry.
+##
+## No CRS is provides
+##
+## Usage:
+## _local reader << shape_reader.new(file_name)
+## _protect
+## 	_loop 
+## 		(id, geom, attrs) << reader.get()
+## 		_if id _is _unset _then _leave _endif
+## 		
+## 		show(id, geom, _scatter attrs)
+## 	_endloop 
+## _protection
+## 	reader.dispose()
+## _endprotect 
+##
 def_slotted_exemplar(:shape_reader,
 	{
 		{:file_name,       _unset},
-		{:attribute_defs,  _unset},
+		{:attribute_defs,  _unset, :readable},
 		{:gt_shape_reader, _unset},
-		{:geom_type,       _unset}
+		{:geom_name,       _unset, :readable},
+		{:geom_type,       _unset, :readable}
 	})
 $
 shape_reader.define_shared_constant(:date_format, "#Y-#m-#d", :private)
@@ -45,6 +65,7 @@ _private _method shape_reader.init(file_name)
 	.file_name << file_name
 	.gt_shape_reader << geotools_shape_reader.new(file_name)
 	.geom_type << .gt_shape_reader.geometry_type()
+	.geom_name << .gt_shape_reader.geometry_name()
 	.attribute_defs << .gt_shape_reader.attribute_defs()
 	>> _self 
 _endmethod
@@ -135,9 +156,9 @@ _private _method shape_reader.convert_sh_polygon_to_polygon(sh_poly)
 	_local sh_coords << sh_poly.get_outer_coordinates()
 	_local sr << _self.sector_rope(sh_coords)
 	_local poly << pseudo_polygon.new(sr)
-	_for i _over range(0, sh_poly.hole_size()-1)
+	_for i _over range(1, sh_poly.hole_size())
 	_loop
-		_local sh_hole_coords << sh_poly.hole_get(i)
+		_local sh_hole_coords << sh_poly.hole_get(i-1)
 		_local hole_sr << _self.sector_rope(sh_hole_coords)
 		poly.add_hole(hole_sr)
 	_endloop
@@ -178,7 +199,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_reader.convert_to_magik_values(sh_values)
 	##
 	_local result << simple_vector.new(sh_values.size)
-	_for i _over range(1, result.size)
+	_for i _over range(1, sh_values.size)
 	_loop
 		_local value << sh_values[i]
 		_local def << .attribute_defs[i]
@@ -186,7 +207,7 @@ _private _method shape_reader.convert_to_magik_values(sh_values)
 		_then
 			value << date.new_from_string(value, _self.date_format)
 		_endif
-		result[i] << value 
+		result[i] << value
 	_endloop
 	_return result
 _endmethod

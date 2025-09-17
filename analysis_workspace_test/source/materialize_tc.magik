@@ -31,9 +31,7 @@ _method materialize_tc.test_on_sw_col()
 	_local sw_col << _self.hotel_collection
 	_local hcol << rwan:sw_collection.new(.ds, sw_col)
 	_local settings << _self.hotel_settings(sw_col)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -43,9 +41,7 @@ _method materialize_tc.test_on_pred_filter_col()
 	_local hcol << _super.predicated_hotel_collection(.ds)
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -55,9 +51,7 @@ _method materialize_tc.test_on_spatial_filter_col()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 	
 _endmethod
@@ -68,9 +62,7 @@ _method materialize_tc.test_on_distance_filter_col()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -80,9 +72,7 @@ _method materialize_tc.test_on_view_col()
 	_local vcol << _self.office_company_view_collection(.ds)
 	_local sw_col << vcol.actual_collection
 	_local settings << _self.office_settings(sw_col)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   vcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(vcol, settings)
 	_self.assert_equals(mat_col.size, vcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -92,9 +82,7 @@ _method materialize_tc.test_on_binary_col()
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
 	_local hcol << _self.binary_op_hotel_collection(.ds)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -104,9 +92,7 @@ _method materialize_tc.test_on_method_col()
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
 	_local hcol << _self.method_hotel_collection(.ds)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -116,9 +102,7 @@ _method materialize_tc.test_on_join_col()
 	_local sw_col << _self.min_road_collection
 	_local settings << _self.road_settings(sw_col)
 	_local rcol << _self.join_road_collection(.ds)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   rcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(rcol, settings)
 	_self.assert_equals(mat_col.size, rcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -128,9 +112,7 @@ _method materialize_tc.test_on_root_col()
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
 	_local hcol << _self.root_hotel_collection(.ds)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -140,9 +122,7 @@ _method materialize_tc.test_on_topology_col()
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
 	_local hcol << _self.topology_hotel_collection(.ds)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -153,9 +133,7 @@ _method materialize_tc.test_on_trace_col()
 	_local hcol << _self.trace_hotel_collection(dsm)	
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -217,9 +195,7 @@ _method materialize_tc.test_on_record_col()
 	_local hcol << _self.record_hotel_collection(dsm)	
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_self.assert_equals(mat_col.size, hcol.size, "actual and materialized collection have same size")
 _endmethod
 $
@@ -231,9 +207,7 @@ _method materialize_tc.hotel_materialized_col()
 	_local hcol << rwan:sw_collection.new(.ds, _self.hotel_collection)
 	_local sw_col << _self.hotel_collection
 	_local settings << _self.hotel_settings(sw_col)
-	_return rwan:materialized_collection.new(.ds,
-						 hcol,
-						 settings)
+	_return _self.materialized_collection(hcol, settings)
 _endmethod
 $
 
@@ -297,11 +271,17 @@ _pragma(classify_level=basic, topic={analysis})
 _method materialize_tc.test_materialize()
 	_local hcol << _self.hotel_materialized_col()
 	_local settings << _self.hotel_settings(hcol.actual_collection)
-	_local mat_col << rwan:materialized_collection.new(.ds,
-							   hcol,
-							   settings)
+	_local mat_col << _self.materialized_collection(hcol, settings)
 	_local res << hcol.union(mat_col)
 	_self.assert_equals(res.size, hcol.size, "Union should have the same number of elements as the orginal")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialize_tc.materialized_collection(base_col, settings)
+	_local creator << materialized_collection_creator.new(.ds)
+	_local mat_col << creator.create(base_col, settings)
+	_return rwan:materialized_collection.new(.ds, base_col, mat_col.name)
 _endmethod
 $
 

@@ -124,6 +124,14 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method construct_dialog.add_shape_from_dialog()
+	_local dia << shape_import_dialog.new_dialog(_self)
+	dia.set_dataset(_self.dataset_manager)
+	dia.activate_relative_to(_unset, .top_frame, 50, 50 )
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.copy()
 	_local col << _self.selected_holder.collection
 	_local cp << col.copy()
@@ -834,7 +842,8 @@ _method construct_dialog.selection_info()
 			areanr +<< 1
 		_else
 			reccolnr +<< 1
-			_if i_holder.collection.origin_is_sw_collection?
+			_if i_holder.collection.is_sw_collection? _orif
+			    i_holder.collection.origin_is_sw_collection?
 			_then
 				swcolnr +<< 1
 			_endif
@@ -889,6 +898,7 @@ _method construct_dialog.manage_actions()
 	_local any_sel? << _self.any_selection?
 	_local open? << _self.open?
 	.owner.action(:add_collections).enabled? << open?
+	.owner.action(:add_shape).enabled? << open?
 	.owner.action(:add_trail).enabled? << open?
 	.owner.action(:add_geom_selection).enabled? << open?
 	.owner.action(:add_collection_selection).enabled? << open?

@@ -1,0 +1,136 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:materialize_shape_tc,
+	{},
+	:base_dsm_test_case)
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_shape_tc.test_basic_col()
+	_local file_name << _self.create_point_shape()
+
+	_local settings << materialization_shape_settings.new("test", "Test")
+	settings.add_id_field(:fid, "FID")
+	settings.add_field("name", :new_name, "New Name", :ds_char16_vec)
+	_local mat_col << _self.materialized_collection(file_name, settings)
+	_local ds_col << mat_col.expose()
+	_self.assert_true(ds_col.record_exemplar.is_kind_of?(user_ds_record), "should be ds_record")
+	_self.assert_equals(ds_col.external_name, "Test", "External collection name should be set")
+	_self.assert_equals(ds_col.field(:new_name).external_name, "New Name", "External field name should be set")
+	_self.assert_equals(1, mat_col.size, "materialized collection should have size 1")
+	_self.assert_equals(1, ds_col.size, "base ds collection should have size 1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_shape_tc.test_basic_point_col()
+	_local file_name << _self.create_point_shape()
+
+	_local settings << materialization_shape_settings.new("test", "Test")
+	settings.add_geom_field("the_geom", :the_geom, "The Geom", :simple_point)
+	settings.add_id_field(:fid, "FID")
+	settings.add_field("name", :new_name, "New Name", :ds_char16_vec)
+	_local mat_col << _self.materialized_collection(file_name, settings)
+	_local ds_col << mat_col.expose()
+	_self.assert_true(ds_col.record_exemplar.is_kind_of?(rwo_record), "should be rwo_record")
+	_self.assert_equals(ds_col.field(:the_geom).geom_type, :simple_point, "The geometry should be a simple_point")
+	_self.assert_equals(1, mat_col.size, "materialized collection should have size 1")
+	_self.assert_equals(1, ds_col.size, "base ds collection should have size 1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_shape_tc.test_attribute_col()
+	_local file_name << _self.create_attribute_shape()
+
+	_local settings << materialization_shape_settings.new("attr", "AttributeTable")
+	settings.add_geom_field("the_geom", :the_geom, "The Geom", :simple_point)
+	settings.add_id_field(:fid, "FID")
+	settings.add_field("aString", :new_astring, "New Name", :ds_char16_vec)
+	settings.add_field("aBoolean", :new_bool, "New Bool", :ds_bool)
+	
+	_local mat_col << _self.materialized_collection(file_name, settings)
+	_local ds_col << mat_col.expose()
+	_self.assert_true(ds_col.record_exemplar.is_kind_of?(rwo_record), "should be rwo_record")
+	_self.assert_equals(ds_col.field(:the_geom).geom_type, :simple_point, "The geometry should be a simple_point")
+	_self.assert_equals(2, mat_col.size, "materialized collection should have size 1")
+	_self.assert_equals(2, ds_col.size, "base ds collection should have size 1")
+	_local rec << mat_col.an_element()
+	_self.assert_equals(rec.new_astring, "Frank")
+	_self.assert_equals(rec.new_bool, _false)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialize_shape_tc.materialized_collection(file_name, settings)
+	_local creator << materialized_shape_creator.new(.ds)
+	_local mat_col << creator.create(file_name, settings)
+	_return rwan:materialized_collection.new(.ds, _unset, mat_col.name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_shape_tc.create_point_shape()
+	_local atts << {{"name",     20,     "String"}}
+	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
+	_local data << {"Frank"}
+	_local id << writer.write(geom, data)
+	_local file_name << _self.temp_file("point.shp")
+	writer.save(file_name)
+	_return file_name
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialize_shape_tc.create_attribute_shape()
+	_local atts << {{"aString",   20,"String"},
+			{"anInteger", 1, "Integer"},
+			{"aDouble",   1, "Double"},
+			{"aBoolean",  1, "Boolean"},
+			{"aDate",     1, "Date"}}
+	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
+	_local data << {"Frank", 20, 1.13, _false, date.now()}
+	writer.write(geom, data)
+	data << {"Bert", -20, 0.13, _true, date.new_from_string("1-1-2001", "#d-#m-#Y")}
+	writer.write(geom, data)
+	_local file_name << _self.temp_file("attr.shp")
+	writer.save(file_name)
+	_return file_name
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialize_shape_tc.coords(args)
+	_return sector_rope.new_with(sector.new_with_xy(_scatter args))
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method materialize_shape_tc.temp_file(file_name)
+	##
+	_return system.temp_file_name(file_name)
+_endmethod
+$

@@ -8,7 +8,7 @@
 :highlighting			Highlighting the data
 :going_to			Going to: #1
 :sending_to_explorer		Sending collection to explorer
-:calc				Report in groups and sums
+:shape				Export to Shapefile
 
 :explorer_tooltip		Show the selected collection in the Analysis explorer
 :goto_tooltip			Go to the bounds of the complete ocllection. Note: can be slow for complex collections

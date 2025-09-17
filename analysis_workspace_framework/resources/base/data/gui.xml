@@ -26,6 +26,7 @@
     <submenu name="workarea" mnemonic_id="workarea_m">
       <submenu name="add_spatial" mnemonic_id="add_spatial_m">
 	<action name="construct.add_collections"/>
+	<action name="construct.add_shape"/>
 	<action name="construct.add_trail"/>
 	<action name="construct.add_geom_selection"/>
 	<action name="construct.add_collection_selection"/>
@@ -74,6 +75,7 @@
   </toolbar>
   <toolbar name="add">
     <action name="construct.add_collections"/>
+    <action name="construct.add_shape"/>
     <action name="construct.add_trail"/>
     <action name="construct.add_geom_selection"/>
     <action name="construct.add_collection_selection"/>
@@ -126,6 +128,7 @@
     <action name="runner.goto_one"/>
     <action name="runner.excel"/>
     <action name="runner.access"/>
+    <action name="runner.shape"/>
   </toolbar>
   <dock name="top">
     <toolbar name="file"/>

@@ -371,9 +371,11 @@ _private _method record_materialize_dialog.construct_materialized()
 		.analysis_dsm.add_dependent(_self)
 		_self.log(_self.message(:started_at, _unset, date_time_now()))
 		
+		_local creator << materialized_collection_creator.new(.analysis_dsm)
+		_local mat_col << creator.create(.holder.collection, settings)
 		col << rwan:materialized_collection.new(.analysis_dsm,
 							.holder.collection,
-							settings)
+							mat_col.name)
 		
 		_self.log(_self.message(:ended_at, _unset, date_time_now()))
 	_protection

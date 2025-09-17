@@ -1,0 +1,496 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:materialized_shape_creator)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Specialist that will create a materialized collection of
+## a shape file. It will create a new collection that stores
+## all records from the shape file. The main method is create().
+##
+## Note that the shape reader will return the id, geometry and
+## alpha values seperately and this creator will need to
+## combine them. The provided materialization_shape_settings
+## knows the difference between the id, geom and alpha
+##
+def_slotted_exemplar(:materialized_shape_creator,
+	{
+		{:dsm,               _unset},
+		{:settings,          _unset},
+		{:reader,            _unset},
+		{:target_id_name,    _unset},
+		{:target_geom_name,  _unset},
+		{:transform,         _unset},
+		{:target_ds,         _unset},
+		{:target_collection, _unset}
+	})
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+materialized_shape_creator.define_shared_constant(
+	:manifold_types,
+	equality_set.new_with(:point, :chain, :area),
+	:private)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_shape_creator.new(dsm)
+	## dsm is analysis_dataset_manager.
+	_return _clone.init(dsm)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.init(dsm)
+	.dsm << dsm
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method materialized_shape_creator.create(file_name, settings, _optional transform)
+	##
+	## Create a new collection to store the shape file file_name.
+	##
+	_dynamic !output! << internal_text_output_stream.new()
+	.transform << transform.default(transform.identity_transform)
+	.target_ds << .dsm.actual_dataset
+	.target_ds.switch(:write)
+	_local ok? << _false 
+	_protect
+		_self.do_create(file_name, settings)
+		ok? << _true 
+	_protection
+		_if _not ok?
+		_then
+			.target_ds.rollback()
+		_else
+			.target_ds.commit()
+		_endif 
+	_endprotect
+	_return .target_collection
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_shape_creator.do_create(file_name, settings)
+	.settings << settings
+	.reader << shape_reader.new(file_name)
+	_protect
+		.target_geom_name << _self.target_geometry_name()
+		.target_id_name << _self.target_id_name()
+		_self.do_do_create()
+	_protection
+		.reader.dispose()
+	_endprotect
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.do_do_create()
+	_self.validate()
+	_self.drop_if_existing()
+	_self.create_collection()
+	_self.create_geometry_fields()
+	_self.finalise()
+	_self.sync_fields()
+	_self.fill_collection()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.validate()
+	_self.ensure_map_to_shape()
+	_self.ensure_no_double_names()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.ensure_map_to_shape()
+	_local shape_names << equality_set.new_from(.reader.attribute_defs).map(_proc(x) >> x[1] _endproc)
+	_for shape_name, int_name, ext_name, meta _over _self.field_elements()
+	_loop
+		_if meta = :geom
+		_then
+			_if shape_name <> .reader.geom_name
+			_then
+				condition.raise(:error, :string, write_string("not maching geometry name ", shape_name))
+			_endif
+		_elif meta = :id
+		_then
+			# ok
+		_else
+			_if shape_names.includes?(shape_name).not
+			_then
+				condition.raise(:error, :string, write_string("not maching name ", shape_name))
+			_endif 
+		_endif
+	_endloop 
+_endmethod
+$
+
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.ensure_no_double_names()
+	_local s << set.new()
+	_for shape_name, int_name _over _self.field_elements()
+	_loop
+		_if s.includes?(int_name)
+		_then
+			condition.raise(:error, :string, "No double fields " + int_name)
+		_endif
+		s.add(int_name)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.drop_if_existing()
+	_if .target_ds.collections.includes_key?(_self.new_collection_name)
+	_then
+		_self.report(:dropping_table, _self.new_collection_name)
+		drop_rwo_table(.target_ds, _self.new_collection_name, _true,_true,_false)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.create_collection()
+	## Core creator method for the new collection.
+	_self.report(:creating_table, _self.new_collection_external_name)
+	_local field_defs << _self.create_physical_field_defs()
+	_if .target_geom_name _isnt _unset
+	_then 
+		.target_ds.define_rwo_table(
+			_self.new_collection_name,
+			field_defs,
+			1,
+			.target_ds.files[1].name)
+	_else
+		.target_ds.define_user_table(
+			_self.new_collection_name,
+			field_defs,
+			1,
+			.target_ds.files[1].name)		
+	_endif 
+	.target_collection << .target_ds.collection(_self.new_collection_name)
+	.target_collection.descriptor.external_name << _self.new_collection_external_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.create_physical_field_defs()
+	## combine the id and alpha fields. The ID needs to be first.
+	_local shape_defs << .reader.attribute_defs
+	_local field_defs << rope.new()
+	_for shape_name, int_name, ext_name, meta, type _over _self.field_elements()
+	_loop
+		_if meta = :alfa
+		_then
+			_local length << _self.get_length_def(shape_defs, shape_name)
+			field_defs.add({int_name, type, length})
+		_elif meta = :id
+		_then
+			field_defs.add_first({int_name, type})
+		_endif 
+	_endloop
+	_return field_defs
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.get_length_def(shape_defs, shape_name)
+	_for i_vec _over shape_defs.fast_elements()
+	_loop
+		_if i_vec[1] = shape_name _then _return i_vec[2] _endif
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.create_geometry_fields()
+	## Create the geometry fields
+	_self.report(:adding_geometry_fields)
+	_local (shape_name, int_name, ext_name, meta, type) << _self.geometry_def()
+	_if shape_name _isnt _unset
+	_then
+		_local manifold_name << _unset 
+		_if _self.manifold_types.includes?(type)
+		_then
+			manifold_name << :shape
+			_if .target_ds.manifold_name(manifold_name,_true) _is _unset
+			_then
+				_local code << _self.derive_unique_manifold_code()
+				.target_ds.define_manifold(manifold_name, code)
+			_endif 
+		_endif 
+		.target_ds.add_geometry_field(.target_collection.name, int_name, type, manifold_name)
+	_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.target_geometry_name()
+	_local (shape_name, int_name) << _self.geometry_def()
+	_return int_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.geometry_def()
+	_for shape_name, int_name, ext_name, meta, type  _over _self.field_elements()
+	_loop
+		_if meta = :geom
+		_then
+			_return shape_name, int_name, ext_name, meta, type
+		_endif 
+	_endloop
+	_return _unset 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.target_id_name()
+	_local (shape_name, int_name) << _self.id_def()
+	_return int_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.id_def()
+	_for shape_name, int_name, ext_name, meta, type  _over _self.field_elements()
+	_loop
+		_if meta = :id
+		_then
+			_return shape_name, int_name, ext_name, meta, type
+		_endif 
+	_endloop
+	_return _unset 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.finalise()
+	## set the exemplar and the visible fields
+	_if .target_geom_name _isnt _unset 
+	_then 
+		.target_collection.descriptor.record_exemplar << rwo_record
+	_else
+		.target_collection.descriptor.record_exemplar << user_ds_record
+	_endif
+	_local vfields << rope.new()
+	_for shape_name, int_name, ext_name _over _self.field_elements()
+	_loop
+		vfields.add(int_name)
+	_endloop
+	.target_collection.descriptor.visible_field_names << vfields
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.sync_fields()
+	_for shape_name, int_name, ext_name _over _self.field_elements()
+	_loop
+		_local new_field << .target_collection.field(int_name)
+		_if new_field _is _unset _then _continue _endif 
+		_if new_field.is_physical?
+		_then
+			_if _not new_field.is_key?
+			_then
+				new_field.mandatory? << _false
+			_endif
+			new_field.external_name << ext_name
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.fill_collection()
+	## Actually copy the records from the source to the new
+	## materialization collection
+	_local shape_defs << .reader.attribute_defs
+	_local c << 0
+	_local c_error << 0
+	_self.report(:start_filling_the_collection)
+
+	_loop
+		_local (id, geom, value_vector) << .reader.get()
+		_if id _is _unset _then _leave _endif 
+
+		_local values << _self.construct_value_hash(shape_defs, id, value_vector)
+		
+		_local ok? << _self.safe_insert(geom, values)
+		_if _not ok? _then c_error +<< 1 _endif 
+		
+		_if ((c+<<1) _mod 100) = 0
+		_then
+			_self.report(:filling_the_collection, c)
+		_endif 
+	_endloop
+	_self.report(:end_filling_the_collection, c, c_error)
+	_self.log(:end_filling_the_collection, c, c_error)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.construct_value_hash(shape_defs, id, value_vector)
+	_local result << equality_hash_table.new()
+	_for i _over range(1, shape_defs.size)
+	_loop
+		result[shape_defs[i][1]] << value_vector[i]
+	_endloop
+	result[.target_id_name] << _self.id_to_nr(id)
+	_return result
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.id_to_nr(id_string)
+	# extract a number from the shape id. The geotools API will
+	# return a string like "point_64.1" and we need the 1.
+	_local idx << id_string.rindex_of(%.)
+	_return _if idx _isnt _unset
+		_then >> id_string.slice_to_end(idx+1).as_number().rounded
+		_else >> id_string.as_number().rounded
+		_endif
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_shape_creator.detached_identifier(detached)
+	_return write_string(detached.external_name,
+			     "(",
+			     detached.key_value().join_as_strings(","),
+			     ")")
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.safe_insert(geom, values)
+	_local ok? << _false 
+	_try _with c
+		_handling information, warning _with _proc() _endproc 
+		detached << .target_collection.new_detached_record()
+		_self.fillup_detached(detached, geom, values)
+		
+		_local new_rec << .target_collection.insert(detached)
+		_if .target_geom_name _isnt _unset 
+		_then
+			_self.insert_geometry(new_rec, geom)
+		_endif
+		ok? << _true 
+	_when error
+		_local rec_str << _self.detached_identifier(detached)
+		_self.log(_self.message(:error_inserting, rec_str, c.report_contents_string))
+	_endtry
+	_return ok?
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.fillup_detached(detached, geom, values)
+	_for shape_name, int_name, ext_name, meta _over _self.field_elements()
+	_loop
+		_if meta = :alfa _or meta = :id
+		_then 
+			_local value << values[shape_name]
+			detached.perform(int_name.as_symbol().with_chevron, value)
+		_endif 
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.insert_geometry(new_rec, geom)
+	_handling self_intersecting _with _proc() _endproc
+	_dynamic !current_world! << new_rec.dataset.world
+
+	new_geom << _if .transform _isnt _unset
+		    _then >> geom.transformed(.transform)
+		    _else >> geom
+		    _endif
+	_try 
+		new_rec.make_geometry(.target_geom_name, new_geom)
+	_when self_error
+		condition.raise(:error, :string,
+				"Geometry out of the world bounds")
+	_endtry 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.derive_unique_manifold_code()
+	_local code << 0
+	_for i_code _over .target_ds.manifolds()
+	_loop
+		code << code.max(i_code)
+	_endloop
+	_return code + 1
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.new_collection_name
+	_return .settings.internal_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.new_collection_external_name
+	_return .settings.external_name
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _iter _method materialized_shape_creator.field_elements()
+	_for shape_name, int_name, ext_name, meta, type _over .settings.field_properties()
+	_loop
+		_loopbody(shape_name, int_name, ext_name, meta, type)
+	_endloop 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.report(msg_id, _gather args)
+	_local str << _self.message(msg_id, _scatter args)
+	_self.changed(:report, str)
+_endmethod
+$
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.log(msg_id, _gather args)
+	_local str << _self.message(msg_id, _scatter args)
+	_self.changed(:log, str)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialized_shape_creator.message(msg_id, _gather args)
+	_return message_handler.new(_self.class_name).human_string(msg_id, _unset, _scatter args)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialized_shape_creator.changed(who, what, _gather data)
+	.dsm.changed(who, what, _scatter data)
+_endmethod
+$

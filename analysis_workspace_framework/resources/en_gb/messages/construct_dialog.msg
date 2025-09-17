@@ -7,6 +7,9 @@
 :add_collections		Collections
 :add_collections_tooltip	Open a dialog to pick collections to add to the workspace
 
+:add_shape			Shape
+:add_shape_tooltip		Open a dialog to import a shapefile to add to the workspace
+
 :add_trail			Trail
 :add_trail_tooltip		Add the trail to the workspace
 

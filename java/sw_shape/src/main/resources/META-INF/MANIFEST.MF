@@ -9,7 +9,7 @@ Import-Package: com.gesmallworld.magik.commons.interop.annotations,com.g
 Bundle-Name: RW Analytics Shape tool
 Bundle-Activator: com.gesmallworld.magik.interop.JavaToMagikActivator
 Bundle-SymbolicName: rwan.geotools.shape
-Bundle-Version: 0.0.2.SNAPSHOT
+Bundle-Version: 1.0.0
 Built-By: frnkv
 Build-Jdk: 17
 

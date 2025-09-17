@@ -48,6 +48,10 @@ _method construct_plugin.init_actions()
 				       :engine, _self.dialog,
 				       :image, {:add_collections, _self.module_name},
 				       :action_message, :|add_collections_from_dialog()|))
+	_self.add_action(sw_action.new(:add_shape,
+				       :engine, _self.dialog,
+				       :image, {:add_shape, _self.module_name},
+				       :action_message, :|add_shape_from_dialog()|))
 	_self.add_action(sw_action.new(:add_trail,
 				       :engine, _self.dialog,
 				       :image, {:add_trail, _self.module_name},

@@ -12,21 +12,55 @@ import rwan.geotools.shape.Writer;
 import rwan.geotools.shape.WriterFactory;
 
 import com.gesmallworld.magik.interop.MagikInteropUtils;
+
+import java.io.File;
+
 import com.gesmallworld.magik.commons.runtime.objects.Char16Vector;
 
 public class run {
 	public static void main(String[] args) throws Exception {	
+		testUrban();
+		/*
+		testAFile();
 		testPoint();
 		testLine();
 		testPolygon();
 		testPolygonWithHoles();
 		testMultiPolygonWithHoles();
 		testAttribute();
+		*/
+	}
+	
+	public static void testAFile() throws Exception {
+		var dir = new File("D:\\50m_cultural").listFiles();
+		for (int i = 0; i < dir.length; i++) {
+			File file = dir[i];
+			if (file.getName().matches(".*[.]shp")) {
+				System.out.println(file.getPath());
+				var reader =new ReaderFactory().create(file.getPath());
+				try {
+					var result = reader.get();
+					
+				} finally {
+					reader.dispose();
+				}
+			};
+		}
+	}
+	
+	public static void testUrban() throws Exception {
+		var fileName = "D:\\50m_cultural\\ne_50m_urban_areas.shp";
+		var reader =new ReaderFactory().create(fileName);
+		try {
+			var result = reader.get();
+			
+		} finally {
+			reader.dispose();
+		}
 	}
 	
 	public static void testPoint() throws Exception {
 		System.out.println("--testPoint()--");
-		var factory = new WriterFactory();
 		Object[] []atts = {{s("name"), 20, s("String")}};
 		var writer = Writer._new(null, s("the_geom"), s("Point"), atts);
 		
@@ -46,7 +80,6 @@ public class run {
 	
 	public static void testLine() throws Exception {
 		System.out.println("--testLine()--");
-		var factory = new WriterFactory();
 		Object[][] atts = {{s("name"), 20, s("String")}};
 		var writer = Writer._new(null, s("the_geom"), s("LineString"), atts);
 		
@@ -180,6 +213,7 @@ public class run {
 	
 	private static Char16Vector s(String str) {
 		return new Char16Vector(str);
+		
 	}
 	
 	private static boolean coordsCompare(Object[] javaCoords, Object[] magikCoords) {

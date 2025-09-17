@@ -58,7 +58,8 @@ _pragma(classify_level=basic, topic={analysis})
 _method materialized_collection_creator.create(col, settings)
 	##
 	## Create a new collection to store the analysis collection col.
-	## 
+	##
+	_dynamic !output! << internal_text_output_stream.new() 
 	.target_ds << .dsm.actual_dataset
 	.target_ds.switch(:write)
 	_local ok? << _false 

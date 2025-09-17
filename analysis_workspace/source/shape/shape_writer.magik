@@ -21,6 +21,37 @@ $
 $
 
 _pragma(classify_level=basic, topic={analysis})
+##
+## Write to a shape file. Allowed geometries are:
+## "Point"       : provide a pseudo_point
+## "LineString"  : provide a pseudo_chain
+## "Polygon"     : provide a pseudo_area, only the first polygon will be used.
+## "MultiPolygon": Provide a pseudo_area, all polygons are used
+##
+## Allowed attributes are:
+## "String" : provide a string
+## "Integer": provide an integer 32 or 64 bit
+## "Double" : provide a floating value
+## "Boolean": provide a boolean (_true|_false)
+## "Date"   : provide a date (not a date_time)
+##
+## No CRS is set.
+## 
+##
+## Usage:
+## _local atts << {{"aString",   20,"String"},
+## 		   {"anInteger", 1, "Integer"},
+## 		   {"aDouble",   1, "Double"},
+## 	           {"aBoolean",  1, "Boolean"},
+## 		   {"aDate",     1, "Date"}}
+## _local writer << shape_writer.new("the_geom", "Point", atts)
+## _local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
+## _local data << {"Frank", 20, 1.13, _false, date.now()}
+## writer.write(geom, data)
+## _local file_name << _self.temp_file("attr.shp")
+## writer.save(file_name)
+##
+
 def_slotted_exemplar(:shape_writer,
 	{
 		{:attribute_defs,  _unset},

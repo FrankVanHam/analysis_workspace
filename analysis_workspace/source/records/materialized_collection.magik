@@ -30,17 +30,16 @@ def_slotted_exemplar(:materialized_collection,
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method materialized_collection.new(dsm, base_col, settings)
-	 _return _clone.init(dsm, base_col, settings)
+_method materialized_collection.new(dsm, base_col, mat_col_name)
+	 _return _clone.init(dsm, base_col, mat_col_name)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method materialized_collection.init(dsm, base_col, settings)
-	_local new_col << dsm.materialize_collection(base_col, settings)
-	dsm.increase_ref_count(new_col.name)
+_private _method materialized_collection.init(dsm, base_col, mat_col_name)
+	dsm.increase_ref_count(mat_col_name)
 	
-	_return _super.init(dsm, base_col, new_col.name)
+	_return _super.init(dsm, base_col, mat_col_name)
 _endmethod
 $
 
@@ -89,7 +88,10 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method materialized_collection.description(translator)
-	_local base_name << translator.name_for_collection(_self.base_collection)
+	_local base_name << _if _self.base_collection _isnt _unset
+			    _then >> translator.name_for_collection(_self.base_collection)
+			    _else >> _self.actual_collection.external_name
+			    _endif 
 	
 	_return _self.message(:description, base_name)
 _endmethod

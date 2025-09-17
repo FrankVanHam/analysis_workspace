@@ -23,4 +23,8 @@ base_sw_view_dialog
 sw_view_join_dialog
 sw_view_eq_dialog
 
+shape_export_dialog
+shape_import_dialog
+
 sw/
+
