@@ -267,6 +267,12 @@ _endmethod
 $
 
 _pragma(classify_level=advanced, topic={analysis})
+_method runner_dialog.dataset_manager
+	_return .owner.dataset_manager
+_endmethod
+$
+
+_pragma(classify_level=advanced, topic={analysis})
 _method runner_dialog.note_change(who, what)
 	_self.manage_actions()
 _endmethod

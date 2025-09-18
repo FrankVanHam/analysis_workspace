@@ -67,12 +67,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method materialized_shape_creator.create(file_name, settings, _optional transform)
+_method materialized_shape_creator.create(file_name, settings, _optional a_transform)
 	##
 	## Create a new collection to store the shape file file_name.
 	##
 	_dynamic !output! << internal_text_output_stream.new()
-	.transform << transform.default(transform.identity_transform)
+	.transform << a_transform.default(transform.identity_transform)
 	.target_ds << .dsm.actual_dataset
 	.target_ds.switch(:write)
 	_local ok? << _false 

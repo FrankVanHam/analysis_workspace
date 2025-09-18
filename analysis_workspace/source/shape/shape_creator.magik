@@ -1,0 +1,245 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:shape_creator)
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+##
+## Specialist that will create a shape file based on a
+## analysis_colection. The main method is create().
+##
+def_slotted_exemplar(:shape_creator,
+	{
+		{:writer,         _unset},
+		{:int_fields,     _unset},
+		{:attribute_defs, _unset}
+	})
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method shape_creator.new()
+	_return _clone.init()
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_creator.init()
+	_return _self 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_creator.create(collection, file_name, settings, _optional a_transform)
+	##
+	## Create a new collection to store the shape file file_name.
+	##
+	#_dynamic !output! << internal_text_output_stream.new()
+	_local sw_collection << collection.expose()
+	
+	_local (geom_shape_name, geom_int_name, dum1, dum2, geom_type) << settings.geom_def()
+	_self.setup_attribute_defs(sw_collection, settings)
+	
+	.writer << shape_writer.new(geom_shape_name, geom_type, .attribute_defs)
+	_if collection.is_spatial? _or collection.is_area?
+	_then
+		_self.report(:spatial_export)
+		_self.write_spatial(collection, a_transform)
+	_else 
+		_self.write_record(collection, a_transform, geom_int_name)
+	_endif 
+	.writer.save(file_name)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator.setup_attribute_defs(sw_collection, settings)
+	.int_fields << rope.new()
+	.attribute_defs << rope.new()
+	_for shape_name, int_name, ext_name, meta, type _over settings.alfa_defs()
+	_loop
+		_local length << _self.get_length(sw_collection, int_name)
+		.attribute_defs.add({shape_name, length, type})
+		.int_fields.add(int_name)
+	_endloop
+	.attribute_defs << simple_vector.new_from(.attribute_defs)
+	.int_fields << simple_vector.new_from(.int_fields)
+_endmethod
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator.write_record(collection, a_transform, geom_int_name)
+	
+	_self.report(:start_filling_the_collection)
+	_local c << c_error << 0
+	_for i_rec _over collection.fast_elements()
+	_loop
+		_local identifier << _self.identifier(i_rec)
+		_local geom << i_rec.geometry(geom_int_name)
+		_if a_transform _isnt _unset
+		_then
+			geom << geom.transformed(a_transform)
+		_endif
+		_if geom _isnt _unset
+		_then
+			_local attributes << _self.attribute_vec(i_rec)
+			_local ok? << _self.safe_write(identifier, geom, attributes)
+			c +<< 1
+			_if _not ok? _then c_error +<< 1 _endif 
+		_else
+			_self.report(:no_geom, identifier)
+			c +<< 1
+		_endif
+		
+	_endloop
+	_self.log(:end_filling_the_collection, c, c_error)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator.attribute_vec(rec)
+	_local attributes << simple_vector.new(.attribute_defs.size)
+	_for i _over range(1, attributes.size)
+	_loop
+		_local length << .attribute_defs[i][2]
+		_local type << .attribute_defs[i][3]
+		attributes[i] << _self.convert_attribute(rec, .int_fields[i], length, type)
+	_endloop 
+	_return  attributes
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator.write_spatial(collection, a_transform)
+	_self.report(:start_filling_the_collection)
+	_local c << c_error << 0
+	_for i_geom _over collection.fast_elements()
+	_loop
+		_local identifier << _self.identifier(i_geom)
+		_local geom << _if a_transform _isnt _unset
+			       _then
+				       >> i_geom.transformed(a_transform)
+			       _else
+				       >> i_geom
+			       _endif
+		_local ok? << _self.safe_write(identifier, geom, {})
+		c +<< 1
+		_if _not ok? _then c_error +<< 1 _endif 
+	_endloop
+	_self.log(:end_filling_the_collection, c, c_error)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator.safe_write(identifier, geom, attrs)
+	_local ok? << _false 
+	_try _with c
+		_handling information, warning _with _proc() _endproc 
+		.writer.write(geom, attrs)		
+		ok? << _true 
+	_when error
+		_self.log(_self.message(:error_inserting, identifier, c.report_contents_string))
+	_endtry
+	_return ok?
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator.convert_attribute(rec, name, length, type)
+	_local value << rec.perform(name)
+	_if value _is _unset _then _return _unset _endif
+	_local fd << rec.field(name)
+	_if fd.has_stored_unit?
+	_then
+		value << value.value
+	_endif 
+	_if type = "String"
+	_then
+		value << value.write_string
+		_if value.size > length
+		_then
+			_return value.slice(1, length)
+		_else
+			_return value 
+		_endif 
+	_elif type = "Integer"
+	_then
+		_return integer.check_type(value.as_number())
+	_elif type = "Double"
+	_then
+		_return float.check_type(value.as_number())
+	_elif type = "Boolean"
+	_then
+		_return value = _true 
+	_elif type = "Date"
+	_then
+		_return value
+	_else
+		_return value
+	_endif 	 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator.get_length(sw_collection, name)
+	_local field << sw_collection.field(name)
+	_if field.is_physical? _orif field.is_derived?
+	_then 
+		_return field.type.size
+	_else
+		_return 0
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_creator.identifier(rec)
+	_if rec.is_a_datastore_object?
+	_then 
+		_return write_string(rec.external_name,
+				     "(",
+				     rec.key_value().join_as_strings(","),
+				     ")")
+	_else
+		_return write_string(rec.class_name)
+	_endif 
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_creator.report(msg_id, _gather args)
+	_local str << _self.message(msg_id, _scatter args)
+	_self.changed(:report, str)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_creator.log(msg_id, _gather args)
+	_local str << _self.message(msg_id, _scatter args)
+	_self.changed(:log, str)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_creator.message(msg_id, _gather args)
+	_return message_handler.new(_self.class_name).human_string(msg_id, _unset, _scatter args)
+_endmethod
+$

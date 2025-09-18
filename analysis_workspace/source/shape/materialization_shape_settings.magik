@@ -36,8 +36,8 @@ def_slotted_exemplar(:materialization_shape_settings,
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method materialization_shape_settings.new(int_name, ext_name)
-	_return _clone.init(int_name, ext_name)
+_method materialization_shape_settings.new(_optional int_name, ext_name)
+	_return _clone.init(int_name.default(:int_name), ext_name.default(:ext_name))
 _endmethod
 $
 
@@ -74,6 +74,43 @@ _method materialization_shape_settings.do_add_field(shape_name, int_name, ext_na
 	.fields.add({shape_name, symbol.check_type(int_name), ext_name, meta, type})
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.geom_def()
+	_return _self.meta_def(:geom)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method materialization_shape_settings.id_def()
+	_return _self.meta_def(:id)
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method materialization_shape_settings.meta_def(meta)
+	_for i_vec _over .fields.fast_elements()
+	_loop
+		_if i_vec[4] = meta
+		_then
+			_return _scatter i_vec
+		_endif 
+	_endloop
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_iter _method materialization_shape_settings.alfa_defs()
+	_for i_vec _over .fields.fast_elements()
+	_loop
+		_if i_vec[4] = :alfa
+		_then
+			_loopbody(_scatter i_vec)
+		_endif 
+	_endloop 
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _iter _method materialization_shape_settings.field_properties()

@@ -106,3 +106,9 @@ _method runner_plugin.goto(bounds)
 	_return _self.app_plugin.goto(bounds)
 _endmethod
 $
+
+_pragma(classify_level=advanced, topic={analysis})
+_method runner_plugin.dataset_manager
+	_return .workspace.dsm
+_endmethod
+$

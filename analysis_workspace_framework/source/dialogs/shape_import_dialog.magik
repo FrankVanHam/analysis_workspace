@@ -40,10 +40,6 @@ def_slotted_exemplar(:shape_import_dialog,
 		# definitions of the shape attributes with the geometry
 		# definition added.
 		{:shape_defs,      _unset},
-		{:source_fields,   _unset},
-		{:source_table,    _unset},
-		{:linked_table,    _unset},
-		{:linked_fields,   _unset},
 		# definitions chosen by the user to be included in the new
 		# materialized table. The list is increased-decreased as the
 		# users clicks on the checkboxes.
@@ -91,7 +87,6 @@ _method shape_import_dialog.activate_in(container)
 	container.modality << :primary_modal
 	container.min_width << 900
 	.shape_defs << rope.new()
-	.linked_fields << rope.new()
 	.result_defs << rope.new()
 	.items << property_list.new()
 	_local rc << rowcol.new(container,_unset, 1, _unset, :style, :top_level, :resize?, _true,
@@ -537,66 +532,6 @@ _private _method shape_import_dialog.field_specs()
 	_return field_specs
 _endmethod
 $
-
-_pragma(classify_level=restricted, topic={analysis})
-_method shape_import_dialog.cancel()
-	_self.close()
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method shape_import_dialog.unlink()
-	_local changed? << _false 
-	_for i_fd _over .linked_fields.fast_elements()
-	_loop
-		_local (used?, v)  << _self.uses?(i_fd)
-		_if used?
-		_then
-			changed? << _true 
-			.result_defs.remove(v)
-		_endif 
-	_endloop
-	_if changed?
-	_then 
-		_self.changed(:result, :refresh)
-	_endif 
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method shape_import_dialog.move_up()
-	_local fds << .items[:result_tree].selection.keys
-	_for i_fd _over fds.fast_elements()
-	_loop
-		_local (uses?, v) << _self.uses?(i_fd)
-		_local idx << .result_defs.index_of(v)
-		_if idx <> 1
-		_then
-			.result_defs.remove(v)
-			.result_defs.add_nth(v, idx-1)
-		_endif
-	_endloop
-	_self.changed(:result, :refresh)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method shape_import_dialog.move_down()
-	_local fds << .items[:result_tree].selection.keys
-	_for i_fd _over fds.fast_elements()
-	_loop
-		_local (uses?, v) << _self.uses?(i_fd)
-		_local idx << .result_defs.index_of(v)
-		_if idx <> .result_defs.size
-		_then
-			.result_defs.remove(v)
-			.result_defs.add_nth(v, idx+1)
-		_endif
-	_endloop
-	_self.changed(:result, :refresh)
-_endmethod
-$
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method shape_import_dialog.get_shape_tree()

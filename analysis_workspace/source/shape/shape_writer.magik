@@ -207,7 +207,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _private _method shape_writer.validate_attribute_defs(defs)
 	##
-	_if defs.size = 0 _then condition.raise(:error, :string, "Can not provide an empty attribute definition") _endif 
+	_if defs.size = 0 _then _return _endif 
 	_self.validate_name_lengths(defs)
 	_self.validate_length_property_set_for_strings(defs)
 	_self.validate_allowed_attribute_types(defs)

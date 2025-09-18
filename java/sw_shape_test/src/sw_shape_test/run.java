@@ -20,7 +20,6 @@ import com.gesmallworld.magik.commons.runtime.objects.Char16Vector;
 public class run {
 	public static void main(String[] args) throws Exception {	
 		testUrban();
-		/*
 		testAFile();
 		testPoint();
 		testLine();
@@ -28,7 +27,6 @@ public class run {
 		testPolygonWithHoles();
 		testMultiPolygonWithHoles();
 		testAttribute();
-		*/
 	}
 	
 	public static void testAFile() throws Exception {

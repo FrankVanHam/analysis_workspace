@@ -1,0 +1,147 @@
+#
+#  This file is part of Analysis Workshop.
+#
+#  Analysis Workshop is free software: you can redistribute it and/or modify
+#  it under the terms of the Lesser GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Analysis Workshop is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public License
+#  along with Analysis Workshop.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+_package rwan
+$
+
+#remex(:shape_creator_tc)
+
+_pragma(classify_level=basic, topic={analysis})
+##
+## Test using geometry filters.
+def_slotted_exemplar(:shape_creator_tc,
+	{},
+	:base_analysis_test_case)
+$
+
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_creator_tc.test_some_roads()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local roads_col << _self.haig_and_chesterton_set(dsm)
+	_local settings << materialization_shape_settings.new()
+	settings.add_geom_field("the_geom", :centre_line, "", "LineString")
+	settings.add_field("newName", :name, "Name", "String")
+
+	_local creator << shape_creator.new()
+	
+	_local file_name << _self.temp_file("some_roads.shp")
+	creator.create(roads_col, file_name, settings, transform.scale(0.001))
+	
+	_local (ids, geoms, attrss) << _self.read_file(file_name)
+	_self.assert_equals(ids.size, 2, "Should be 2 in there #1")
+	
+	_local names << equality_set.new_from(attrss).map(_proc(x) >> x[1] _endproc)
+	_self.assert_true(names.includes?("Haig Road"), "Haig street should be in there")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_creator_tc.test_data_conversion()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local sw_col << _self.road_works_collection
+	_local rcol << rwan:sw_collection.new(dsm, sw_col)
+	_local pred << predicate.eq(:code_name, "rw1")
+	_local pred_col << rcol.filter_by_predicate(pred)
+
+	_local rw << pred_col.an_element()
+	_self.assert_true(pred_col.size = 1, "Size should be one")
+	
+	_local settings << materialization_shape_settings.new()
+	settings.add_geom_field("the_geom", :location, "", "Point")
+	settings.add_field("DATEB", :date_begun, "", "Date")
+	settings.add_field("DURAT", :duration, "", "Integer")
+	
+	_local creator << shape_creator.new()
+	
+	_local file_name << _self.temp_file("road_work.shp")
+	creator.create(pred_col, file_name, settings, transform.scale(0.001))
+	
+	_local (ids, geoms, attrss) << _self.read_file(file_name)
+	_self.assert_equals(ids.size, 1, "Should be 1 in there #1")
+	_self.assert_equals(attrss[1][1], rw.date_begun, "Dates should match #1")
+	_self.assert_equals(attrss[1][2], rw.duration.value, "Duration should match #1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_creator_tc.test_geom_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local geom_col << _self.geometry_road_collection(dsm)
+	_local settings << materialization_shape_settings.new()
+	settings.add_geom_field("the_geom", "", "", "LineString")
+	
+	_local creator << shape_creator.new()
+	
+	_local file_name << _self.temp_file("some_geoms.shp")
+	creator.create(geom_col, file_name, settings, transform.scale(0.001))
+	
+	_local (ids, geoms, attrss) << _self.read_file(file_name)
+	_self.assert_equals(ids.size, geom_col.size, "Should be same size #1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_creator_tc.test_area_col()
+	_local dsm << rwan:analysis_dataset_manager.new(:test)
+	_local geom_col << _self.buffer_collection(dsm)
+	_local settings << materialization_shape_settings.new()
+	settings.add_geom_field("the_geom", "", "", "MultiPolygon")
+	
+	_local creator << shape_creator.new()
+	
+	_local file_name << _self.temp_file("some_areas.shp")
+	creator.create(geom_col, file_name, settings, transform.scale(0.001))
+	
+	_local (ids, geoms, attrss) << _self.read_file(file_name)
+	_self.assert_equals(ids.size, geom_col.size, "Should be same size #1")
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator_tc.read_file(file_name)
+	_local ids << rope.new()
+	_local geoms << rope.new()
+	_local attrss << rope.new()
+	_local reader << shape_reader.new(file_name)
+	_protect
+		_loop 
+			(id, geom, attrs) << reader.get()
+			_if id _is _unset _then _leave _endif
+			ids.add(id)
+			geoms.add(geom)
+			attrss.add(attrs)
+		_endloop 
+	_protection
+		reader.dispose()
+	_endprotect 
+	_return ids, geoms, attrss
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method shape_creator_tc.note_change(_gather args)
+	show(_scatter args)
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method shape_creator_tc.temp_file(file_name)
+	##
+	_return system.temp_file_name(file_name)
+_endmethod
+$
