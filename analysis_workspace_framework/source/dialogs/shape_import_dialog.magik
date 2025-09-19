@@ -433,7 +433,6 @@ _private _method shape_import_dialog.add_fields(settings)
 		_local geom? << i_prop[:geom?]
 		_local length << i_prop[:length]
 		_local type << _self.type_map[i_prop[:type]]
-		show(type, i_prop[:type])
 		_if type _is _unset _then condition.raise(:error, :string, "Unknown type") _endif
 		_if geom?
 		_then

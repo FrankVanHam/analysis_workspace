@@ -7,19 +7,15 @@ public class WriterFactory {
 	private static final HashSet<String> ALLOWED_GEOM_TYPES = new HashSet<>(Arrays.asList("Point", "LineString", "Polygon", "MultiPolygon"));
 	private static final HashSet<String> ALLOWED_ATTR_TYPES = new HashSet<>(Arrays.asList("String", "Integer", "Double", "Boolean", "Date", "Point", "LineString", "Polygon", "MultiPolygon"));
 
-	public Writer create(String geomName, String geomType, AttributeDef[] attributeDefs)
+	public Writer create(String geomType, AttributeDef[] attributeDefs)
 			throws Exception {
 		this.validateAttributeDefs(attributeDefs);
-		this.validateGeom(geomName, geomType);
-		return new Writer(geomName, geomType, attributeDefs);
+		this.validateGeom(geomType);
+		return new Writer(geomType, attributeDefs);
 	}
 	
-	private void validateGeom(String geomName, String geomType) throws Exception {
+	private void validateGeom(String geomType) throws Exception {
 		if (!ALLOWED_GEOM_TYPES.contains(geomType)) throw new Exception(String.format("Unknow geomentry type %s", geomType));
-		
-		var nameLen = geomName.length();
-		var ok = (nameLen > 0 && nameLen <= 10);
-		if (!ok) throw new Exception(String.format("Geometry name '%s' length should be between 0 and 10", geomName));
 	}
 	
 	private void validateAttributeDefs(AttributeDef[] attributeDefs) throws Exception {

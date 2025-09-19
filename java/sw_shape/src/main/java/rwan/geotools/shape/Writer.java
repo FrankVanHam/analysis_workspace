@@ -39,13 +39,16 @@ public class Writer {
 	private final SimpleFeatureBuilder _featureBuilder;
 	private List<SimpleFeature> _features;
 	private final MagikShapeConverter _shapeConverter;
+	
+	// Default geometry name for shape file
+	private final String GEOM_NAME = "the_geom"; 
 
 	public Writer() {
 		_attributeDefs = null; _builder = null; _featureBuilder = null; _geometryFactory = null; _shapeConverter = null;
 	}
 
-	public Writer(String geomName, String geomType, AttributeDef[] attributeDefs){
-		_attributeDefs = this.appendGeomToAttribute(geomName, geomType, attributeDefs);
+	public Writer(String geomType, AttributeDef[] attributeDefs){
+		_attributeDefs = this.appendGeomToAttribute(GEOM_NAME, geomType, attributeDefs);
 		_builder = this.createBuilder();
 		_featureBuilder = new SimpleFeatureBuilder(_builder);
 		_geometryFactory = JTSFactoryFinder.getGeometryFactory();
@@ -116,13 +119,12 @@ public class Writer {
 
 	// This method returns a new instance of the exemplar
 	@MagikMethod("new()")
-	public static Writer _new(Object self, Object oGeomName, Object oGeomType, Object[] oAttributeDefs)
+	public static Writer _new(Object self, Object oGeomType, Object[] oAttributeDefs)
 			throws Exception {
 		var factory = new WriterFactory();
-		var geomName = MagikJavaConverter.fromMagikString(oGeomName);
 		var geomType = MagikJavaConverter.fromMagikString(oGeomType);
 		var attributeDefs = fromMagikAttributeDefs(oAttributeDefs);
-		return factory.create(geomName, geomType, attributeDefs);
+		return factory.create(geomType, attributeDefs);
 	}
 	
 

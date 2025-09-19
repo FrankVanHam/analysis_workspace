@@ -90,13 +90,22 @@ _method base_collection.origin_is_sw_collection?
 	_then
 		_return _self.base_collection.origin_is_sw_collection?
 	_else
-		_return _false
+		_return _self.is_sw_collection?
 	_endif 
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.is_sw_collection?
+	## Is this a direct collection on a smallworld collection?
+	_return _false 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method base_collection.is_materialized?
+	## is the collection stored in the analysis dataset.
+	## this is important when highlighting the collection
 	_return _false 
 _endmethod
 $

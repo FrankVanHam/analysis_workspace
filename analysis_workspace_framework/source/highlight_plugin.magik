@@ -137,7 +137,6 @@ _pragma(classify_level=advanced, topic={analysis})
 _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds)
 	_dynamic !rwan_limit_bounds! << window_bounds
 	_local gs << col.convert_to_geometry()
-
 	_if _not gs.is_collection?
 	_then
 		gs << geometry_set.new_with(gs)
@@ -151,9 +150,9 @@ _private _method highlight_plugin.highlight_set(col, given_colour, window_bounds
 						       :wash_percent, 50 )
 
 	_local sts << transient_style_system.new(clr)
-
-	sts.deferred? << col.origin_is_sw_collection?
-
+	
+	sts.deferred? << col.origin_is_sw_collection? _and _not col.is_materialized?
+	
 	_local pstyle << composite_point_style.new(
 				 {pseudo_chain.new(
 					  circle.new(coordinate.new(0,0),5))},

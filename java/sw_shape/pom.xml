@@ -10,6 +10,7 @@
 	<packaging>bundle</packaging>
 	<name>RW Analytics Shape tool</name>
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<magik.interop-systemPath>
 			D:\SW530\core\libs\com.gesmallworld.magik.interop-5.3.0.0-490.jar</magik.interop-systemPath>
 		<magik.commons-systemPath>

@@ -10,6 +10,7 @@
 	<packaging>bundle</packaging>
 	<name>RW Analytics Shape core</name>
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<geotools.version>33.2</geotools.version>
 		<maven.deploy.skip>false</maven.deploy.skip>
 	</properties>

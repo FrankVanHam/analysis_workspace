@@ -72,7 +72,7 @@ _method materialized_shape_creator.create(file_name, settings, _optional a_trans
 	## Create a new collection to store the shape file file_name.
 	##
 	_dynamic !output! << internal_text_output_stream.new()
-	.transform << a_transform.default(transform.identity_transform)
+	.transform << a_transform
 	.target_ds << .dsm.actual_dataset
 	.target_ds.switch(:write)
 	_local ok? << _false 
@@ -426,7 +426,7 @@ _private _method materialized_shape_creator.insert_geometry(new_rec, geom)
 	_dynamic !current_world! << new_rec.dataset.world
 
 	new_geom << _if .transform _isnt _unset
-		    _then >> geom.transformed(.transform)
+		    _then >> geom.transformed(.transform, _true)
 		    _else >> geom
 		    _endif
 	_try 

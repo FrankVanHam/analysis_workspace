@@ -44,7 +44,7 @@ _pragma(classify_level=basic, topic={analysis})
 ## 		   {"aDouble",   1, "Double"},
 ## 	           {"aBoolean",  1, "Boolean"},
 ## 		   {"aDate",     1, "Date"}}
-## _local writer << shape_writer.new("the_geom", "Point", atts)
+## _local writer << shape_writer.new("Point", atts)
 ## _local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
 ## _local data << {"Frank", 20, 1.13, _false, date.now()}
 ## writer.write(geom, data)
@@ -69,35 +69,29 @@ shape_writer.define_shared_constant(:date_format, sw:date_time_format.new(:date_
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method shape_writer.new(geom_name, geom_type, attribute_defs)
+_method shape_writer.new(geom_type, attribute_defs)
 	##
-	_return _clone.init(geom_name, geom_type, attribute_defs)
+	_return _clone.init(geom_type, attribute_defs)
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method shape_writer.init(geom_name, geom_type, attribute_defs)
+_private _method shape_writer.init(geom_type, attribute_defs)
 	##
-	_self.validate_geom(geom_name, geom_type)
+	_self.validate_geom(geom_type)
 	_self.validate_attribute_defs(attribute_defs)
 	.geom_type << geom_type
 	.attribute_defs << attribute_defs
-	.gt_shape_writer << geotools_shape_writer.new(geom_name, geom_type, attribute_defs)
+	.gt_shape_writer << geotools_shape_writer.new(geom_type, attribute_defs)
 	>> _self 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method shape_writer.validate_geom(geom_name, geom_type)
+_private _method shape_writer.validate_geom(geom_type)
 	_if _self.allowed_geom_types.includes?(geom_type).not
 	_then
 		condition.raise(:error, :string, write_string("Unknow geomentry type ", geom_type))
-	_endif 
-	_local name_len << geom_name.size
-	_local ok << (name_len > 0) _andif (name_len <= 10)
-	_if (_not ok)
-	_then
-		condition.raise(:error, :string, write_string("Geometry name ", geom_name, " length should be between 0 and 10"))
 	_endif 
 _endmethod
 $

@@ -31,7 +31,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method shape_tc.test_point()
 	_local atts << {{"name",     20,     "String"}}
-	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local writer << shape_writer.new("Point", atts)
 	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
 	_local data << {"Frank"}
 	_local id << writer.write(geom, data)
@@ -46,7 +46,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method shape_tc.test_line()
 	_local atts << {{"name",     20,     "String"}}
-	_local writer << shape_writer.new("the_geom", "LineString", atts)
+	_local writer << shape_writer.new("LineString", atts)
 	_local coords << _self.coords({0.0 ,0.0, 10.0, 0.0})
 	_local geom << pseudo_chain.new(coords)
 	_local data << {"Frank"}
@@ -62,7 +62,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method shape_tc.test_polygon()
 	_local atts << {{"name", 20, "String"}}
-	_local writer << shape_writer.new("the_geom", "Polygon", atts)
+	_local writer << shape_writer.new("Polygon", atts)
 	_local coords << _self.coords({0, 0, 0, 10, 10, 10, 10, 0, 0, 0})
 	_local geom << pseudo_area.new(coords)
 	_local data << {"Frank"}
@@ -78,7 +78,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method shape_tc.test_polygon_with_holes()
 	_local atts << {{"name", 20, "String"}}
-	_local writer << shape_writer.new("the_geom", "Polygon", atts)
+	_local writer << shape_writer.new("Polygon", atts)
 	_local outer_coords << _self.coords({0,0,0,100,100,100,100,0,0,0})
 	_local hole_coords << {_self.coords({10,10,20,10,20,20,10,20,10,10}),
 			       _self.coords({50,50,60,50,60,60,50,60,50,50})}
@@ -100,7 +100,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method shape_tc.test_multi_polygon_with_holes()
 	_local atts << {{"name", 20, "String"}}
-	_local writer << shape_writer.new("the_geom", "MultiPolygon", atts)
+	_local writer << shape_writer.new("MultiPolygon", atts)
 	_local outer_coords << _self.coords({0,0,0,100,100,100,100,0,0,0})
 	_local hole_coords << _self.coords({10,10,20,10,20,20,10,20,10,10})
 	_local geom1 << pseudo_polygon.new(outer_coords)
@@ -125,7 +125,7 @@ _method shape_tc.test_attribute()
 			{"aDouble",   1, "Double"},
 			{"aBoolean",  1, "Boolean"},
 			{"aDate",     1, "Date"}}
-	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local writer << shape_writer.new("Point", atts)
 	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
 	_local data << {"Frank", 20, 1.13, _false, date.now()}
 	writer.write(geom, data)

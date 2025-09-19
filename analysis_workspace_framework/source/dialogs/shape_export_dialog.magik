@@ -68,7 +68,7 @@ shape_export_dialog.define_shared_constant(
 	:geom_type_map,
 	equality_hash_table.new_with(
 		:simple_point, "Point",
-		:point,        "MultiPoint",  
+		:point,        "Point",  
 		:simple_chain, "LineString", 
 		:chain,        "LineString", 
 		:simple_area,  "Polygon", 
@@ -159,8 +159,8 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.build_geometry(container)
-	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested,
-				:col_alignment, :fill, :col_resize_values, {0,100})
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill, :col_resize_values, {0,100, 0, 100})
 	label_item.new(rc, _self.message(:source_collection))
 	.items[:col] << text_item.new(rc, _unset, :value, .holder.name,
 				      :display_length, 20, :editable?, _false, :col_alignment, :fill)
@@ -198,37 +198,15 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.build_result(container)
-	_local rc << rowcol.new(container, _unset, 2, _unset, :style, :nested,
-				:col_alignment, :fill, :col_resize_values, {0, 100})
-	label_item.new(rc, _self.message(:file_name))
-	_self.build_file_result(rc)
-	label_item.new(rc, _self.message(:geometry))
-	_self.build_result_geometry(rc)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method shape_export_dialog.build_file_result(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
-				:col_alignment, :fill, :col_resize_values, {100, 0})
+				:col_alignment, :fill, :col_resize_values, {0,100,0,0})
+	label_item.new(rc, _self.message(:file_name))
 	.items[:file_name] << text_item.new(rc, _unset,
 					    :editable?, _false,
 					    :col_alignment, :fill)
 	.items[:file_open] << image_button_item.new(rc, _self.file_open_image, _self, :|open_file()|,
 						    :insensitive_image, _self.file_open_grey_image,
 						    :col_alignment, :left)
-_endmethod
-$
-
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method shape_export_dialog.build_result_geometry(container)
-	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
-				:col_alignment, :fill, :col_resize_values, {100,0})
-	.items[:target_geometry] << text_item.new(rc, _unset,
-						  :max_length, _self.max_length,
-						  :display_length, _self.max_length,
-						  :col_alignment, :fill)
 	.items[:scale] << text_item.new(rc, _self.message(:scale),
 					       :model, _self,
 					       :value, .scale.write_string,
@@ -437,7 +415,6 @@ _method shape_export_dialog.geometry_changed(fd)
 	_local name << fd.external_name.copy().convert_to_non_escape_string()
 	name << _if name.size > _self.max_length _then >> name.slice(1,_self.max_length) _else >> name _endif
 	.geom_name << name
-	.items[:target_geometry].value << .geom_name
 _endmethod
 $
 

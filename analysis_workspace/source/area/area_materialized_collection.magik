@@ -62,7 +62,13 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method area_materialized_collection.origin_is_sw_collection?
-	_return _false 
+	_return _false
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method area_materialized_collection.is_materialized?
+	_return _true
 _endmethod
 $
 

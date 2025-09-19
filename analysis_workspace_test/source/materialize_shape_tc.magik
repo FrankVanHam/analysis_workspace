@@ -93,7 +93,7 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method materialize_shape_tc.create_point_shape()
 	_local atts << {{"name",     20,     "String"}}
-	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local writer << shape_writer.new("Point", atts)
 	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
 	_local data << {"Frank"}
 	_local id << writer.write(geom, data)
@@ -110,7 +110,7 @@ _method materialize_shape_tc.create_attribute_shape()
 			{"aDouble",   1, "Double"},
 			{"aBoolean",  1, "Boolean"},
 			{"aDate",     1, "Date"}}
-	_local writer << shape_writer.new("the_geom", "Point", atts)
+	_local writer << shape_writer.new("Point", atts)
 	_local geom << pseudo_point.new(coordinate.new(0.0, 0.0))
 	_local data << {"Frank", 20, 1.13, _false, date.now()}
 	writer.write(geom, data)

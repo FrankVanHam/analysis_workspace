@@ -46,6 +46,12 @@ _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
+_method spatial_materialized_collection.is_materialized?
+	_return _true 
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
 _private _method spatial_materialized_collection.init_copy()
 	.dsm.increase_ref_count(.id)
 	_return _self

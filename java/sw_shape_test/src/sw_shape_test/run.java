@@ -60,7 +60,7 @@ public class run {
 	public static void testPoint() throws Exception {
 		System.out.println("--testPoint()--");
 		Object[] []atts = {{s("name"), 20, s("String")}};
-		var writer = Writer._new(null, s("the_geom"), s("Point"), atts);
+		var writer = Writer._new(null, s("Point"), atts);
 		
 		var geom = new ShPoint(new ShCoordinate(0d,0d));
 		Object[] data = {s("Frank")};
@@ -79,7 +79,7 @@ public class run {
 	public static void testLine() throws Exception {
 		System.out.println("--testLine()--");
 		Object[][] atts = {{s("name"), 20, s("String")}};
-		var writer = Writer._new(null, s("the_geom"), s("LineString"), atts);
+		var writer = Writer._new(null, s("LineString"), atts);
 		
 		var coords = new ShCoordinate[] {new ShCoordinate(0d ,0d), new ShCoordinate(10d, 0d)};
 		var geom = new ShLineString(coords);
@@ -101,7 +101,7 @@ public class run {
 		System.out.println("--testPolygon()--");
 		var factory = new WriterFactory();
 		Object[][] atts = {{s("name"), 20, s("String")}};
-		var writer = Writer._new(null, s("the_geom"), s("Polygon"), atts);
+		var writer = Writer._new(null, s("Polygon"), atts);
 		
 		var outer = ShCoordinate.listOfCoords(new Double[]{0d, 0d, 0d, 10d, 10d, 10d, 10d, 0d, 0d, 0d});
 		var holes = new ShCoordinate[0][];
@@ -123,7 +123,7 @@ public class run {
 		System.out.println("--testPolygonWithHoles()--");
 		var factory = new WriterFactory();
 		Object[][] atts = {{s("name"), 20, s("String")}};
-		var writer = Writer._new(null, s("the_geom"), s("Polygon"), atts);
+		var writer = Writer._new(null, s("Polygon"), atts);
 		
 		var outer = ShCoordinate.listOfCoords(new Double[]{0d,0d,0d,100d,100d,100d,100d,0d,0d,0d});
 		var holes = new ShCoordinate[][] {
@@ -148,7 +148,7 @@ public class run {
 		System.out.println("--testMultiPolygonWithHoles()--");
 		var factory = new WriterFactory();
 		Object[][] atts = {{s("name"), 20, s("String")}};
-		var writer = Writer._new(null, s("the_geom"), s("MultiPolygon"), atts);
+		var writer = Writer._new(null, s("MultiPolygon"), atts);
 				
 		var outer = ShCoordinate.listOfCoords(new Double[]{0d,0d,0d,100d,100d,100d,100d,0d,0d,0d});
 		var holes = new ShCoordinate[][] {
@@ -180,7 +180,7 @@ public class run {
 				{s("aDouble"),   null, s("Double")},
 				{s("aBoolean"),  null, s("Boolean")},
 				{s("aDate"),     null, s("Date")}};
-		var writer = Writer._new(null, s("the_geom"), s("Point"), atts);
+		var writer = Writer._new(null, s("Point"), atts);
 		
 		var geom = new ShPoint(new ShCoordinate(0d,0d));
 		Object[] data = {s("Frank"), 20, 1.13, MagikInteropUtils.toMagikBoolean(true), s("2025-12-28")};
