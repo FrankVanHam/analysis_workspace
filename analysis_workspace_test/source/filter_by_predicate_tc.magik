@@ -161,7 +161,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method filter_by_predicate_tc.test_basic_pred()
-	# Test a global alfa predicate on the collection
+	# Test a global alpha predicate on the collection
 	_local dsm << rwan:analysis_dataset_manager.new(:test)
 	_local col << _self.min_road_collection
 	_local rcol << rwan:sw_collection.new(dsm, col)

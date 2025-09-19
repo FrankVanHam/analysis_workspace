@@ -73,7 +73,7 @@ _pragma(classify_level=basic, topic={analysis})
 _private _method shape_creator.setup_attribute_defs(sw_collection, settings)
 	.int_fields << rope.new()
 	.attribute_defs << rope.new()
-	_for shape_name, int_name, ext_name, meta, type _over settings.alfa_defs()
+	_for shape_name, int_name, ext_name, meta, type _over settings.alpha_defs()
 	_loop
 		_local length << _self.get_length(sw_collection, int_name)
 		.attribute_defs.add({shape_name, length, type})

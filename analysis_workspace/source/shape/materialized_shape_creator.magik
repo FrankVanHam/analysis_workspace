@@ -204,7 +204,7 @@ _private _method materialized_shape_creator.create_physical_field_defs()
 	_local field_defs << rope.new()
 	_for shape_name, int_name, ext_name, meta, type _over _self.field_elements()
 	_loop
-		_if meta = :alfa
+		_if meta = :alpha
 		_then
 			_local length << _self.get_length_def(shape_defs, shape_name)
 			field_defs.add({int_name, type, length})
@@ -411,7 +411,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.fillup_detached(detached, geom, values)
 	_for shape_name, int_name, ext_name, meta _over _self.field_elements()
 	_loop
-		_if meta = :alfa _or meta = :id
+		_if meta = :alpha _or meta = :id
 		_then 
 			_local value << values[shape_name]
 			detached.perform(int_name.as_symbol().with_chevron, value)
