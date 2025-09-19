@@ -202,8 +202,16 @@ _pragma(classify_level=basic, topic={analysis})
 _private _method shape_creator.get_length(sw_collection, name)
 	_local field << sw_collection.field(name)
 	_if field.is_physical? _orif field.is_derived?
-	_then 
-		_return field.type.size
+	_then
+		_if field.type.enumerator _isnt _unset
+		_then
+			_return field.type.enumerator.
+				sorted_values.
+				map(_proc(x) >> x.as_charvec() _endproc).
+				reduce(_proc(a_max, c) >> max(a_max, c.size) _endproc,0)
+		_else 
+			_return field.type.size
+		_endif 
 	_else
 		_return 0
 	_endif 

@@ -519,7 +519,6 @@ _private _method shape_export_dialog.construct_materialized()
 		creator.add_dependent(_self)
 		_self.log(_self.message(:started_at, _unset, date_time_now()))
 		
-		
 		creator.create(.holder.collection, .file_name, settings, _self.transform())
 		
 		_self.log(_self.message(:ended_at, _unset, date_time_now()))
