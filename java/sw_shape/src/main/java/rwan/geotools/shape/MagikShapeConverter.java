@@ -21,6 +21,8 @@ public class MagikShapeConverter {
 	}
 
 	Object fromMagikToShape(AttributeDef def, java.lang.Object obj) throws Exception {
+		if (obj == null) return null;
+		
 		var type = def.get_type();
 		var length = def.get_length();
 		switch (type) {

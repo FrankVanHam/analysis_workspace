@@ -27,6 +27,7 @@ public class run {
 		testPolygonWithHoles();
 		testMultiPolygonWithHoles();
 		testAttribute();
+		testNullAttribute();
 	}
 	
 	public static void testAFile() throws Exception {
@@ -197,7 +198,32 @@ public class run {
 		if (!"2025-12-28".equals(MagikInteropUtils.fromMagikString(resultAttributes[4]))) System.out.println("aDate not matching");
 	}
 	
-	public static GetResult testReadFile(String fileName) throws Exception {
+	public static void testNullAttribute() throws Exception {
+		System.out.println("--test Null Attributes()--");
+		var factory = new WriterFactory();
+		//"string", "integer", "double", "boolean", "date"
+		Object[][] atts = {{s("aString"),   20,   s("String")},
+				{s("anInteger"), null, s("Integer")},
+				{s("aDouble"),   null, s("Double")},
+				{s("aBoolean"),  null, s("Boolean")},
+				{s("aDate"),     null, s("Date")}};
+		var writer = Writer._new(null, s("Point"), atts);
+		
+		var geom = new ShPoint(new ShCoordinate(0d,0d));
+		Object[] data = {null, null, null, null, null};
+		writer.addData(geom, data);
+		var file = "C:\\Users\\frnkv\\Documents\\test_null_attrs.shp";
+		writer.saveToFile(s(file));
+		
+		var results = testReadFile(file);
+		var resultAttributes = results.getAttributeValues();
+		if (resultAttributes[0] != null) System.out.println("aString not matching");
+		if (resultAttributes[1] != null) System.out.println("anInteger not matching");
+		if (resultAttributes[2] != null) System.out.println("aDouble not matching");
+		if (resultAttributes[3] != null) System.out.println("aBoolean not matching");
+		if (resultAttributes[4] != null) System.out.println("aDate not matching");
+	}
+		public static GetResult testReadFile(String fileName) throws Exception {
 		var reader =new ReaderFactory().create(fileName);
 		var type = reader.geometryType().toString();
 		var defs = reader.attributeDefs();

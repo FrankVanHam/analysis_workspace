@@ -693,7 +693,7 @@ _private _iter _method materialized_collection_creator.field_elements()
 	## 3) the new external name
 	## 4) if the field is a 1:1 join field, this is the field in the
 	##    joined object thwt should be used to retrieve the value.
-	_for field, int_name, ext_name, join_aspect _over .settings.field_properties()
+	_for field, int_name, ext_name, join_aspect _over .settings.defs()
 	_loop
 		_loopbody(field, int_name, ext_name, join_aspect)
 	_endloop 

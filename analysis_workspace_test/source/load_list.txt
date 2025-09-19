@@ -22,3 +22,4 @@ basic_property_tc
 basic_dsm_property_tc
 shape_tc
 materialize_shape_tc
+shape_creator_tc

@@ -34,7 +34,6 @@ def_slotted_exemplar(:shape_export_dialog,
 	{
 		{:file_name,       _unset},
 		{:source_gfd,      _unset},
-		{:geom_name,       _unset},
 		{:scale,           _unset},
 		{:source_table,    _unset},
 		{:source_fields,   _unset},
@@ -90,7 +89,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _method shape_export_dialog.activate_in(container)
 	container.modality << :primary_modal
 	container.min_width << 900
-	.file_name << .geom_name << ""
+	.file_name <<  ""
 	.source_fields << rope.new()
 	.result_defs << rope.new()
 	.items << property_list.new()
@@ -411,10 +410,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method shape_export_dialog.geometry_changed(fd)
 	.source_gfd << fd
-	
-	_local name << fd.external_name.copy().convert_to_non_escape_string()
-	name << _if name.size > _self.max_length _then >> name.slice(1,_self.max_length) _else >> name _endif
-	.geom_name << name
+	_self.manage_actions()
 _endmethod
 $
 
@@ -456,7 +452,7 @@ _private _method shape_export_dialog.trees_for(sw_table, fields)
 		_local img << _if i_field.is_key?
 			      _then >> {:key, :ui_resources}
 			      _elif i_field.is_join?
-			      _then >> {:relationship_field, :ui_resources}
+			      _then >> sw:sw_basic_field.icon_scheme
 			      _else >> i_field.icon_scheme
 			      _endif
 		tree.styled_string << {:toggle, :use?, :tab,
@@ -468,7 +464,6 @@ _private _method shape_export_dialog.trees_for(sw_table, fields)
 _endmethod
 $
 
-
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.fields_for(col)
 	_local fields << rope.new()
@@ -477,9 +472,15 @@ _private _method shape_export_dialog.fields_for(col)
 	# Skip internal fields
 	_for a_field _over all_fields.fast_elements()
 	_loop
-		_if _not _self.skip_field_names.includes?( a_field.name ) _andif
-		    a_field.name.index_of_seq( "dd!" ) _is _unset _andif
-		    (a_field.is_physical? _or a_field.is_derived?)
+		_if _self.skip_field_names.includes?( a_field.name ) _then _continue _endif
+		_if (a_field.is_physical? _or a_field.is_derived?)
+		_then
+			_if a_field.name.index_of_seq( "dd!" ) _is _unset _andif
+			    a_field.is_text_join_key?().not
+			_then
+				fields.add(a_field)
+			_endif
+		_elif a_field.is_join? _andif (a_field.join_type = :text)
 		_then
 			fields.add(a_field)
 		_endif 
@@ -491,11 +492,10 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method shape_export_dialog.manage_actions()
 	_local file? << .file_name.default("") <> ""
-	_local tgeom? << .geom_name.default("") <> ""
 	_local scale?  << .items[:scale].value.as_number().default(0) <> 0
 	_local result? << .result_defs.size > 0
 	
-	.items[:ok].enabled? << file? _and tgeom? _and scale? _and result?
+	.items[:ok].enabled? << file? _and scale? _and result?
 	_super.manage_actions()
 _endmethod
 $
@@ -534,11 +534,11 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.creator_settings()
 	_local name << _self.new_table_name
-	_local settings << materialization_shape_settings.new(name, name)
+	_local settings << export_shape_settings.new()
 	settings.add_id_field(:fid, "FeatureID")
 
 	_local type << _self.geom_type_map[.source_gfd.geom_type]
-	settings.add_geom_field(.geom_name, .source_gfd.name, .source_gfd.name, type)
+	settings.add_geom_field(.source_gfd.name, type)
 	_self.add_fields(settings)
 	_return settings
 _endmethod
@@ -552,7 +552,7 @@ _private _method shape_export_dialog.add_fields(settings)
 		_local shape_name << i_prop[:name]
 		_local name << fd.name
 		_local type << _self.shape_attribute_type(fd)
-		settings.add_field(shape_name, name, name, type)
+		settings.add_field(shape_name, name, type)
 	_endloop 
 _endmethod
 $
@@ -560,33 +560,37 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.shape_attribute_type(fd)
 	##
-	_local cls << fd.type.class
-	_if cls.is_kind_of?(sw:charindex_mixin)
+	_if fd.is_physical? _orif fd.is_derived?
+	_then 
+		_local cls << fd.type.class
+		_if cls.is_kind_of?(sw:charindex_mixin)
+		_then
+			_return "String"
+		_elif cls.is_kind_of?(sw:integer)
+		_then
+			_return "Integer"
+		_elif cls.is_kind_of?(sw:float)
+		_then
+			_return "Double"
+		_elif cls.is_kind_of?(sw:date_mixin)
+		_then
+			_return "Date"
+		_elif (cls _is _true) _or (cls _is _false) _or (cls _is _maybe)
+		_then
+			_return "Boolean"
+		_else
+			_return "String"
+		_endif
+	_elif fd.is_join? # text join, that is
 	_then
 		_return "String"
-	_elif cls.is_kind_of?(sw:integer)
-	_then
-		_return "Integer"
-	_elif cls.is_kind_of?(sw:float)
-	_then
-		_return "Double"
-	_elif cls.is_kind_of?(sw:date_mixin)
-	_then
-		_return "Date"
-	_elif (cls _is _true) _or (cls _is _false) _or (cls _is _maybe)
-	_then
-		_return "Boolean"
-	_else
-		_return "String"
-	_endif
+	_endif 
 _endmethod
 $
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.validate()
 	_self.validate_scale()
-	_self.validate_geom_name()
 	_self.validate_single_names()
 	_self.validate_field_names()
 _endmethod
@@ -599,16 +603,6 @@ _private _method shape_export_dialog.validate_scale()
 	_if scale = 0
 	_then
 		_self.user_error(:provide_valid_scale, _unset, scale_str)
-	_endif
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method shape_export_dialog.validate_geom_name()
-	_local name << .geom_name.default("")
-	_if name.identifier_requires_escape?
-	_then
-		_self.user_error(:invalid_geom_name, _unset, name)
 	_endif
 _endmethod
 $

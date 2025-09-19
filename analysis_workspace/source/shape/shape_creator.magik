@@ -51,10 +51,10 @@ _method shape_creator.create(collection, file_name, settings, _optional a_transf
 	##
 	## Create a new collection to store the shape file file_name.
 	##
-	#_dynamic !output! << internal_text_output_stream.new()
+	_dynamic !output! << internal_text_output_stream.new()
 	_local sw_collection << collection.expose()
 	
-	_local (geom_shape_name, geom_int_name, dum1, dum2, geom_type) << settings.geom_def()
+	_local (dummy, geom_int_name, dummy, geom_type) << settings.geom_def()
 	_self.setup_attribute_defs(sw_collection, settings)
 	
 	.writer << shape_writer.new(geom_type, .attribute_defs)
@@ -73,7 +73,7 @@ _pragma(classify_level=basic, topic={analysis})
 _private _method shape_creator.setup_attribute_defs(sw_collection, settings)
 	.int_fields << rope.new()
 	.attribute_defs << rope.new()
-	_for shape_name, int_name, ext_name, meta, type _over settings.alpha_defs()
+	_for shape_name, int_name, meta, type _over settings.alpha_defs()
 	_loop
 		_local length << _self.get_length(sw_collection, int_name)
 		.attribute_defs.add({shape_name, length, type})
@@ -166,7 +166,17 @@ _pragma(classify_level=basic, topic={analysis})
 _private _method shape_creator.convert_attribute(rec, name, length, type)
 	_local value << rec.perform(name)
 	_if value _is _unset _then _return _unset _endif
+
 	_local fd << rec.field(name)
+	
+	_if fd.is_physical? _or fd.is_derived?
+	_then
+		_if fd.type _isnt _unset _andif fd.type.enumerator _isnt _unset
+		_then
+			value << value.as_charvec()
+		_endif
+	_endif 
+	
 	_if fd.has_stored_unit?
 	_then
 		value << value.value
@@ -211,7 +221,10 @@ _private _method shape_creator.get_length(sw_collection, name)
 				reduce(_proc(a_max, c) >> max(a_max, c.size) _endproc,0)
 		_else 
 			_return field.type.size
-		_endif 
+		_endif
+	_elif field.is_join?
+	_then
+		_return 254
 	_else
 		_return 0
 	_endif 

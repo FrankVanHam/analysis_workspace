@@ -127,7 +127,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.ensure_map_to_shape()
 	_local shape_names << equality_set.new_from(.reader.attribute_defs).map(_proc(x) >> x[1] _endproc)
-	_for shape_name, int_name, ext_name, meta _over _self.field_elements()
+	_for shape_name, int_name, ext_name, meta _over .settings.defs()
 	_loop
 		_if meta = :geom
 		_then
@@ -152,7 +152,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.ensure_no_double_names()
 	_local s << set.new()
-	_for shape_name, int_name _over _self.field_elements()
+	_for shape_name, int_name _over .settings.defs()
 	_loop
 		_if s.includes?(int_name)
 		_then
@@ -202,7 +202,7 @@ _private _method materialized_shape_creator.create_physical_field_defs()
 	## combine the id and alpha fields. The ID needs to be first.
 	_local shape_defs << .reader.attribute_defs
 	_local field_defs << rope.new()
-	_for shape_name, int_name, ext_name, meta, type _over _self.field_elements()
+	_for shape_name, int_name, ext_name, meta, type _over .settings.defs()
 	_loop
 		_if meta = :alpha
 		_then
@@ -230,7 +230,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.create_geometry_fields()
 	## Create the geometry fields
 	_self.report(:adding_geometry_fields)
-	_local (shape_name, int_name, ext_name, meta, type) << _self.geometry_def()
+	_local (shape_name, int_name, ext_name, meta, type) << .settings.geom_def()
 	_if shape_name _isnt _unset
 	_then
 		_local manifold_name << _unset 
@@ -250,41 +250,15 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.target_geometry_name()
-	_local (shape_name, int_name) << _self.geometry_def()
+	_local (shape_name, int_name) << .settings.geom_def()
 	_return int_name
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method materialized_shape_creator.geometry_def()
-	_for shape_name, int_name, ext_name, meta, type  _over _self.field_elements()
-	_loop
-		_if meta = :geom
-		_then
-			_return shape_name, int_name, ext_name, meta, type
-		_endif 
-	_endloop
-	_return _unset 
 _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.target_id_name()
-	_local (shape_name, int_name) << _self.id_def()
+	_local (shape_name, int_name) << .settings.id_def()
 	_return int_name
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _method materialized_shape_creator.id_def()
-	_for shape_name, int_name, ext_name, meta, type  _over _self.field_elements()
-	_loop
-		_if meta = :id
-		_then
-			_return shape_name, int_name, ext_name, meta, type
-		_endif 
-	_endloop
-	_return _unset 
 _endmethod
 $
 
@@ -298,7 +272,7 @@ _private _method materialized_shape_creator.finalise()
 		.target_collection.descriptor.record_exemplar << user_ds_record
 	_endif
 	_local vfields << rope.new()
-	_for shape_name, int_name, ext_name _over _self.field_elements()
+	_for shape_name, int_name, ext_name _over .settings.defs()
 	_loop
 		vfields.add(int_name)
 	_endloop
@@ -308,7 +282,7 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.sync_fields()
-	_for shape_name, int_name, ext_name _over _self.field_elements()
+	_for shape_name, int_name, ext_name _over .settings.defs()
 	_loop
 		_local new_field << .target_collection.field(int_name)
 		_if new_field _is _unset _then _continue _endif 
@@ -409,12 +383,15 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.fillup_detached(detached, geom, values)
-	_for shape_name, int_name, ext_name, meta _over _self.field_elements()
+	_for shape_name, int_name, ext_name, meta _over .settings.defs()
 	_loop
 		_if meta = :alpha _or meta = :id
 		_then 
 			_local value << values[shape_name]
-			detached.perform(int_name.as_symbol().with_chevron, value)
+			_if value _isnt _unset
+			_then 
+				detached.perform(int_name.as_symbol().with_chevron, value)
+			_endif 
 		_endif 
 	_endloop 
 _endmethod
@@ -458,15 +435,6 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method materialized_shape_creator.new_collection_external_name
 	_return .settings.external_name
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_private _iter _method materialized_shape_creator.field_elements()
-	_for shape_name, int_name, ext_name, meta, type _over .settings.field_properties()
-	_loop
-		_loopbody(shape_name, int_name, ext_name, meta, type)
-	_endloop 
 _endmethod
 $
 

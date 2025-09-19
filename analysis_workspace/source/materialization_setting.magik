@@ -64,7 +64,7 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_iter _method materialization_settings.field_properties()
+_iter _method materialization_settings.defs()
 	_for i_vec _over .fields.fast_elements()
 	_loop
 		_loopbody(_scatter i_vec)
