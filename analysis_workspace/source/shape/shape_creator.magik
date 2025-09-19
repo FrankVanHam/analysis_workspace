@@ -175,11 +175,10 @@ _private _method shape_creator.convert_attribute(rec, name, length, type)
 		_then
 			value << value.as_charvec()
 		_endif
-	_endif 
-	
-	_if fd.has_stored_unit?
-	_then
-		value << value.value
+		_if fd.has_stored_unit?
+		_then
+			value << value.value
+		_endif 
 	_endif 
 	_if type = "String"
 	_then
@@ -201,7 +200,7 @@ _private _method shape_creator.convert_attribute(rec, name, length, type)
 		_return value = _true 
 	_elif type = "Date"
 	_then
-		_return value
+		_return date.new_from(value)
 	_else
 		_return value
 	_endif 	 
