@@ -166,6 +166,13 @@ _method framework_plugin.remove_from_application(dsm)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method framework_plugin.refresh_ace()
+	_return _self.soc.refresh_ace()
+_endmethod
+$
+
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _method framework_plugin.map_manager
