@@ -59,12 +59,6 @@ _endmethod
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_method export_shape_settings.add_id_field(shape_name)
-	_self.do_add_field(shape_name, :id, :id, :ds_uint)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
 _method export_shape_settings.do_add_field(shape_name, name, meta, type)
 	_if meta _is _unset _then condition.raise(:error, :string, "Meta is mandatory") _endif 
 	.fields.add({shape_name, symbol.check_type(name), meta, type})
@@ -73,13 +67,8 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _method export_shape_settings.geom_def()
-	_return _self.meta_def(:geom)
-_endmethod
-$
-
-_pragma(classify_level=restricted, topic={analysis})
-_method export_shape_settings.id_def()
-	_return _self.meta_def(:id)
+	_local (shape_name, name, meta, type) << _self.meta_def(:geom)
+	_return name, type
 _endmethod
 $
 

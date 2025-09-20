@@ -39,13 +39,6 @@ def_slotted_exemplar(:analysis_dataset_manager,
 	}, :dataset_manager)
 $
 
-
-_pragma(classify_level=basic, topic={analysis})
-_method analysis_dataset_manager.open(name, path, _optional concurrency_mode)
-	_return _self.new(name).do_open(path, concurrency_mode)
-_endmethod
-$
-
 _pragma(classify_level=basic, topic={analysis})
 _method analysis_dataset_manager.new(name)
 	_return _clone.init(name)
@@ -68,6 +61,41 @@ $
 _pragma(classify_level=basic, topic={analysis})
 _method analysis_dataset_manager.dataset_exemplar
 	_return .ds_view.exemplar
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.visible_object_information(an_ace)
+	_local top_tree << sw:vhs_tree.new(:object_description, _self.object_description, :object_data, _self)
+	_local _constant exclude_tables << {:ref_count}
+	_local _constant exclude_geoms << {:meatball}
+	_for i_name _over .ds_view.user_table_names()
+	_loop
+		_if exclude_tables.includes?(i_name) _then _continue _endif
+		
+		_local col << .ds_view.collection(i_name)
+		_local cv << sw:vhs_tree.new(:object_description, col.external_name, :object_data, col)
+		top_tree.add_child(cv)
+		_if col.record_exemplar.is_rwo?
+		_then
+			_for fd _over col.geometry_fields.fast_elements()
+			_loop
+				_if exclude_geoms.includes?(fd.name) _then _continue _endif
+				_if fd.mapped_to? _then _continue _endif 
+				fv << sw:vhs_tree.new(:object_description, fd.external_name, :object_data, fd)
+				cv.add_child(fv)
+			_endloop
+		_else
+			cv.set_children(sw:rope.new())
+		_endif
+	_endloop
+	_return top_tree
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.open(name, path, _optional concurrency_mode)
+	_return _self.new(name).do_open(path, concurrency_mode)
 _endmethod
 $
 
@@ -104,8 +132,6 @@ _method analysis_dataset_manager.assign_coordinate_system(cs)
 	.ds_view.commit()
 _endmethod
 $
-
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method analysis_dataset_manager.int!do_open(gv, filename, concurrency_mode)
@@ -219,6 +245,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method analysis_dataset_manager.materialized_collection(table_name)
+	_if .ds_view _is _unset _then _return record_collection.new(_self, {}) _endif 
 	_return .ds_view.collections[table_name]
 _endmethod
 $

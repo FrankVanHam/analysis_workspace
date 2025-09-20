@@ -1,3 +1,3 @@
 :activate_framework	Analysis Workspace...
-:short_help_text	Starts the Realworld Analysis Workspace
+:short_help_text	Starts the Analysis Workspace
 :browse_collection	Analysis Explorer Result

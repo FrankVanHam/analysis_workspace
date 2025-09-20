@@ -54,7 +54,7 @@ _method shape_creator.create(collection, file_name, settings, _optional a_transf
 	_dynamic !output! << internal_text_output_stream.new()
 	_local sw_collection << collection.expose()
 	
-	_local (dummy, geom_int_name, dummy, geom_type) << settings.geom_def()
+	_local (geom_int_name, geom_type) << settings.geom_def()
 	_self.setup_attribute_defs(sw_collection, settings)
 	
 	.writer << shape_writer.new(geom_type, .attribute_defs)
@@ -94,12 +94,13 @@ _private _method shape_creator.write_record(collection, a_transform, geom_int_na
 	_loop
 		_local identifier << _self.identifier(i_rec)
 		_local geom << i_rec.geometry(geom_int_name)
-		_if a_transform _isnt _unset
-		_then
-			geom << geom.transformed(a_transform, _true)
-		_endif
+		
 		_if geom _isnt _unset
 		_then
+			_if a_transform _isnt _unset
+			_then
+				geom << geom.transformed(a_transform, _true)
+			_endif
 			_local attributes << _self.attribute_vec(i_rec)
 			_local ok? << _self.safe_write(identifier, geom, attributes)
 			c +<< 1

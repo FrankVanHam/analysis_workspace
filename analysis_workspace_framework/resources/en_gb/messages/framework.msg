@@ -23,3 +23,5 @@
 :set_m			e
 :materialize		Materialize
 :materialize_m		M
+:tool			Tool
+:materialize_m		T

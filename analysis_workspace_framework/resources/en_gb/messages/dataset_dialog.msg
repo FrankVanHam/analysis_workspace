@@ -9,3 +9,4 @@
 :save				       Save
 :ignore				       Ignore changes
 :cancel				       Cancel
+:refresh_ace			       Refresh Application

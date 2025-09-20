@@ -233,6 +233,12 @@ _method dataset_dialog.open_ds_file(path, _optional first_time?)
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_dialog.refresh_ace()
+	.owner.refresh_ace()
+_endmethod
+$
+
 _pragma(classify_level=advanced, topic={analysis})
 _private _method dataset_dialog.workspace_changed()
 	.owner.publish_workspace()
