@@ -473,13 +473,12 @@ _private _method shape_export_dialog.fields_for(col)
 	_for a_field _over all_fields.fast_elements()
 	_loop
 		_if _self.skip_field_names.includes?( a_field.name ) _then _continue _endif
-		_if (a_field.is_physical? _or a_field.is_derived?)
+		_if a_field.name.index_of_seq( "dd!" ) _isnt _unset _then _continue _endif
+		
+		_if (a_field.is_physical? _andif a_field.is_text_join_key?().not) _orif
+		    (a_field.is_derived?)
 		_then
-			_if a_field.name.index_of_seq( "dd!" ) _is _unset _andif
-			    a_field.is_text_join_key?().not
-			_then
-				fields.add(a_field)
-			_endif
+			fields.add(a_field)
 		_elif a_field.is_join? _andif (a_field.join_type = :text)
 		_then
 			fields.add(a_field)
@@ -535,8 +534,6 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.creator_settings()
 	_local name << _self.new_table_name
 	_local settings << export_shape_settings.new()
-	settings.add_id_field(:fid, "FeatureID")
-
 	_local type << _self.geom_type_map[.source_gfd.geom_type]
 	settings.add_geom_field(.source_gfd.name, type)
 	_self.add_fields(settings)
