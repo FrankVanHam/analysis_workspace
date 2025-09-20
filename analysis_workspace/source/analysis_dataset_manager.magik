@@ -34,38 +34,36 @@ _pragma(classify_level=basic, topic={analysis})
 ##
 def_slotted_exemplar(:analysis_dataset_manager,
 	{
-		{:ds_view,   _unset},
 		{:col_cache, _unset}
-	}, :dataset_manager)
+	}, :swdp_manager)
 $
 
 _pragma(classify_level=basic, topic={analysis})
-_method analysis_dataset_manager.new(name)
-	_return _clone.init(name)
-_endmethod
+analysis_dataset_manager.define_shared_constant(:use_authorisation?, _false, :private)
 $
 
 _pragma(classify_level=restricted, topic={analysis})
-_private _method analysis_dataset_manager.init(name)
+_private _method analysis_dataset_manager.init(_gather args)
 	.col_cache << hash_table.new()
-	_return _super.init(name, _unset, _unset)
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method analysis_dataset_manager.actual_dataset
-	_return .ds_view
-_endmethod
-$
-
-_pragma(classify_level=basic, topic={analysis})
-_method analysis_dataset_manager.dataset_exemplar
-	_return .ds_view.exemplar
+	_return _super.init(_scatter args)
 _endmethod
 $
 
 _pragma(classify_level=basic, topic={analysis})
 _method analysis_dataset_manager.visible_object_information(an_ace)
+
+	_local default_vhs << _super.visible_object_information(an_ace)
+	>> _if default_vhs.children?
+	   _then
+		   >> default_chs
+	   _else
+		   >> _self.fixed_visible_object_information()
+	   _endif
+_endmethod
+$
+
+_pragma(classify_level=basic, topic={analysis})
+_private _method analysis_dataset_manager.fixed_visible_object_information()
 	_local top_tree << sw:vhs_tree.new(:object_description, _self.object_description, :object_data, _self)
 	_local _constant exclude_tables << {:ref_count}
 	_local _constant exclude_geoms << {:meatball}
