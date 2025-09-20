@@ -55,7 +55,7 @@ _method analysis_dataset_manager.visible_object_information(an_ace)
 	_local default_vhs << _super.visible_object_information(an_ace)
 	>> _if default_vhs.children?
 	   _then
-		   >> default_chs
+		   >> default_vhs
 	   _else
 		   >> _self.fixed_visible_object_information()
 	   _endif
