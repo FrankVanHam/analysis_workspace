@@ -114,6 +114,7 @@ _private _method materialized_shape_creator.do_do_create()
 	_self.finalise()
 	_self.sync_fields()
 	_self.fill_collection()
+	.dsm.created(.target_collection)
 _endmethod
 $
 

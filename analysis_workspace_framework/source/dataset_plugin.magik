@@ -60,12 +60,6 @@ _method dataset_plugin.remove_from_application()
 _endmethod
 $
 
-_pragma(classify_level=basic, topic={analysis})
-_method dataset_plugin.refresh_ace()
-	_return _self.app_plugin.refresh_ace()
-_endmethod
-$
-
 _pragma(classify_level=advanced, topic={analysis})
 _method dataset_plugin.init_actions()
 	##
@@ -89,9 +83,6 @@ _method dataset_plugin.init_actions()
 				       :engine, _self.dialog,
 				       :action_message, {:|perform_safely()|, :|close()|},
 				       :image, {:close, _self.module_name}))
-	_self.add_action(sw_action.new(:refresh_ace,
-				       :engine, _self.dialog,
-				       :action_message, {:|perform_safely()|, :|refresh_ace()|}))
 _endmethod
 $
 

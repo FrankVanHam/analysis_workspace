@@ -150,6 +150,7 @@ _method framework_plugin.add_to_application(dsm)
 		_endif
 	_endloop
 	soc.add_dataset_manager(dsm)
+	dsm.add_dependent(_self)
 _endmethod
 $
 
@@ -161,6 +162,7 @@ _method framework_plugin.remove_from_application(dsm)
 		_if (a_soc_dsm.actual_dataset _is dsm.actual_dataset)
 		_then
 			soc.remove_dataset_manager(a_soc_dsm.name)
+			dsm.remove_dependent(_self)
 		_endif
 	_endloop
 _endmethod
@@ -171,8 +173,6 @@ _method framework_plugin.refresh_ace()
 	_return _self.soc.refresh_ace()
 _endmethod
 $
-
-
 
 _pragma(classify_level=restricted, topic={analysis})
 _method framework_plugin.map_manager
@@ -304,5 +304,12 @@ _method framework_plugin.explore(set)
 					     :group_name,  _self.message(:browse_collection),
 					     :group_image, { :list, :ui_resources },
 					     :set_current?, _true } )
+_endmethod
+$
+
+_pragma(classify_level=restricted, topic={analysis})
+_method framework_plugin.note_change(who, _optional aspect, _gather data)
+	## React to changes in the dsm
+	_self.refresh_ace()
 _endmethod
 $

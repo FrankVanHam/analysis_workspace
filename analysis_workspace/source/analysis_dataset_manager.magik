@@ -271,9 +271,17 @@ _method analysis_dataset_manager.discard_collection(table_name)
 		_endloop 
 		drop_rwo_table(.ds_view, table_name, _true,_true,_false)
 		.ds_view.commit()
+		_self.changed(:remove, table_name)
 	_endif 
 _endmethod
 $
+
+_pragma(classify_level=basic, topic={analysis})
+_method analysis_dataset_manager.created(table)
+	_self.changed(:add, table)
+_endmethod
+$
+
 
 _pragma(classify_level=basic, topic={analysis})
 _private _method analysis_dataset_manager.geom_field_map

@@ -94,6 +94,7 @@ _method materialized_collection_creator.do_create(col, settings)
 	_self.create_geometry_fields()
 	_self.finalise()
 	_self.fill_collection()
+	.dsm.created(.target_collection)
 _endmethod
 $
 
