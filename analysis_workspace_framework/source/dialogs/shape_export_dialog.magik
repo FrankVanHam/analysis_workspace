@@ -492,9 +492,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _method shape_export_dialog.manage_actions()
 	_local file? << .file_name.default("") <> ""
 	_local scale?  << .items[:scale].value.as_number().default(0) <> 0
-	_local result? << .result_defs.size > 0
-	
-	.items[:ok].enabled? << file? _and scale? _and result?
+	.items[:ok].enabled? << file? _and scale?
 	_super.manage_actions()
 _endmethod
 $
