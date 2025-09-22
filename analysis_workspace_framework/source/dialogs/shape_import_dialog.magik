@@ -188,7 +188,9 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_import_dialog.build_file(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
-				:col_alignment, :fill, :col_resize_values, {100,0})
+				:col_alignment, :fill, :col_resize_values, {100,0},
+				:col_spacing, 0,
+				:outer_spacing, 0)
 	.items[:file_name] << text_item.new(rc, _self.message(:file_name),
 					    :editable?, _false,
 					    :col_alignment, :fill)

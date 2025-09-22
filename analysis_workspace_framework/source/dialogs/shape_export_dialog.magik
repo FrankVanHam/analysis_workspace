@@ -198,14 +198,9 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.build_result(container)
 	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
-				:col_alignment, :fill, :col_resize_values, {0,100,0,0})
+				:col_alignment, :fill, :col_resize_values, {0,100,0})
 	label_item.new(rc, _self.message(:file_name))
-	.items[:file_name] << text_item.new(rc, _unset,
-					    :editable?, _false,
-					    :col_alignment, :fill)
-	.items[:file_open] << image_button_item.new(rc, _self.file_open_image, _self, :|open_file()|,
-						    :insensitive_image, _self.file_open_grey_image,
-						    :col_alignment, :left)
+	_self.build_file_open(rc)
 	.items[:scale] << text_item.new(rc, _self.message(:scale),
 					       :model, _self,
 					       :value, .scale.write_string,
@@ -214,6 +209,22 @@ _private _method shape_export_dialog.build_result(container)
 					       :col_alignment, :fill)
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_private _method shape_export_dialog.build_file_open(container)
+	_local rc << rowcol.new(container, 1, _unset, _unset, :style, :nested,
+				:col_alignment, :fill, :col_resize_values, {100,0},
+				:col_spacing, 0,
+				:outer_spacing, 0)
+	.items[:file_name] << text_item.new(rc, _unset,
+					    :editable?, _false,
+					    :col_alignment, :fill)
+	.items[:file_open] << image_button_item.new(rc, _self.file_open_image, _self, :|open_file()|,
+						    :insensitive_image, _self.file_open_grey_image,
+						    :col_alignment, :left)
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method shape_export_dialog.initialise_geometry_choice()
