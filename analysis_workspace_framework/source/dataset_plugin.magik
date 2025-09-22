@@ -114,3 +114,9 @@ _method dataset_plugin.terminate()
 _endmethod
 $
 
+_pragma(classify_level=basic, topic={analysis})
+_method dataset_plugin.publish_empty_workspace()
+	.workspace << _unset
+	_self.publish_workspace(_unset)
+_endmethod
+$

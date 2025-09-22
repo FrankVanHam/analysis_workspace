@@ -174,7 +174,6 @@ _method dataset_dialog.new_ds_file(target_path)
 _endmethod
 $
 
-
 _pragma(classify_level=advanced, topic={analysis})
 _method dataset_dialog.close()
 	_self.save_or_cancel_if_updated()
@@ -190,8 +189,7 @@ _private _method dataset_dialog.close_ds_file()
 	_then 
 		.owner.remove_from_application()
 		_self.dsm.discard()
-		workspace << rwan:workspace.new()
-		.owner.publish_workspace(workspace)
+		.owner.publish_empty_workspace()
 	_endif 
 _endmethod
 $
