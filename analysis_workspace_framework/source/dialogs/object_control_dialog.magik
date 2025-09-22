@@ -44,7 +44,6 @@ _method object_control_dialog.set_dataset(ds, dsm)
 _endmethod
 $
 
-
 _pragma(classify_level=advanced, topic={analysis})
 _method object_control_dialog.activate_in(frame)
 	frame.modality << :primary_modal
@@ -90,7 +89,6 @@ _private _method object_control_dialog.filter_ds()
 _endmethod
 $
 
-
 _pragma(classify_level=advanced, topic={analysis})
 _method object_control_dialog.double_clicked()
 	_self.perform_safely(:|add()|)
@@ -104,7 +102,10 @@ _method object_control_dialog.add()
 	_local ana_cols << rope.new_for(cols.size)
 	_for i_col _over cols.fast_elements()
 	_loop
-		ana_cols.add(rwan:sw_collection.new(.dsm, i_col))
+		_if i_col.is_kind_of?(sw:ds_collection)
+		_then 
+			ana_cols.add(rwan:sw_collection.new(.dsm, i_col))
+		_endif 
 	_endloop
 	.parent_model.add_collections(ana_cols)
 	_self.close()

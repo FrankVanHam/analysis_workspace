@@ -59,6 +59,7 @@ $
 
 _pragma(classify_level=advanced, topic={analysis})
 _method construct_dialog.add_collections(collections)
+	_if collections.empty? _then _return _endif 
 	_local workspace << _self.workspace
 	_local last_holder
 	_for i_col _over collections.fast_elements()
