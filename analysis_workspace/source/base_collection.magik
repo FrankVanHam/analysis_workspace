@@ -258,10 +258,7 @@ $
 
 _pragma(classify_level=basic, topic={analysis})
 _method base_collection.discard()
-	_if _self.base_collection _isnt _unset
-	_then
-		_self.base_collection.discard()
-	_endif 
+	
 _endmethod
 $
 
