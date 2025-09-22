@@ -180,7 +180,10 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method distance_filter_dialog.most_likely_geom_field(items)
-	_if items.size = 1
+	_if items.empty?
+	_then
+		_return _unset
+	_elif items.size = 1
 	_then
 		_return items[1][1]
 	_endif 
@@ -200,8 +203,10 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method distance_filter_dialog.manage_actions()
 	_local col? << .record_holder.is_record_collection?
+	_local geom? << .geom_name _isnt _unset
 	.items[:col].enabled? << col?
 	.items[:geometry_choice].enabled? << col?
+	.items[:ok].enabled? << col? _and geom?
 _endmethod
 $
 

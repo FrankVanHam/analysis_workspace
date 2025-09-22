@@ -72,6 +72,7 @@ $
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_dialog.on_activation()
 	_self.initialise_geometry_choice()
+	_self.manage_actions()
 	_return _super.on_activation()
 _endmethod
 $
@@ -86,7 +87,10 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_dialog.most_likely_geom_field(items)
-	_if items.size = 1
+	_if items.empty?
+	_then
+		_return _unset
+	_elif items.size = 1
 	_then
 		_return items[1][1]
 	_endif 
@@ -123,6 +127,12 @@ _private _method spatial_dialog.build_buttons(container)
 _endmethod
 $
 
+_pragma(classify_level=restricted, topic={analysis})
+_method spatial_dialog.manage_actions()
+	_local geom? << .items[:geometry_choice].value _isnt _unset 
+	.items[:ok].enabled? << geom?
+_endmethod
+$
 
 _pragma(classify_level=restricted, topic={analysis})
 _method spatial_dialog.ok()

@@ -160,7 +160,10 @@ $
 
 _pragma(classify_level=restricted, topic={analysis})
 _private _method spatial_filter_dialog.most_likely_geom_field(items)
-	_if items.size = 1
+	_if items.empty?
+	_then
+		_return _unset
+	_elif items.size = 1
 	_then
 		_return items[1][1]
 	_endif 

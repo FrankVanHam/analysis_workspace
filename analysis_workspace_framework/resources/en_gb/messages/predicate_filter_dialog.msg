@@ -4,3 +4,4 @@
 :indexes				Indexes
 :no_indexes				No indexes available
 :indexes_balloon			All indexes, just for information
+:please_supply_a_predicate		Please supply a predicate

@@ -101,6 +101,7 @@ _method join_dialog.on_activation()
 	_local items << _self.join_items
 	.items[:join_choice].items << items
 	_self.set_current_join(items)
+	_self.manage_actions()
 _endmethod
 $
 
@@ -133,6 +134,14 @@ _private _method join_dialog.set_current_join(items)
 	_endif 
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_method join_dialog.manage_actions()
+	_local join? << .items[:join_choice].value _isnt _unset
+	.items[:ok].enabled? << join?
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _method join_dialog.ok()

@@ -102,6 +102,7 @@ _pragma(classify_level=restricted, topic={analysis})
 _method topology_dialog.on_activation() 
 	_self.initialise_geometry_choice()
 	_self.initialise_target_choice()
+	_self.manage_actions()
 	_return _super(model).on_activation()
 _endmethod
 $
@@ -180,6 +181,15 @@ _private _method topology_dialog.set_current_geom_field(items)
 	_endif
 _endmethod
 $
+
+_pragma(classify_level=restricted, topic={analysis})
+_method topology_dialog.manage_actions()
+	##
+	_local geom? << .items[:geometry_choice].value _isnt _unset
+	.items[:ok].enabled? << geom?
+_endmethod
+$
+
 
 _pragma(classify_level=restricted, topic={analysis})
 _method topology_dialog.ok()
@@ -272,7 +282,6 @@ _pragma(classify_level=restricted, topic={analysis})
 _private _method topology_dialog.geom_field_items
 	_return _self.geom_field_items_for(.record_holder.collection) 
 _endmethod
-
 $
 
 _pragma(classify_level=restricted, topic={analysis})
