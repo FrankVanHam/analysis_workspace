@@ -1,0 +1,24 @@
+_package sw
+$
+
+_pragma(classify_level=restricted, topic={explorer_view_plugin})
+_private _method explorer_rwo_set_output_view.post_delete()
+	##
+	## Reset the input output view
+	_self.interrupt()
+	.tree_item.selection.empty()
+	.current_element << _unset
+	_self.action(:get_all_records).enabled? << _true
+	_self.action(:select_all_records).enabled? << _true
+	.rwo_set_item.auto_redraw? << _false
+	.rwo_set_item.retain_headings? << _false
+	
+	# Clear the cache because the source collection might be deleted.
+	sw:tree_headings_holder.column_cache.empty()
+	
+	.rwo_set_item.reset()
+	_self.notify_number_of_records(_true)
+	.rwo_set_item.auto_redraw? << _true
+	_return _unset
+_endmethod
+$
